@@ -22,13 +22,7 @@ func test_initialize_pool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : H
     assert primary_token_balance_before = 0
     assert secondary_token_balance_before = 0
 
-    let (OWNER_ADDRESS) = 12345
-    let (POOL_TYPE) = 1
-    let (START_PRICE) = 100
-    let (DELTA) = 1
-    let (TOKEN_AMOUNT) = 10
-
-    initialize_pool(OWNER_ADDRESS, POOL_TYPE, START_PRICE, DELTA, TOKEN_AMOUNT)
+    initialize_pool(12345, 1, 100, 1, 10)
 
     let (owner_after) = pool_owner.read()
     let (pool_type_after) = pool_type.read()
@@ -37,11 +31,11 @@ func test_initialize_pool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : H
     let (primary_token_balance_after) = primary_token_balance.read()
     let (secondary_token_balance_after) = secondary_token_balance.read()
 
-    assert owner_after = OWNER_ADDRESS
-    assert pool_type_after = POOL_TYPE
-    assert start_price_after = START_PRICE
-    assert delta_after = DELTA
-    assert primary_token_balance_after = TOKEN_AMOUNT
+    assert owner_after = 12345
+    assert pool_type_after = 1
+    assert start_price_after = 100
+    assert delta_after = 1
+    assert primary_token_balance_after = 10
     assert secondary_token_balance_after = 0
     
     return ()
