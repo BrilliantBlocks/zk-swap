@@ -2,6 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_not_zero
+from starkware.cairo.common.bool import TRUE, FALSE
 
 @storage_var
 func pool_owner() -> (address: felt):
@@ -20,22 +21,23 @@ func delta() -> (res: felt):
 end 
 
 @storage_var
-func primary_token_balance() -> (res: felt):
-end 
-
-@storage_var
-func secondary_token_balance() -> (res: felt):
+func pool_balance(token_type: felt) -> (balance: felt):
 end 
 
 
 func initialize_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     _owner : felt,
-    _pool_type : felt,
+    _pool_type : felt, # 0 for NFT token, 1 for ETH token
     _start_price : felt,
     _delta : felt,
     _token_amount : felt
 ) -> ():
     
+    let (initialized) = pool_owner.read()
+    with_attr error_message("Pool is already initialized"):
+        assert initialized = FALSE
+    end
+
     with_attr error_message("Owner address cannot be zero"):
         assert_not_zero(_owner)
     end
@@ -50,7 +52,7 @@ func initialize_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_che
 
     delta.write(_delta)
 
-    primary_token_balance.write(_token_amount)
+    pool_balance.write(_pool_type, _token_amount)
 
     return ()
 end
