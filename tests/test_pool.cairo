@@ -1,6 +1,6 @@
 %lang starknet
 
-from src.pool import pool_owner, pool_type, start_price, delta, pool_balance
+from src.pool import pool_owner, current_price, delta, pool_balance
 from src.pool import initialize_pool
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 
@@ -9,8 +9,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 func test_initialize_pool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
     
     let (owner_before) = pool_owner.read()
-    let (pool_type_before) = pool_type.read()
-    let (start_price_before) = start_price.read()
+    let (current_price_before) = current_price.read()
     let (delta_before) = delta.read()
     let (pool_balance_before) = pool_balance.read(1)
     
@@ -38,36 +37,36 @@ func test_initialize_pool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : H
 end
 
 
-@external
-func test_owner_cannot_be_zero{
-    syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+# @external
+# func test_owner_cannot_be_zero{
+#     syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
-    %{ expect_revert(error_message="Owner address cannot be zero") %}
-    initialize_pool(0, 1, 100, 1, 10)
+#     %{ expect_revert(error_message="Owner address cannot be zero") %}
+#     initialize_pool(0, 1, 100, 1, 10)
 
-    return ()
-end
-
-
-@external
-func test_pool_type_must_be_boolean{
-    syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
-
-    %{ expect_revert(error_message="Pool type is not a boolean") %}
-    initialize_pool(12345, 2, 100, 1, 10)
-
-    return ()
-end
+#     return ()
+# end
 
 
-@external
-func test_pool_already_initialized{
-    syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+# @external
+# func test_pool_type_must_be_boolean{
+#     syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
-    initialize_pool(12345, 1, 100, 1, 10)
+#     %{ expect_revert(error_message="Pool type is not a boolean") %}
+#     initialize_pool(12345, 2, 100, 1, 10)
 
-    %{ expect_revert(error_message="Pool is already initialized") %}
-    initialize_pool(12345, 0, 100, 1, 10)
+#     return ()
+# end
 
-    return ()
-end
+
+# @external
+# func test_pool_already_initialized{
+#     syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+#     initialize_pool(12345, 1, 100, 1, 10)
+
+#     %{ expect_revert(error_message="Pool is already initialized") %}
+#     initialize_pool(12345, 0, 100, 1, 10)
+
+#     return ()
+# end
