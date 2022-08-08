@@ -1,38 +1,92 @@
 %lang starknet
 
-from src.SellPool import pool_owner, current_price, delta, nft_collection, collection_by_nft
-from src.SellPool import add_nft_to_pool, remove_nft_from_pool
+from src.SellPool import pool_owner, current_price, delta
+from src.SellPool import add_tupel, get_tupel, get_tupel_id, get_pool_owner, get_current_price, get_delta
+from src.ISellPool import ISellPool
 from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.alloc import alloc
+
+
+
+const OWNER = 12345
+const CURRENT_PRICE = 10
+const DELTA = 1
+
+
+@view
+func __setup__():
+    %{
+        context.contract_address = deploy_contract("./src/SellPool.cairo", 
+            [
+                ids.OWNER, ids.CURRENT_PRICE, ids.DELTA
+            ]
+        ).contract_address
+    %}
+    return ()
+end
 
 
 @external
-func test_initialization{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
-    
-    let (owner_before) = pool_owner.read()
-    let (current_price_before) = current_price.read()
-    let (delta_before) = delta.read()
-    let (nft_collection_before) = nft_collection.read()
-    let (collection_by_nft_before) = collection_by_nft.read(0)
-    
-    assert owner_before = 0
-    assert current_price_before = 0
-    assert delta_before = 0
-    assert nft_collection_before = 0
-    assert collection_by_nft_before = 0
+func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
-    #constructor(12345, 10, 1, 111, 2, 20, 30)
+    tempvar contract_address
+    %{ ids.contract_address = context.contract_address %}
 
-    # let (owner_after) = pool_owner.read()
-    # let (current_price_after) = current_price.read()
-    # let (delta_after) = delta.read()
-    # let (nft_collection_after) = nft_collection.read()
-    # let (collection_by_nft_after) = collection_by_nft.read(20)
+    let (owner_after) = ISellPool.get_pool_owner(contract_address)
+    let (current_price_after) = ISellPool.get_current_price(contract_address)
+    let (delta_after) = ISellPool.get_delta(contract_address)
 
-    # assert owner_after = 12345
-    # assert current_price_after = 10
-    # assert delta_after = 1
-    # assert nft_collection_after = 111
-    # assert collection_by_nft_after = 111
+    assert owner_after = 12345
+    assert current_price_after = 10
+    assert delta_after = 1
     
     return ()
 end
+
+
+@external
+func test_tupel{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    tempvar contract_address
+    %{ ids.contract_address = context.contract_address %}
+
+    add_tupel(1, 22, 0)
+
+    let (x) = get_tupel(1)
+    assert x = (22,0)
+
+    let (y) = get_tupel_id(1)
+    assert y = 22
+    
+    return ()
+end
+
+
+# @external
+# func test_owner_cannot_be_zero{
+#     syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+#     let (ptr) = alloc()
+#     assert [ptr] = 20
+#     assert [ptr + 1] = 30
+
+#     %{ expect_revert(error_message="Owner address cannot be zero") %}
+#     initialize_pool(0, 10, 1, 111, 2, ptr)
+
+#     return ()
+# end
+
+
+# @external
+# func test_nft_collection_cannot_be_zero{
+#     syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+#     let (ptr) = alloc()
+#     assert [ptr] = 20
+#     assert [ptr + 1] = 30
+
+#     %{ expect_revert(error_message="NFT collection address cannot be zero") %}
+#     initialize_pool(12345, 10, 1, 0, 2, ptr)
+
+#     return ()
+# end
