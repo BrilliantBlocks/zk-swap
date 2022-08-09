@@ -12,6 +12,10 @@ const OWNER = 12345
 const CURRENT_PRICE = 10
 const DELTA = 1
 
+# let (ptr) = alloc()
+# assert [ptr] = 20
+# assert [ptr + 1] = 30
+
 
 @view
 func __setup__():
@@ -60,33 +64,3 @@ func test_tupel{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin
     
     return ()
 end
-
-
-# @external
-# func test_owner_cannot_be_zero{
-#     syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
-
-#     let (ptr) = alloc()
-#     assert [ptr] = 20
-#     assert [ptr + 1] = 30
-
-#     %{ expect_revert(error_message="Owner address cannot be zero") %}
-#     initialize_pool(0, 10, 1, 111, 2, ptr)
-
-#     return ()
-# end
-
-
-# @external
-# func test_nft_collection_cannot_be_zero{
-#     syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
-
-#     let (ptr) = alloc()
-#     assert [ptr] = 20
-#     assert [ptr + 1] = 30
-
-#     %{ expect_revert(error_message="NFT collection address cannot be zero") %}
-#     initialize_pool(12345, 10, 1, 0, 2, ptr)
-
-#     return ()
-# end
