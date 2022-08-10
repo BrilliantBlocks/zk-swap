@@ -18,8 +18,10 @@ const NFT_1_1 = 21
 const NFT_1_2 = 22
 const NFT_2_1 = 23
 
+const ZERO_ID = 0
 const START_ID_COLLECTION_1 = 1
 const START_ID_COLLECTION_2 = 2
+const NEXT_ID_COLLECTION_1 = 3
 
 
 
@@ -28,7 +30,7 @@ func __setup__():
     %{
         context.contract_address = deploy_contract("./src/SellPool.cairo", 
             [
-                ids.OWNER, ids.CURRENT_PRICE, ids.DELTA, 2, ids.COLLECTION_1, ids.COLLECTION_2, 2, ids.NFT_1_1, ids.NFT_2_1
+                ids.OWNER, ids.CURRENT_PRICE, ids.DELTA, 3, ids.COLLECTION_1, ids.COLLECTION_2, ids.COLLECTION_1, 3, ids.NFT_1_1, ids.NFT_2_1, ids.NFT_1_2
             ]
         ).contract_address
     %}
@@ -49,8 +51,9 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     let (delta) = ISellPool.get_delta(contract_address)
     let (start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
     let (start_id_collection_2) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_2)
-    let (tuple1) = ISellPool.get_tupel_by_id(contract_address, start_id_collection_1)
-    let (tuple2) = ISellPool.get_tupel_by_id(contract_address, start_id_collection_2)
+    let (tuple1) = ISellPool.get_tupel_by_id(contract_address, START_ID_COLLECTION_1)
+    let (tuple2) = ISellPool.get_tupel_by_id(contract_address, START_ID_COLLECTION_2)
+    let (tuple3) = ISellPool.get_tupel_by_id(contract_address, NEXT_ID_COLLECTION_1)
 
     assert owner = OWNER
     assert current_price = CURRENT_PRICE
@@ -58,9 +61,11 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     assert start_id_collection_1 = START_ID_COLLECTION_1
     assert start_id_collection_2 = START_ID_COLLECTION_2
     assert tuple1[0] = NFT_1_1
-    assert tuple1[1] = 0
+    assert tuple1[1] = NEXT_ID_COLLECTION_1
     assert tuple2[0] = NFT_2_1
-    assert tuple2[1] = 0
+    assert tuple2[1] = ZERO_ID
+    assert tuple3[0] = NFT_1_2
+    assert tuple3[1] = ZERO_ID
     
     return ()
 end

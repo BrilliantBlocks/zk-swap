@@ -40,7 +40,6 @@ func constructor{
         _nft_list_len : felt,
         _nft_list : felt*
     ):
-    
     alloc_locals
 
     with_attr error_message("Owner address cannot be zero"):
@@ -73,7 +72,6 @@ func add_nft_to_pool{
         _nft_list: felt*,
         _current_id: felt
     ) -> ():
-
     alloc_locals
 
     if _nft_list_len == 0:
@@ -89,14 +87,13 @@ func add_nft_to_pool{
         return add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1, 1)
     end
 
-
     let (last_collection_id) = find_last_collection_id(start_id)
     let (next_free_id) = find_next_free_id(_current_id)
     let (last_token_id) = get_last_token_id(last_collection_id)
     tupel_by_id.write(last_collection_id, (last_token_id, next_free_id))
     tupel_by_id.write(next_free_id, (_nft_list[0], 0))
     return add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1, 1)
-
+    
 end
 
 
