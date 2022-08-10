@@ -14,4 +14,10 @@ namespace ISellPool:
     func get_delta() -> (res : felt):
     end
 
+    func get_start_id_by_collection(_collection_address: felt) -> (res: felt):
+    end
+
+    func get_tupel_by_id(_current_id: felt) -> (res: (felt, felt)):
+    end
+
 end

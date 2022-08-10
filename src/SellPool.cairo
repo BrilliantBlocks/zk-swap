@@ -35,12 +35,14 @@ func constructor{
         _owner: felt,
         _current_price : felt,
         _delta : felt,
-        #_nft_collection_len : felt,
-        #_nft_collection : felt*,
-        #_nft_list_len : felt,
-        #_nft_list : felt*
+        _nft_collection_len : felt,
+        _nft_collection : felt*,
+        _nft_list_len : felt,
+        _nft_list : felt*
     ):
     
+    alloc_locals
+
     with_attr error_message("Owner address cannot be zero"):
         assert_not_zero(_owner)
     end
@@ -50,9 +52,9 @@ func constructor{
 
     delta.write(_delta)
 
-    #assert_len_match(_nft_collection_len, _nft_list_len)
+    assert_len_match(_nft_collection_len, _nft_list_len)
 
-    #add_nft_to_pool(_nft_collection_len, _nft_collection, _nft_list_len, _nft_list, 1)
+    add_nft_to_pool(_nft_collection_len, _nft_collection, _nft_list_len, _nft_list, 1)
 
     return ()
 end
@@ -83,7 +85,7 @@ func add_nft_to_pool{
     if start_id == 0:
         let (next_free_id) = find_next_free_id(_current_id)
         start_id_by_collection.write(_nft_collection[0], next_free_id)
-        tupel_by_id.write(_current_id, (_nft_list[0], 0))
+        tupel_by_id.write(next_free_id, (_nft_list[0], 0))
         return add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1, 1)
     end
 
@@ -116,7 +118,7 @@ func find_next_free_id{
     end
 
     let (sum) = find_next_free_id(_current_id + 1)
-    return (sum)
+    return (sum + 1)
 
 end
 
@@ -155,6 +157,17 @@ func get_last_token_id{
 end
 
 
+func assert_len_match(
+        _nft_collection_len: felt,
+        _nft_list_len: felt,
+    ) -> ():
+    with_attr error_message("Collection and NFT array lengths don't match."):
+        assert _nft_collection_len = _nft_list_len
+    end
+    
+    return ()
+end
+
 
 
 # Helper functions 
@@ -166,6 +179,7 @@ func get_pool_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
     return (res)
 end
 
+
 @view
 func get_current_price{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
         res : felt):
@@ -173,12 +187,42 @@ func get_current_price{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_c
     return (res)
 end
 
+
 @view
 func get_delta{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
         res : felt):
     let (res) = delta.read()
     return (res)
 end
+
+
+@view
+func get_start_id_by_collection{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        _collection_address: felt
+    ) -> (res: felt):
+    
+    let (res) = start_id_by_collection.read(_collection_address)
+    return (res)
+end
+
+
+@view
+func get_tupel_by_id{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        _current_id: felt
+    ) -> (res: (felt, felt)):
+    
+    let (x) = tupel_by_id.read(_current_id)
+    return (x)
+end
+
 
 @external
 func add_tupel{
@@ -194,30 +238,4 @@ func add_tupel{
     tupel_by_id.write(_current_id, (_token_id, _next_id))
 
     return ()
-end
-
-@external
-func get_tupel{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }(
-        _current_id: felt
-    ) -> (res: (felt, felt)):
-    
-    let (x) = tupel_by_id.read(_current_id)
-    return (x)
-end
-
-@external
-func get_tupel_id{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }(
-        _current_id: felt
-    ) -> (res: felt):
-    
-    let (x) = tupel_by_id.read(_current_id)
-    return (x[0])
 end
