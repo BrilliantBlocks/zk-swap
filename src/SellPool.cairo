@@ -3,6 +3,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.math import assert_nn
 
 @storage_var
 func pool_owner() -> (address: felt):
@@ -107,7 +108,7 @@ func add_nft_to_pool{
         _nft_list_len: felt,
         _nft_list: felt*,
     ) -> ():
-    
+
     assert_len_match(_nft_collection_len, _nft_list_len)
 
     _add_nft_to_pool(_nft_collection_len, _nft_collection, _nft_list_len, _nft_list, 1)

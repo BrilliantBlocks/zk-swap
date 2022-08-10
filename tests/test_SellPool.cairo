@@ -109,3 +109,46 @@ func test_add_nft_to_pool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : H
 end
 
 
+@external
+func test_mismatch_array_lengths{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals 
+
+    local contract_address
+    %{ ids.contract_address = context.contract_address %}
+
+    let (MISMATCH_COLLECTIONS) = alloc()
+    assert [MISMATCH_COLLECTIONS] = COLLECTION_2
+
+    let (MISMATCH_NFTS) = alloc()
+    assert [MISMATCH_NFTS] = NFT_2_2
+    assert [MISMATCH_NFTS + 1] = NFT_3_1
+
+    %{ expect_revert(error_message="Collection and NFT array lengths don't match.") %}
+    ISellPool.add_nft_to_pool(contract_address, 1, MISMATCH_COLLECTIONS, 2, MISMATCH_NFTS)
+
+    return ()
+end
+
+
+# @external
+# func test_negative_values{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+#     alloc_locals 
+
+#     local contract_address
+#     %{ ids.contract_address = context.contract_address %}
+
+#     let (NEGATIVE_COLLECTIONS) = alloc()
+#     assert [NEGATIVE_COLLECTIONS] = COLLECTION_2
+#     assert [NEGATIVE_COLLECTIONS + 1] = COLLECTION_2
+
+#     let (NEGATIVE_NFTS) = alloc()
+#     assert [NEGATIVE_NFTS] = NFT_2_2
+#     assert [NEGATIVE_NFTS + 1] = -1
+
+#     %{ expect_revert(error_message="Values cannot be negative.") %}
+#     ISellPool.add_nft_to_pool(contract_address, 2, NEGATIVE_COLLECTIONS, 2, NEGATIVE_NFTS)
+
+#     return ()
+# end
