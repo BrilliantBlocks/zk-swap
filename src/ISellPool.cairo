@@ -20,4 +20,7 @@ namespace ISellPool:
     func get_tupel_by_id(_current_id: felt) -> (res: (felt, felt)):
     end
 
+    func add_nft_to_pool(_nft_collection_len: felt, _nft_collection: felt*, _nft_list_len: felt,  _nft_list: felt*) -> ():
+    end
+
 end
