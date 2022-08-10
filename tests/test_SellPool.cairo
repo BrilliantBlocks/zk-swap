@@ -20,11 +20,11 @@ const NFT_2_2 = 22
 const NFT_3_1 = 31
 
 const ZERO_ID = 0
-const START_LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1 = 1
-const START_LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1 = 2
-const START_LIST_ELEMENT_ID_COLLECTION_3_NFT_3_1 = 5
+const LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1 = 1
+const LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1 = 2
 const LIST_ELEMENT_ID_COLLECTION_1_NFT_1_2 = 3
 const LIST_ELEMENT_ID_COLLECTION_2_NFT_2_2 = 4
+const LIST_ELEMENT_ID_COLLECTION_3_NFT_3_1 = 5
 
 
 
@@ -54,15 +54,15 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     let (delta) = ISellPool.get_delta(contract_address)
     let (start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
     let (start_id_collection_2) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_2)
-    let (tuple_1_1) = ISellPool.get_tupel_by_id(contract_address, START_LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1)
-    let (tuple_2_1) = ISellPool.get_tupel_by_id(contract_address, START_LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1)
+    let (tuple_1_1) = ISellPool.get_tupel_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1)
+    let (tuple_2_1) = ISellPool.get_tupel_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1)
     let (tuple_1_2) = ISellPool.get_tupel_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_1_NFT_1_2)
 
     assert owner = OWNER
     assert current_price = CURRENT_PRICE
     assert delta = DELTA
-    assert start_id_collection_1 = START_LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1
-    assert start_id_collection_2 = START_LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1
+    assert start_id_collection_1 = LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1
+    assert start_id_collection_2 = LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1
     assert tuple_1_1[0] = NFT_1_1
     assert tuple_1_1[1] = LIST_ELEMENT_ID_COLLECTION_1_NFT_1_2
     assert tuple_2_1[0] = NFT_2_1
@@ -93,11 +93,11 @@ func test_add_nft_to_pool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : H
     ISellPool.add_nft_to_pool(contract_address, 2, COLLECTIONS, 2, NFTS)
 
     let (start_id_collection_3) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_3)
-    let (tuple_2_1) = ISellPool.get_tupel_by_id(contract_address, START_LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1)
+    let (tuple_2_1) = ISellPool.get_tupel_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1)
     let (tuple_2_2) = ISellPool.get_tupel_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_2_NFT_2_2)
-    let (tuple_3_1) = ISellPool.get_tupel_by_id(contract_address, START_LIST_ELEMENT_ID_COLLECTION_3_NFT_3_1)
+    let (tuple_3_1) = ISellPool.get_tupel_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_3_NFT_3_1)
 
-    assert start_id_collection_3 = START_LIST_ELEMENT_ID_COLLECTION_3_NFT_3_1
+    assert start_id_collection_3 = LIST_ELEMENT_ID_COLLECTION_3_NFT_3_1
     assert tuple_2_1[0] = NFT_2_1
     assert tuple_2_1[1] = LIST_ELEMENT_ID_COLLECTION_2_NFT_2_2
     assert tuple_2_2[0] = NFT_2_2
@@ -126,6 +126,48 @@ func test_mismatch_array_lengths{syscall_ptr : felt*, range_check_ptr, pedersen_
 
     %{ expect_revert(error_message="Collection and NFT array lengths don't match.") %}
     ISellPool.add_nft_to_pool(contract_address, 1, MISMATCH_COLLECTIONS, 2, MISMATCH_NFTS)
+
+    return ()
+end
+
+
+@external
+func test_remove_nft_from_pool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals 
+
+    local contract_address
+    %{ ids.contract_address = context.contract_address %}
+
+    let (COLLECTIONS) = alloc()
+    assert [COLLECTIONS] = COLLECTION_1
+    assert [COLLECTIONS + 1] = COLLECTION_2
+
+    let (NFTS) = alloc()
+    assert [NFTS] = NFT_1_2
+    assert [NFTS + 1] = NFT_2_1
+
+    ISellPool.remove_nft_from_pool(contract_address, 2, COLLECTIONS, 2, NFTS)
+
+    let (new_start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
+    let (new_start_id_collection_2) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_2)
+    let (tuple_1_1) = ISellPool.get_tupel_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1)
+    let (tuple_1_2) = ISellPool.get_tupel_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_1_NFT_1_2)
+    let (tuple_2_1) = ISellPool.get_tupel_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1)
+    let (tuple_2_2) = ISellPool.get_tupel_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_2_NFT_2_2)
+    
+
+    assert new_start_id_collection_1 = LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1
+    assert new_start_id_collection_2 = LIST_ELEMENT_ID_COLLECTION_2_NFT_2_2
+    
+    assert tuple_1_1[0] = NFT_1_1
+    assert tuple_1_1[1] = ZERO_ID
+    assert tuple_1_2[0] = ZERO_ID
+    assert tuple_1_2[1] = ZERO_ID
+    assert tuple_2_1[0] = ZERO_ID
+    assert tuple_2_1[1] = ZERO_ID
+    assert tuple_2_2[0] = NFT_2_2
+    assert tuple_2_2[1] = ZERO_ID
 
     return ()
 end

@@ -23,4 +23,7 @@ namespace ISellPool:
     func add_nft_to_pool(_nft_collection_len: felt, _nft_collection: felt*, _nft_list_len: felt,  _nft_list: felt*) -> ():
     end
 
+    func remove_nft_from_pool(_nft_collection_len: felt, _nft_collection: felt*, _nft_list_len: felt,  _nft_list: felt*) -> ():
+    end
+
 end
