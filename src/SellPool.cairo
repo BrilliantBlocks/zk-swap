@@ -23,7 +23,7 @@ func start_id_by_collection(address: felt) -> (int: felt):
 end
 
 @storage_var
-func tupel_by_id(int: felt) -> (res: (token_id: felt, next_id: felt)):
+func list_element_by_id(int: felt) -> (res: (token_id: felt, next_id: felt)):
 end
 
 
@@ -105,61 +105,61 @@ func _add_nft_to_pool{
     let (start_id) = start_id_by_collection.read(_nft_collection[0])
 
     if start_id == 0:
-        let (next_free_id) = find_next_free_id(first_element)
-        start_id_by_collection.write(_nft_collection[0], next_free_id)
-        tupel_by_id.write(next_free_id, (_nft_list[0], 0))
+        let (next_free_slot) = find_next_free_slot(first_element)
+        start_id_by_collection.write(_nft_collection[0], next_free_slot)
+        list_element_by_id.write(next_free_slot, (_nft_list[0], 0))
         return _add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
     end
 
-    let (last_collection_id) = find_last_collection_id(start_id)
-    let (next_free_id) = find_next_free_id(first_element)
-    let (last_token_id) = get_token_id(last_collection_id)
-    tupel_by_id.write(last_collection_id, (last_token_id, next_free_id))
-    tupel_by_id.write(next_free_id, (_nft_list[0], 0))
+    let (last_collection_element) = find_last_collection_element(start_id)
+    let (next_free_slot) = find_next_free_slot(first_element)
+    let (last_token_id) = get_token_id(last_collection_element)
+    list_element_by_id.write(last_collection_element, (last_token_id, next_free_slot))
+    list_element_by_id.write(next_free_slot, (_nft_list[0], 0))
     return _add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
 
 end
 
 
-func find_next_free_id{
+func find_next_free_slot{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
         _current_id: felt
     ) -> (
-        _next_free_id: felt
+        _next_free_slot: felt
     ):
 
-    let (s) = tupel_by_id.read(_current_id)
+    let (s) = list_element_by_id.read(_current_id)
 
     if s[0] == 0:
         return (1)
     end
 
-    let (sum) = find_next_free_id(_current_id + 1)
+    let (sum) = find_next_free_slot(_current_id + 1)
     return (sum + 1)
 
 end
 
 
-func find_last_collection_id{
+func find_last_collection_element{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
         _current_id: felt
     ) -> (
-        _last_collection_id: felt
+        _last_collection_element: felt
     ):
 
-    let (s) = tupel_by_id.read(_current_id)
+    let (s) = list_element_by_id.read(_current_id)
 
     if s[1] == 0:
         return (_current_id)
     end
 
-    return find_last_collection_id(s[1])
+    return find_last_collection_element(s[1])
 
 end
 
@@ -211,27 +211,27 @@ func _remove_nft_from_pool{
         return ()
     end
 
-    let (last_id, this_id) = find_id_to_be_removed(start_id, _nft_list[0])
+    let (last_element, this_element) = find_element_to_be_removed(start_id, _nft_list[0])
 
-    if last_id == 0: 
-        start_id_by_collection.write(_nft_collection[0], this_id)
-        tupel_by_id.write(start_id, (0, 0))
+    if last_element == 0: 
+        start_id_by_collection.write(_nft_collection[0], this_element)
+        list_element_by_id.write(start_id, (0, 0))
         return ()
     end
 
-    let (this_token_id) = get_token_id(this_id)
-    let (last_token_id) = get_token_id(last_id)
-    let (next_collection_id) = get_next_collection_id(this_id)
+    let (this_token_id) = get_token_id(this_element)
+    let (last_token_id) = get_token_id(last_element)
+    let (next_collection_slot) = get_next_collection_slot(this_element)
 
-    tupel_by_id.write(last_id, (last_token_id, next_collection_id))
-    tupel_by_id.write(this_id, (0, 0))
+    list_element_by_id.write(last_element, (last_token_id, next_collection_slot))
+    list_element_by_id.write(this_element, (0, 0))
 
     return _remove_nft_from_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
 
 end
 
 
-func find_id_to_be_removed{
+func find_element_to_be_removed{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -239,11 +239,11 @@ func find_id_to_be_removed{
         _current_id: felt,
         _token_id: felt
     ) -> (
-        _last_id: felt,
-        _this_id: felt
+        _last_element: felt,
+        _this_element: felt
     ):
-    let (_last_element) = tupel_by_id.read(_current_id)
-    let (_this_element) = tupel_by_id.read(_last_element[1])
+    let (_last_element) = list_element_by_id.read(_current_id)
+    let (_this_element) = list_element_by_id.read(_last_element[1])
 
     if _last_element[0] == _token_id:
         return (0, _last_element[1])
@@ -253,7 +253,7 @@ func find_id_to_be_removed{
         return (_current_id, _last_element[1])
     end
 
-    return find_id_to_be_removed(_last_element[1], _token_id)
+    return find_element_to_be_removed(_last_element[1], _token_id)
 
 end
 
@@ -301,12 +301,12 @@ func get_token_id{
         _current_id: felt
     ) -> (res: felt):
   
-    let (x) = tupel_by_id.read(_current_id)
+    let (x) = list_element_by_id.read(_current_id)
     return (x[0])
 end
 
 
-func get_next_collection_id{
+func get_next_collection_slot{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -314,7 +314,7 @@ func get_next_collection_id{
         _current_id: felt
     ) -> (res: felt):
     
-    let (x) = tupel_by_id.read(_current_id)
+    let (x) = list_element_by_id.read(_current_id)
     return (x[1])
 end
 
@@ -387,7 +387,7 @@ end
 
 
 @view
-func get_tupel_by_id{
+func get_list_element_by_id{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -395,7 +395,7 @@ func get_tupel_by_id{
         _current_id: felt
     ) -> (res: (felt, felt)):
     
-    let (x) = tupel_by_id.read(_current_id)
+    let (x) = list_element_by_id.read(_current_id)
     return (x)
 end
 
@@ -411,7 +411,7 @@ func add_tupel{
         _next_id: felt
     ) -> ():
     
-    tupel_by_id.write(_current_id, (_token_id, _next_id))
+    list_element_by_id.write(_current_id, (_token_id, _next_id))
 
     return ()
 end
