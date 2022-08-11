@@ -55,7 +55,7 @@ func constructor{
 
     assert_len_match(_nft_collection_len, _nft_list_len)
 
-    _add_nft_to_pool(_nft_collection_len, _nft_collection, _nft_list_len, _nft_list, 1)
+    _add_nft_to_pool(_nft_collection_len, _nft_collection, _nft_list_len, _nft_list)
 
     return ()
 end
@@ -78,7 +78,7 @@ func add_nft_to_pool{
     #assert_only_owner()
     assert_len_match(_nft_collection_len, _nft_list_len)
 
-    _add_nft_to_pool(_nft_collection_len, _nft_collection, _nft_list_len, _nft_list, 1)
+    _add_nft_to_pool(_nft_collection_len, _nft_collection, _nft_list_len, _nft_list)
 
     return ()
 
@@ -93,8 +93,7 @@ func _add_nft_to_pool{
         _nft_collection_len: felt,
         _nft_collection: felt*,
         _nft_list_len: felt,
-        _nft_list: felt*,
-        _current_id: felt
+        _nft_list: felt*
     ) -> ():
     alloc_locals
 
@@ -102,21 +101,22 @@ func _add_nft_to_pool{
         return ()
     end
 
+    const first_element = 1
     let (start_id) = start_id_by_collection.read(_nft_collection[0])
 
     if start_id == 0:
-        let (next_free_id) = find_next_free_id(_current_id)
+        let (next_free_id) = find_next_free_id(first_element)
         start_id_by_collection.write(_nft_collection[0], next_free_id)
         tupel_by_id.write(next_free_id, (_nft_list[0], 0))
-        return _add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1, 1)
+        return _add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
     end
 
     let (last_collection_id) = find_last_collection_id(start_id)
-    let (next_free_id) = find_next_free_id(_current_id)
+    let (next_free_id) = find_next_free_id(first_element)
     let (last_token_id) = get_token_id(last_collection_id)
     tupel_by_id.write(last_collection_id, (last_token_id, next_free_id))
     tupel_by_id.write(next_free_id, (_nft_list[0], 0))
-    return _add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1, 1)
+    return _add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
 
 end
 
@@ -181,7 +181,7 @@ func remove_nft_from_pool{
     #assert_only_owner()
     assert_len_match(_nft_collection_len, _nft_list_len)
 
-    _remove_nft_from_pool(_nft_collection_len, _nft_collection, _nft_list_len, _nft_list, 1)
+    _remove_nft_from_pool(_nft_collection_len, _nft_collection, _nft_list_len, _nft_list)
 
     return ()
 
@@ -196,8 +196,7 @@ func _remove_nft_from_pool{
         _nft_collection_len: felt,
         _nft_collection: felt*,
         _nft_list_len: felt,
-        _nft_list: felt*,
-        _current_id: felt
+        _nft_list: felt*
     ) -> ():
     
     alloc_locals
@@ -227,7 +226,7 @@ func _remove_nft_from_pool{
     tupel_by_id.write(last_id, (last_token_id, next_collection_id))
     tupel_by_id.write(this_id, (0, 0))
 
-    return _remove_nft_from_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1, 1)
+    return _remove_nft_from_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
 
 end
 
