@@ -19,6 +19,10 @@ func delta() -> (res: felt):
 end 
 
 @storage_var
+func collection_by_id(int: felt) -> (address: felt):
+end
+
+@storage_var
 func start_id_by_collection(address: felt) -> (int: felt):
 end
 
@@ -104,21 +108,27 @@ func _add_nft_to_pool{
         return ()
     end
 
-    const first_element = 1
+    const start_slot_collection_array = 0
+    const start_slot_element_list = 1
     let (start_id) = start_id_by_collection.read(_nft_collection[0])
 
     if start_id == 0:
-        let (next_free_slot) = find_next_free_slot(first_element)
+        let (next_collection_id) = get_collection_count(start_slot_collection_array)
+        collection_by_id.write(next_collection_id, _nft_collection[0])
+
+        let (next_free_slot) = find_next_free_slot(start_slot_element_list)
         start_id_by_collection.write(_nft_collection[0], next_free_slot)
         list_element_by_id.write(next_free_slot, (_nft_list[0], 0))
+
         return _add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
     end
 
     let (last_collection_element) = find_last_collection_element(start_id)
-    let (next_free_slot) = find_next_free_slot(first_element)
+    let (next_free_slot) = find_next_free_slot(start_slot_element_list)
     let (last_token_id) = get_token_id(last_collection_element)
     list_element_by_id.write(last_collection_element, (last_token_id, next_free_slot))
     list_element_by_id.write(next_free_slot, (_nft_list[0], 0))
+
     return _add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
 
 end
@@ -163,6 +173,28 @@ func find_last_collection_element{
     end
 
     return find_last_collection_element(s[1])
+
+end
+
+
+func get_collection_count{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        _current_id: felt
+    ) -> (
+        _collection_count: felt
+    ):
+
+    let (s) = collection_by_id.read(_current_id)
+
+    if s == 0:
+        return (0)
+    end
+
+    let (sum) = get_collection_count(_current_id + 1)
+    return (sum + 1)
 
 end
 
@@ -392,18 +424,15 @@ func get_list_element_by_id{
 end
 
 
-@external
-func add_tupel{
+@view
+func get_collection_by_id{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        _current_id: felt,
-        _token_id: felt,
-        _next_id: felt
-    ) -> ():
+        _collection_id: felt
+    ) -> (_collection_address: felt):
     
-    list_element_by_id.write(_current_id, (_token_id, _next_id))
-
-    return ()
+    let (x) = collection_by_id.read(_collection_id)
+    return (x)
 end

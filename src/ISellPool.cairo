@@ -29,4 +29,7 @@ namespace ISellPool:
     func edit_pool(_new_price: felt, _new_delta: felt) -> ():
     end
 
+    func get_collection_by_id(_collection_id: felt) -> (_collection_address: felt):
+    end
+
 end

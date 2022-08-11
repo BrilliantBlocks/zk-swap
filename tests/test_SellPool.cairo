@@ -5,26 +5,14 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.alloc import alloc
 
 
-
 const OWNER = 123456789
 const CURRENT_PRICE = 10
 const DELTA = 1
 const COLLECTION_1 = 1111111111
 const COLLECTION_2 = 2222222222
-const COLLECTION_3 = 3333333333
 const NFT_1_1 = 11
 const NFT_1_2 = 12
 const NFT_2_1 = 21
-const NFT_2_2 = 22
-const NFT_3_1 = 31
-
-const ZERO_ID = 0
-const LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1 = 1
-const LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1 = 2
-const LIST_ELEMENT_ID_COLLECTION_1_NFT_1_2 = 3
-const LIST_ELEMENT_ID_COLLECTION_2_NFT_2_2 = 4
-const LIST_ELEMENT_ID_COLLECTION_3_NFT_3_1 = 5
-
 
 
 @view
@@ -48,6 +36,22 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     local contract_address
     %{ ids.contract_address = context.contract_address %}
 
+    const OWNER = 123456789
+    const CURRENT_PRICE = 10
+    const DELTA = 1
+    const COLLECTION_1 = 1111111111
+    const COLLECTION_2 = 2222222222
+    const NFT_1_1 = 11
+    const NFT_1_2 = 12
+    const NFT_2_1 = 21
+    const ZERO_ID = 0
+    const LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1 = 1
+    const LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1 = 2
+    const LIST_ELEMENT_ID_COLLECTION_1_NFT_1_2 = 3
+    const COLLECTION_1_ID = 0
+    const COLLECTION_2_ID = 1
+
+
     let (owner) = ISellPool.get_pool_owner(contract_address)
     let (current_price) = ISellPool.get_current_price(contract_address)
     let (delta) = ISellPool.get_delta(contract_address)
@@ -56,6 +60,8 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     let (list_element_1_1) = ISellPool.get_list_element_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1)
     let (list_element_2_1) = ISellPool.get_list_element_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1)
     let (list_element_1_2) = ISellPool.get_list_element_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_1_NFT_1_2)
+    let (collection_address_1) = ISellPool.get_collection_by_id(contract_address, COLLECTION_1_ID)
+    let (collection_address_2) = ISellPool.get_collection_by_id(contract_address, COLLECTION_2_ID)
 
     assert owner = OWNER
     assert current_price = CURRENT_PRICE
@@ -68,6 +74,8 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     assert list_element_2_1[1] = ZERO_ID
     assert list_element_1_2[0] = NFT_1_2
     assert list_element_1_2[1] = ZERO_ID
+    assert collection_address_1 = COLLECTION_1
+    assert collection_address_2 = COLLECTION_2
     
     return ()
 end
@@ -80,6 +88,16 @@ func test_add_nft_to_pool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : H
 
     local contract_address
     %{ ids.contract_address = context.contract_address %}
+
+    const COLLECTION_2 = 2222222222
+    const COLLECTION_3 = 3333333333
+    const NFT_2_1 = 21
+    const NFT_2_2 = 22
+    const NFT_3_1 = 31
+    const ZERO_ID = 0
+    const LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1 = 2
+    const LIST_ELEMENT_ID_COLLECTION_2_NFT_2_2 = 4
+    const LIST_ELEMENT_ID_COLLECTION_3_NFT_3_1 = 5
 
     let (COLLECTIONS) = alloc()
     assert [COLLECTIONS] = COLLECTION_2
@@ -116,6 +134,11 @@ func test_mismatch_array_lengths{syscall_ptr : felt*, range_check_ptr, pedersen_
     local contract_address
     %{ ids.contract_address = context.contract_address %}
 
+    const COLLECTION_2 = 2222222222
+    const COLLECTION_3 = 3333333333
+    const NFT_2_2 = 22
+    const NFT_3_1 = 31
+
     let (MISMATCH_COLLECTIONS) = alloc()
     assert [MISMATCH_COLLECTIONS] = COLLECTION_2
 
@@ -137,6 +160,21 @@ func test_remove_nft_from_pool{syscall_ptr : felt*, range_check_ptr, pedersen_pt
 
     local contract_address
     %{ ids.contract_address = context.contract_address %}
+
+    const COLLECTION_1 = 1111111111
+    const COLLECTION_2 = 2222222222
+    const COLLECTION_3 = 3333333333
+    const NFT_1_1 = 11
+    const NFT_1_2 = 12
+    const NFT_2_1 = 21
+    const NFT_2_2 = 22
+    const NFT_3_1 = 31
+    const ZERO_ID = 0
+    const LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1 = 1
+    const LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1 = 2
+    const LIST_ELEMENT_ID_COLLECTION_1_NFT_1_2 = 3
+    const LIST_ELEMENT_ID_COLLECTION_2_NFT_2_2 = 4
+    const LIST_ELEMENT_ID_COLLECTION_3_NFT_3_1 = 5
 
     let (COLLECTIONS_ADD) = alloc()
     assert [COLLECTIONS_ADD] = COLLECTION_2
