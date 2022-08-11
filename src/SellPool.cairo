@@ -49,6 +49,9 @@ func constructor{
     end
     pool_owner.write(_owner)
 
+    with_attr error_message("Price cannot be negative."):
+        assert_nn(_current_price)
+    end
     current_price.write(_current_price)
 
     delta.write(_delta)
@@ -258,39 +261,28 @@ func find_element_to_be_removed{
 end
 
 
-
-# Further functions
-
 @external
-func update_current_price{
+func edit_pool{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        _new_price: felt
-    ) -> ():
-
-    #assert_only_owner()
-    current_price.write(_new_price)
-
-    return ()
-end
-
-
-@external
-func update_delta{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }(
+        _new_price: felt,
         _new_delta: felt
     ) -> ():
-
     #assert_only_owner()
+    with_attr error_message("Price cannot be negative."):
+        assert_nn(_new_price)
+    end
+    current_price.write(_new_price)
     delta.write(_new_delta)
 
     return ()
 end
+
+
+
+# Further functions
 
 
 func get_token_id{

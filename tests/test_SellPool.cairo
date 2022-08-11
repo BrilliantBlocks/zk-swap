@@ -45,7 +45,7 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
 
     alloc_locals 
 
-    tempvar contract_address
+    local contract_address
     %{ ids.contract_address = context.contract_address %}
 
     let (owner) = ISellPool.get_pool_owner(contract_address)
@@ -196,24 +196,50 @@ func test_remove_nft_from_pool{syscall_ptr : felt*, range_check_ptr, pedersen_pt
 end
 
 
-# @external
-# func test_negative_values{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+@external
+func test_edit_pool_with_expected_output{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
-#     alloc_locals 
+    alloc_locals 
 
-#     local contract_address
-#     %{ ids.contract_address = context.contract_address %}
+    local contract_address
+    %{ ids.contract_address = context.contract_address %}
 
-#     let (NEGATIVE_COLLECTIONS) = alloc()
-#     assert [NEGATIVE_COLLECTIONS] = COLLECTION_2
-#     assert [NEGATIVE_COLLECTIONS + 1] = COLLECTION_2
+    const OLD_PRICE = 10
+    const OLD_DELTA = 1 
+    const NEW_PRICE = 15
+    const NEW_DELTA = 2
 
-#     let (NEGATIVE_NFTS) = alloc()
-#     assert [NEGATIVE_NFTS] = NFT_2_2
-#     assert [NEGATIVE_NFTS + 1] = -1
+    let (old_price) = ISellPool.get_current_price(contract_address)
+    let (old_delta) = ISellPool.get_delta(contract_address)
 
-#     %{ expect_revert(error_message="Values cannot be negative.") %}
-#     ISellPool.add_nft_to_pool(contract_address, 2, NEGATIVE_COLLECTIONS, 2, NEGATIVE_NFTS)
+    assert old_price = CURRENT_PRICE
+    assert old_delta = DELTA
 
-#     return ()
-# end
+    ISellPool.edit_pool(contract_address, NEW_PRICE, NEW_DELTA)
+
+    let (new_price) = ISellPool.get_current_price(contract_address)
+    let (new_delta) = ISellPool.get_delta(contract_address)
+
+    assert new_price = NEW_PRICE
+    assert new_delta = NEW_DELTA
+
+    return ()
+end
+
+
+@external
+func test_edit_pool_with_negative_price{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals 
+
+    local contract_address
+    %{ ids.contract_address = context.contract_address %}
+
+    const NEW_NEGATIVE_PRICE = -15
+    const NEW_DELTA = 2
+
+    %{ expect_revert(error_message="Price cannot be negative.") %}
+    ISellPool.edit_pool(contract_address, NEW_NEGATIVE_PRICE, NEW_DELTA)
+
+    return ()
+end
