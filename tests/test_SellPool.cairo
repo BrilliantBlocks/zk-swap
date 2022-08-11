@@ -3,7 +3,6 @@
 from src.ISellPool import ISellPool
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.serialize import serialize_word
 
 
 
@@ -139,15 +138,39 @@ func test_remove_nft_from_pool{syscall_ptr : felt*, range_check_ptr, pedersen_pt
     local contract_address
     %{ ids.contract_address = context.contract_address %}
 
-    let (COLLECTIONS) = alloc()
-    assert [COLLECTIONS] = COLLECTION_1
-    assert [COLLECTIONS + 1] = COLLECTION_2
+    let (COLLECTIONS_ADD) = alloc()
+    assert [COLLECTIONS_ADD] = COLLECTION_2
+    assert [COLLECTIONS_ADD + 1] = COLLECTION_3
 
-    let (NFTS) = alloc()
-    assert [NFTS] = NFT_1_2
-    assert [NFTS + 1] = NFT_2_1
+    let (NFTS_ADD) = alloc()
+    assert [NFTS_ADD] = NFT_2_2
+    assert [NFTS_ADD + 1] = NFT_3_1
 
-    ISellPool.remove_nft_from_pool(contract_address, 2, COLLECTIONS, 2, NFTS)
+    ISellPool.add_nft_to_pool(contract_address, 2, COLLECTIONS_ADD, 2, NFTS_ADD)
+
+    let (start_id_collection_3) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_3)
+    let (tuple_2_1) = ISellPool.get_tupel_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_2_NFT_2_1)
+    let (tuple_2_2) = ISellPool.get_tupel_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_2_NFT_2_2)
+    let (tuple_3_1) = ISellPool.get_tupel_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_3_NFT_3_1)
+
+    assert start_id_collection_3 = LIST_ELEMENT_ID_COLLECTION_3_NFT_3_1
+    assert tuple_2_1[0] = NFT_2_1
+    assert tuple_2_1[1] = LIST_ELEMENT_ID_COLLECTION_2_NFT_2_2
+    assert tuple_2_2[0] = NFT_2_2
+    assert tuple_2_2[1] = ZERO_ID
+    assert tuple_3_1[0] = NFT_3_1
+    assert tuple_3_1[1] = ZERO_ID
+
+
+    let (COLLECTIONS_REMOVE) = alloc()
+    assert [COLLECTIONS_REMOVE] = COLLECTION_1
+    assert [COLLECTIONS_REMOVE + 1] = COLLECTION_2
+
+    let (NFTS_REMOVE) = alloc()
+    assert [NFTS_REMOVE] = NFT_1_2
+    assert [NFTS_REMOVE + 1] = NFT_2_1
+
+    ISellPool.remove_nft_from_pool(contract_address, 2, COLLECTIONS_REMOVE, 2, NFTS_REMOVE)
 
     let (new_start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
     let (new_start_id_collection_2) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_2)

@@ -216,6 +216,7 @@ func _remove_nft_from_pool{
 
     if last_id == 0: 
         start_id_by_collection.write(_nft_collection[0], this_id)
+        tupel_by_id.write(start_id, (0, 0))
         return ()
     end
 
@@ -239,21 +240,21 @@ func find_id_to_be_removed{
         _current_id: felt,
         _token_id: felt
     ) -> (
-        _last_id: felt, 
+        _last_id: felt,
         _this_id: felt
     ):
-    let (_last_id) = tupel_by_id.read(_current_id)
-    let (_this_id) = tupel_by_id.read(_last_id[1])
+    let (_last_element) = tupel_by_id.read(_current_id)
+    let (_this_element) = tupel_by_id.read(_last_element[1])
 
-    if _last_id[0] == _token_id:
-        return (0, _last_id[1])
+    if _last_element[0] == _token_id:
+        return (0, _last_element[1])
     end
 
-    if _this_id[0] == _token_id:
-        return (_current_id, _last_id[1])
+    if _this_element[0] == _token_id:
+        return (_current_id, _last_element[1])
     end
 
-    return find_id_to_be_removed(_last_id[1], _token_id)
+    return find_id_to_be_removed(_last_element[1], _token_id)
 
 end
 
