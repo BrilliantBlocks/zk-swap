@@ -5,6 +5,7 @@ from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import assert_nn
 from starkware.starknet.common.syscalls import get_caller_address
+from starkware.cairo.common.alloc import alloc
 
 @storage_var
 func pool_owner() -> (address: felt):
@@ -293,6 +294,9 @@ func find_element_to_be_removed{
 end
 
 
+# Edit pool 
+
+
 @external
 func edit_pool{
         syscall_ptr: felt*,
@@ -312,6 +316,55 @@ func edit_pool{
     return ()
 end
 
+
+# Get all pool assets
+
+@view
+func get_all_collections{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }() -> (
+        _collection_array_len: felt,
+        _collection_array: felt*
+    ):
+    alloc_locals
+    let (collection_array: felt*) = alloc()
+
+    tempvar array_index = 0
+    tempvar current_count = 0
+    let (collection_array_len) = populate_collections(collection_array, array_index, current_count)
+
+    return (collection_array_len, collection_array)
+
+end
+
+
+func populate_collections{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        _collection_array: felt*,
+        _array_index: felt,
+        _current_count: felt
+    ) -> (
+        _collection_count: felt
+    ):
+    let (_collection_element) = collection_by_id.read(_array_index)
+    if _collection_element == 0:
+        return (_current_count)
+    end
+
+    let (_start_id) = start_id_by_collection.read(_collection_element)
+    if _start_id == 0: 
+        return populate_collections(_collection_array, _array_index + 1, _current_count)
+    end
+
+    _collection_array[0] = _collection_element
+    return populate_collections(_collection_array + 1, _array_index + 1, _current_count + 1)
+
+end
 
 
 # Further functions

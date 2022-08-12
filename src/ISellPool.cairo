@@ -32,4 +32,7 @@ namespace ISellPool:
     func get_collection_by_id(_collection_id: felt) -> (_collection_address: felt):
     end
 
+    func get_all_collections() -> (_collection_array_len: felt, _collection_array: felt*):
+    end
+
 end

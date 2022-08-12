@@ -33,7 +33,7 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
 
     alloc_locals 
 
-    local contract_address
+    tempvar contract_address
     %{ ids.contract_address = context.contract_address %}
 
     const OWNER = 123456789
@@ -50,6 +50,7 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     const LIST_ELEMENT_ID_COLLECTION_1_NFT_1_2 = 3
     const COLLECTION_1_ID = 0
     const COLLECTION_2_ID = 1
+    const COLLECTION_ARRAY_LEN = 2
 
 
     let (owner) = ISellPool.get_pool_owner(contract_address)
@@ -62,6 +63,7 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     let (list_element_1_2) = ISellPool.get_list_element_by_id(contract_address, LIST_ELEMENT_ID_COLLECTION_1_NFT_1_2)
     let (collection_address_1) = ISellPool.get_collection_by_id(contract_address, COLLECTION_1_ID)
     let (collection_address_2) = ISellPool.get_collection_by_id(contract_address, COLLECTION_2_ID)
+    let (collection_array_len, collection_array) = ISellPool.get_all_collections(contract_address)
 
     assert owner = OWNER
     assert current_price = CURRENT_PRICE
@@ -76,6 +78,9 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     assert list_element_1_2[1] = ZERO_ID
     assert collection_address_1 = COLLECTION_1
     assert collection_address_2 = COLLECTION_2
+    assert collection_array_len = COLLECTION_ARRAY_LEN
+    assert collection_array[0] = COLLECTION_1
+    assert collection_array[1] = COLLECTION_2
     
     return ()
 end
