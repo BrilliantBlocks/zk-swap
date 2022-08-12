@@ -3,7 +3,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.math import assert_nn
+from starkware.cairo.common.math import assert_nn, unsigned_div_rem
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.alloc import alloc
 
@@ -29,6 +29,10 @@ end
 
 @storage_var
 func list_element_by_id(int: felt) -> (res: (token_id: felt, next_id: felt)):
+end
+
+@storage_var
+func eth_balance() -> (res: felt):
 end
 
 
@@ -424,6 +428,83 @@ func populate_nfts{
 end
 
 
+# Swap NFTs
+
+@external
+func buy_nfts{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        _nft_collection_len: felt,
+        _nft_collection: felt*,
+        _nft_list_len: felt,
+        _nft_list: felt*,
+    ) -> ():
+    alloc_locals
+    assert_len_match(_nft_collection_len, _nft_list_len)
+
+    let (_current_price) = current_price.read()
+    let (_delta) = delta.read()
+    let (_total_price) = get_total_price(_nft_list_len, _current_price, _delta)
+
+    # Call ERC20 contract to check if balanceOf > _total_price
+    # -> Transfer ETH amount to pool address
+    # Call ERC721 contract to transfer NFTs to caller
+
+    let (_old_eth_balance) = eth_balance.read()
+    local _new_eth_balance = _old_eth_balance + _total_price
+    eth_balance.write(_new_eth_balance)
+
+    let (_new_price) = get_new_price(_nft_list_len, _current_price, _delta)
+    current_price.write(_new_price)
+
+    _remove_nft_from_pool(_nft_collection_len, _nft_collection, _nft_list_len, _nft_list)
+    
+    return ()
+end
+
+
+# Linear Bonding curve
+
+
+func get_total_price{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        _number_items: felt,
+        _current_price: felt,
+        _delta: felt
+    ) -> (
+        _total_price: felt
+    ):
+    alloc_locals
+    local _counter = _number_items * (_number_items - 1) * _delta + 2 * _current_price
+    let (_total_price, _) = unsigned_div_rem(_counter, 2)
+    
+    return (_total_price)
+end
+
+
+func get_new_price{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        _number_items: felt,
+        _current_price: felt,
+        _delta: felt
+    ) -> (
+        _new_price: felt
+    ):
+    alloc_locals
+    local _new_price = _current_price + _delta * _number_items
+    
+    return (_new_price)
+end
+
+
 # Further functions
 
 
@@ -545,4 +626,16 @@ func get_collection_by_id{
     
     let (x) = collection_by_id.read(_collection_id)
     return (x)
+end
+
+
+@view
+func get_eth_balance{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }() -> (_eth_balance: felt):
+    
+    let (_eth_balance) = eth_balance.read()
+    return (_eth_balance)
 end
