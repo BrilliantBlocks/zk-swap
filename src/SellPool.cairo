@@ -7,6 +7,24 @@ from starkware.cairo.common.math import assert_nn, unsigned_div_rem
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.alloc import alloc
 
+
+# Events
+
+@event
+func AddTokenToPool(_collection_address: felt, _token_id: felt):
+end
+
+@event
+func RemoveTokenFromPool(_collection_address: felt, _token_id: felt):
+end
+
+@event
+func EditPool(_new_price: felt, _new_delta: felt):
+end
+
+
+# Storage
+
 @storage_var
 func pool_owner() -> (address: felt):
 end 
@@ -125,6 +143,8 @@ func _add_nft_to_pool{
         start_id_by_collection.write(_nft_collection[0], next_free_slot)
         list_element_by_id.write(next_free_slot, (_nft_list[0], 0))
 
+        AddTokenToPool.emit(_nft_collection[0], _nft_list[0])
+
         return _add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
     end
 
@@ -133,6 +153,8 @@ func _add_nft_to_pool{
     let (last_token_id) = get_token_id(last_collection_element)
     list_element_by_id.write(last_collection_element, (last_token_id, next_free_slot))
     list_element_by_id.write(next_free_slot, (_nft_list[0], 0))
+
+    AddTokenToPool.emit(_nft_collection[0], _nft_list[0])
 
     return _add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
 
@@ -256,6 +278,9 @@ func _remove_nft_from_pool{
     if last_element == 0: 
         start_id_by_collection.write(_nft_collection[0], this_element)
         list_element_by_id.write(start_id, (0, 0))
+
+        RemoveTokenFromPool.emit(_nft_collection[0], _nft_list[0])
+
         return _remove_nft_from_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
     end
 
@@ -265,6 +290,8 @@ func _remove_nft_from_pool{
 
     list_element_by_id.write(last_element, (last_token_id, next_collection_slot))
     list_element_by_id.write(this_element, (0, 0))
+
+    RemoveTokenFromPool.emit(_nft_collection[0], _nft_list[0])
 
     return _remove_nft_from_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
 
@@ -316,6 +343,8 @@ func edit_pool{
     end
     current_price.write(_new_price)
     delta.write(_new_delta)
+
+    EditPool.emit(_new_price, _new_delta)
 
     return ()
 end
