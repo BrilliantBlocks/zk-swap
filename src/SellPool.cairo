@@ -256,7 +256,7 @@ func _remove_nft_from_pool{
     if last_element == 0: 
         start_id_by_collection.write(_nft_collection[0], this_element)
         list_element_by_id.write(start_id, (0, 0))
-        return ()
+        return _remove_nft_from_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
     end
 
     let (this_token_id) = get_token_id(this_element)

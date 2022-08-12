@@ -33,7 +33,7 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
 
     alloc_locals 
 
-    tempvar contract_address
+    local contract_address
     %{ ids.contract_address = context.contract_address %}
 
     const OWNER = 123456789
