@@ -480,7 +480,7 @@ func get_total_price{
         _total_price: felt
     ):
     alloc_locals
-    local _counter = _number_items * (_number_items - 1) * _delta + 2 * _current_price
+    local _counter = _number_items * (_number_items - 1) * _delta + 2 * _current_price * _number_items
     let (_total_price, _) = unsigned_div_rem(_counter, 2)
     
     return (_total_price)

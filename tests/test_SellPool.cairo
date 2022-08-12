@@ -331,7 +331,7 @@ func test_buy_nfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuil
 
     let (new_eth_balance) = ISellPool.get_eth_balance(contract_address)
     let (new_start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
-    #assert new_eth_balance = NEW_ETH_BALANCE
+    assert new_eth_balance = NEW_ETH_BALANCE
     assert new_start_id_collection_1 = ZERO_ID
 
     return ()
