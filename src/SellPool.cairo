@@ -367,6 +367,63 @@ func populate_collections{
 end
 
 
+@view
+func get_all_nfts_of_collection{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        _collection_address: felt
+    ) -> (
+        _nft_array_len: felt,
+        _nft_array: felt*
+    ):
+    alloc_locals
+    let (nft_array: felt*) = alloc()
+
+    with_attr error_message("Collection address cannot be negative."):
+        assert_nn(_collection_address)
+    end
+
+    let (start_id) = start_id_by_collection.read(_collection_address)
+
+    if start_id == 0:
+        return (0, nft_array)
+    end
+
+    tempvar array_index = 0
+    tempvar current_count = 0
+    let (nft_array_len) = populate_nfts(nft_array, array_index, start_id)
+
+    return (nft_array_len, nft_array)
+
+end
+
+
+func populate_nfts{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        _nft_array: felt*,
+        _array_index: felt,
+        _current_id: felt
+    ) -> (
+        _nft_count: felt
+    ):
+
+    let (s) = list_element_by_id.read(_current_id)
+    _nft_array[0] = s[0]
+
+    if s[1] == 0:
+        return (_array_index + 1)
+    end
+
+    return populate_nfts(_nft_array + 1, _array_index + 1, s[1])
+
+end
+
+
 # Further functions
 
 

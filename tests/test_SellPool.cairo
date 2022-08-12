@@ -41,6 +41,7 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     const DELTA = 1
     const COLLECTION_1 = 1111111111
     const COLLECTION_2 = 2222222222
+    const COLLECTION_3 = 3333333333
     const NFT_1_1 = 11
     const NFT_1_2 = 12
     const NFT_2_1 = 21
@@ -51,6 +52,8 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     const COLLECTION_1_ID = 0
     const COLLECTION_2_ID = 1
     const COLLECTION_ARRAY_LEN = 2
+    const NFT_COLLECTION_1_ARRAY_LEN = 2
+    const NFT_COLLECTION_2_ARRAY_LEN = 1
 
 
     let (owner) = ISellPool.get_pool_owner(contract_address)
@@ -64,6 +67,9 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     let (collection_address_1) = ISellPool.get_collection_by_id(contract_address, COLLECTION_1_ID)
     let (collection_address_2) = ISellPool.get_collection_by_id(contract_address, COLLECTION_2_ID)
     let (collection_array_len, collection_array) = ISellPool.get_all_collections(contract_address)
+    let (nft_collection_1_array_len, nft_collection_1_array) = ISellPool.get_all_nfts_of_collection(contract_address, COLLECTION_1)
+    let (nft_collection_2_array_len, nft_collection_2_array) = ISellPool.get_all_nfts_of_collection(contract_address, COLLECTION_2)
+    let (nft_collection_3_array_len, nft_collection_3_array) = ISellPool.get_all_nfts_of_collection(contract_address, COLLECTION_3)
 
     assert owner = OWNER
     assert current_price = CURRENT_PRICE
@@ -81,6 +87,12 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     assert collection_array_len = COLLECTION_ARRAY_LEN
     assert collection_array[0] = COLLECTION_1
     assert collection_array[1] = COLLECTION_2
+    assert nft_collection_1_array_len = NFT_COLLECTION_1_ARRAY_LEN
+    assert nft_collection_1_array[0] = NFT_1_1
+    assert nft_collection_1_array[1] = NFT_1_2
+    assert nft_collection_2_array_len = NFT_COLLECTION_2_ARRAY_LEN
+    assert nft_collection_2_array[0] = NFT_2_1
+    assert nft_collection_3_array_len = ZERO_ID
     
     return ()
 end
