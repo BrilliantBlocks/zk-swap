@@ -312,6 +312,8 @@ func test_buy_nfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuil
     const LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1 = 1
     const OLD_ETH_BALANCE = 0
     const NEW_ETH_BALANCE = 21
+    const OLD_PRICE = 10
+    const NEW_PRICE = 12
     
     let (COLLECTIONS_BUY) = alloc()
     assert [COLLECTIONS_BUY] = COLLECTION_1
@@ -323,16 +325,19 @@ func test_buy_nfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuil
 
     let (old_eth_balance) = ISellPool.get_eth_balance(contract_address)
     let (start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
+    let (old_price) = ISellPool.get_current_price(contract_address)
     assert old_eth_balance = OLD_ETH_BALANCE
     assert start_id_collection_1 = LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1
-
+    assert old_price = OLD_PRICE
 
     ISellPool.buy_nfts(contract_address, 2, COLLECTIONS_BUY, 2, NFTS_BUY)
 
     let (new_eth_balance) = ISellPool.get_eth_balance(contract_address)
     let (new_start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
+    let (new_price) = ISellPool.get_current_price(contract_address)
     assert new_eth_balance = NEW_ETH_BALANCE
     assert new_start_id_collection_1 = ZERO_ID
+    assert new_price = NEW_PRICE
 
     return ()
 end
