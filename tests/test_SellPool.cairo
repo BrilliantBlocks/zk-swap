@@ -14,13 +14,59 @@ const NFT_1_1 = 11
 const NFT_1_2 = 12
 const NFT_2_1 = 21
 
+struct NFT:
+    member address: felt
+    member id: felt
+end
+
+# alloc_locals
+# let (NFT_ARRAY : NFT*) = alloc()
+
+# assert NFT_ARRAY[0] = NFT(address = 1111111111, id = 11)
+# assert NFT_ARRAY[1] = NFT(address = 2222222222, id = 21)
+# assert NFT_ARRAY[2] = NFT(address = 1111111111, id = 12)
+
+# let FIRST_NFT = NFT(
+#     address = 1111111111, id = 11
+# )
+
+# let SECOND_NFT = NFT(
+#     address = 2222222222, id = 21
+# )
+
+# let THIRD_NFT = NFT(
+#     address = 1111111111, id = 12
+# )
+
 
 @view
 func __setup__():
+
+    alloc_locals
+    let (NFT_ARRAY : NFT*) = alloc()
+    let FIRST_NFT = NFT(
+        address = 1111111111, id = 11
+    )
+
+    let SECOND_NFT = NFT(
+        address = 2222222222, id = 21
+    )
+
+    let THIRD_NFT = NFT(
+        address = 1111111111, id = 12
+    )
+
+    #let (NFT_ARRAY : NFT*) = alloc()
+
+    # assert NFT_ARRAY[0] = NFT(address = 1111111111, id = 11)
+    # assert NFT_ARRAY[1] = NFT(address = 2222222222, id = 21)
+    # assert NFT_ARRAY[2] = NFT(address = 1111111111, id = 12)
+
+
     %{
         context.contract_address = deploy_contract("./src/SellPool.cairo", 
             [
-                ids.OWNER, ids.CURRENT_PRICE, ids.DELTA, 3, ids.COLLECTION_1, ids.COLLECTION_2, ids.COLLECTION_1, 3, ids.NFT_1_1, ids.NFT_2_1, ids.NFT_1_2
+                ids.OWNER, ids.CURRENT_PRICE, ids.DELTA, 3, ids.FIRST_NFT, ids.SECOND_NFT, ids.THIRD_NFT
             ]
         ).contract_address
     %}

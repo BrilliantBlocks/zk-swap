@@ -8,14 +8,19 @@ from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.alloc import alloc
 
 
+struct NFT:
+    member address: felt
+    member id: felt
+end
+
 # Events
 
 @event
-func AddTokenToPool(_collection_address: felt, _token_id: felt):
+func AddTokenToPool(nft: NFT):
 end
 
 @event
-func RemoveTokenFromPool(_collection_address: felt, _token_id: felt):
+func RemoveTokenFromPool(nft: NFT):
 end
 
 @event
@@ -64,10 +69,8 @@ func constructor{
         _owner: felt,
         _current_price : felt,
         _delta : felt,
-        _nft_collection_len : felt,
-        _nft_collection : felt*,
-        _nft_list_len : felt,
-        _nft_list : felt*
+        _nft_array_len : felt,
+        _nft_array : NFT*
     ):
     alloc_locals
 
@@ -83,9 +86,9 @@ func constructor{
 
     delta.write(_delta)
 
-    assert_len_match(_nft_collection_len, _nft_list_len)
+    #assert_len_match(_nft_collection_len, _nft_list_len)
 
-    _add_nft_to_pool(_nft_collection_len, _nft_collection, _nft_list_len, _nft_list)
+    _add_nft_to_pool(_nft_array_len, _nft_array)
 
     return ()
 end
@@ -99,16 +102,14 @@ func add_nft_to_pool{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        _nft_collection_len: felt,
-        _nft_collection: felt*,
-        _nft_list_len: felt,
-        _nft_list: felt*,
+        _nft_array_len : felt,
+        _nft_array : NFT*
     ) -> ():
     #alloc_locals
     #assert_only_owner()
-    assert_len_match(_nft_collection_len, _nft_list_len)
+    #assert_len_match(_nft_collection_len, _nft_list_len)
 
-    _add_nft_to_pool(_nft_collection_len, _nft_collection, _nft_list_len, _nft_list)
+    _add_nft_to_pool(_nft_array_len, _nft_array)
 
     return ()
 
@@ -120,43 +121,43 @@ func _add_nft_to_pool{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        _nft_collection_len: felt,
-        _nft_collection: felt*,
-        _nft_list_len: felt,
-        _nft_list: felt*
+        _nft_array_len : felt,
+        _nft_array : NFT*
     ) -> ():
     alloc_locals
 
-    if _nft_list_len == 0:
+    if _nft_array_len == 0:
         return ()
     end
 
     const start_slot_collection_array = 0
     const start_slot_element_list = 1
-    let (start_id) = start_id_by_collection.read(_nft_collection[0])
+    let (start_id) = start_id_by_collection.read(_nft_array[0].address)
 
     if start_id == 0:
         let (next_collection_id) = get_collection_count(start_slot_collection_array)
-        collection_by_id.write(next_collection_id, _nft_collection[0])
+        collection_by_id.write(next_collection_id, _nft_array[0].address)
 
         let (next_free_slot) = find_next_free_slot(start_slot_element_list)
-        start_id_by_collection.write(_nft_collection[0], next_free_slot)
-        list_element_by_id.write(next_free_slot, (_nft_list[0], 0))
+        start_id_by_collection.write(_nft_array[0].address, next_free_slot)
+        list_element_by_id.write(next_free_slot, (_nft_array[0].id, 0))
 
-        AddTokenToPool.emit(_nft_collection[0], _nft_list[0])
+        # To do: Approve token for pool address in ERC721
+        AddTokenToPool.emit(_nft_array[0])
 
-        return _add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
+        return _add_nft_to_pool(_nft_array_len - 1, _nft_array + 1)
     end
 
     let (last_collection_element) = find_last_collection_element(start_id)
     let (next_free_slot) = find_next_free_slot(start_slot_element_list)
     let (last_token_id) = get_token_id(last_collection_element)
     list_element_by_id.write(last_collection_element, (last_token_id, next_free_slot))
-    list_element_by_id.write(next_free_slot, (_nft_list[0], 0))
+    list_element_by_id.write(next_free_slot, (_nft_array[0].id, 0))
 
-    AddTokenToPool.emit(_nft_collection[0], _nft_list[0])
+    # To do: Approve token for pool address in ERC721
+    AddTokenToPool.emit(_nft_array[0])
 
-    return _add_nft_to_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
+    return _add_nft_to_pool(_nft_array_len - 1, _nft_array + 1)
 
 end
 
@@ -234,16 +235,14 @@ func remove_nft_from_pool{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        _nft_collection_len: felt,
-        _nft_collection: felt*,
-        _nft_list_len: felt,
-        _nft_list: felt*,
+        _nft_array_len : felt,
+        _nft_array : NFT*
     ) -> ():
     #alloc_locals
     #assert_only_owner()
-    assert_len_match(_nft_collection_len, _nft_list_len)
+    #assert_len_match(_nft_collection_len, _nft_list_len)
 
-    _remove_nft_from_pool(_nft_collection_len, _nft_collection, _nft_list_len, _nft_list)
+    _remove_nft_from_pool(_nft_array_len, _nft_array)
 
     return ()
 
@@ -255,33 +254,32 @@ func _remove_nft_from_pool{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        _nft_collection_len: felt,
-        _nft_collection: felt*,
-        _nft_list_len: felt,
-        _nft_list: felt*
+        _nft_array_len : felt,
+        _nft_array : NFT*
     ) -> ():
     
     alloc_locals
 
-    if _nft_list_len == 0:
+    if _nft_array_len == 0:
         return ()
     end
 
-    let (start_id) = start_id_by_collection.read(_nft_collection[0])
+    let (start_id) = start_id_by_collection.read(_nft_array[0].address)
 
     if start_id == 0:
         return ()
     end
 
-    let (last_element, this_element) = find_element_to_be_removed(start_id, _nft_list[0])
+    let (last_element, this_element) = find_element_to_be_removed(start_id, _nft_array[0].id)
 
     if last_element == 0: 
-        start_id_by_collection.write(_nft_collection[0], this_element)
+        start_id_by_collection.write(_nft_array[0].address, this_element)
         list_element_by_id.write(start_id, (0, 0))
 
-        RemoveTokenFromPool.emit(_nft_collection[0], _nft_list[0])
+        # To do: Remove token approval for pool address in ERC721
+        RemoveTokenFromPool.emit(_nft_array[0])
 
-        return _remove_nft_from_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
+        return _remove_nft_from_pool(_nft_array_len - 1, _nft_array + 1)
     end
 
     let (this_token_id) = get_token_id(this_element)
@@ -291,9 +289,10 @@ func _remove_nft_from_pool{
     list_element_by_id.write(last_element, (last_token_id, next_collection_slot))
     list_element_by_id.write(this_element, (0, 0))
 
-    RemoveTokenFromPool.emit(_nft_collection[0], _nft_list[0])
+    # To do: Remove token approval for pool address in ERC721
+    RemoveTokenFromPool.emit(_nft_array[0])
 
-    return _remove_nft_from_pool(_nft_collection_len - 1, _nft_collection + 1, _nft_list_len - 1, _nft_list + 1)
+    return _remove_nft_from_pool(_nft_array_len - 1, _nft_array + 1)
 
 end
 
@@ -465,30 +464,30 @@ func buy_nfts{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        _nft_collection_len: felt,
-        _nft_collection: felt*,
-        _nft_list_len: felt,
-        _nft_list: felt*,
+        _nft_array_len : felt,
+        _nft_array : NFT*
     ) -> ():
     alloc_locals
-    assert_len_match(_nft_collection_len, _nft_list_len)
+    #assert_len_match(_nft_collection_len, _nft_list_len)
 
     let (_current_price) = current_price.read()
     let (_delta) = delta.read()
-    let (_total_price) = get_total_price(_nft_list_len, _current_price, _delta)
+    let (_total_price) = get_total_price(_nft_array_len, _current_price, _delta)
 
+    # To do:
     # Call ERC20 contract to check if balanceOf > _total_price
+    # Check if pool is approved for amount
     # -> Transfer ETH amount to pool address
-    # Call ERC721 contract to transfer NFTs to caller
+    # Call ERC721 contract to transfer NFTs to caller address
 
     let (_old_eth_balance) = eth_balance.read()
     local _new_eth_balance = _old_eth_balance + _total_price
     eth_balance.write(_new_eth_balance)
 
-    let (_new_price) = get_new_price(_nft_list_len, _current_price, _delta)
+    let (_new_price) = get_new_price(_nft_array_len, _current_price, _delta)
     current_price.write(_new_price)
 
-    _remove_nft_from_pool(_nft_collection_len, _nft_collection, _nft_list_len, _nft_list)
+    _remove_nft_from_pool(_nft_array_len - 1, _nft_array + 1)
     
     return ()
 end
