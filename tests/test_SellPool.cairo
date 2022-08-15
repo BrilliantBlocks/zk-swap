@@ -305,44 +305,47 @@ func test_edit_pool_with_negative_price{syscall_ptr : felt*, range_check_ptr, pe
 end
 
 
-# @external
-# func test_buy_nfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+@external
+func test_buy_nfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
-#     alloc_locals 
+    alloc_locals 
 
-#     local contract_address
-#     %{ ids.contract_address = context.contract_address %}
+    local contract_address
+    %{ ids.contract_address = context.contract_address %}
 
-#     const ZERO_ID = 0
-#     const LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1 = 1
-#     const OLD_ETH_BALANCE = 0
-#     const NEW_ETH_BALANCE = 21
-#     const OLD_PRICE = 10
-#     const NEW_PRICE = 12
+    const COLLECTION_1 = 1111111111
+    const NFT_1_1 = 11
+    const NFT_1_2 = 12
+    const ZERO_ID = 0
+    const OLD_ETH_BALANCE = 0
+    const NEW_ETH_BALANCE = 21
+    const OLD_PRICE = 10
+    const NEW_PRICE = 12
     
-#     let (COLLECTIONS_BUY) = alloc()
-#     assert [COLLECTIONS_BUY] = COLLECTION_1
-#     assert [COLLECTIONS_BUY + 1] = COLLECTION_1
+    let (NFT_ARRAY : NFT*) = alloc()
 
-#     let (NFTS_BUY) = alloc()
-#     assert [NFTS_BUY] = NFT_1_1
-#     assert [NFTS_BUY + 1] = NFT_1_2
+    assert NFT_ARRAY[0] = NFT(address = COLLECTION_1, id = NFT_1_1)
+    assert NFT_ARRAY[1] = NFT(address = COLLECTION_1, id = NFT_1_2)
+    
+    ISellPool.add_nft_to_pool(contract_address, 2, NFT_ARRAY)
 
-#     let (old_eth_balance) = ISellPool.get_eth_balance(contract_address)
-#     let (start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
-#     let (old_price) = ISellPool.get_current_price(contract_address)
-#     assert old_eth_balance = OLD_ETH_BALANCE
-#     assert start_id_collection_1 = LIST_ELEMENT_ID_COLLECTION_1_NFT_1_1
-#     assert old_price = OLD_PRICE
+    let (old_eth_balance) = ISellPool.get_eth_balance(contract_address)
+    let (start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
+    let (old_price) = ISellPool.get_current_price(contract_address)
+    
+    assert old_eth_balance = OLD_ETH_BALANCE
+    assert start_id_collection_1 = 1
+    assert old_price = OLD_PRICE
 
-#     ISellPool.buy_nfts(contract_address, 2, COLLECTIONS_BUY, 2, NFTS_BUY)
+    ISellPool.buy_nfts(contract_address, 2, NFT_ARRAY)
 
-#     let (new_eth_balance) = ISellPool.get_eth_balance(contract_address)
-#     let (new_start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
-#     let (new_price) = ISellPool.get_current_price(contract_address)
-#     assert new_eth_balance = NEW_ETH_BALANCE
-#     assert new_start_id_collection_1 = ZERO_ID
-#     assert new_price = NEW_PRICE
+    let (new_eth_balance) = ISellPool.get_eth_balance(contract_address)
+    let (new_start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
+    let (new_price) = ISellPool.get_current_price(contract_address)
+    
+    assert new_eth_balance = NEW_ETH_BALANCE
+    assert new_start_id_collection_1 = ZERO_ID
+    assert new_price = NEW_PRICE
 
-#     return ()
-# end
+    return ()
+end

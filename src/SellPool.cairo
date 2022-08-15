@@ -480,7 +480,7 @@ func buy_nfts{
     let (_new_price) = get_new_price(_nft_array_len, _current_price, _delta)
     current_price.write(_new_price)
 
-    _remove_nft_from_pool(_nft_array_len - 1, _nft_array + 1)
+    _remove_nft_from_pool(_nft_array_len, _nft_array)
     
     return ()
 end
