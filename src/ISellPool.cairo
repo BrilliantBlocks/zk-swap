@@ -37,7 +37,7 @@ namespace ISellPool:
     func get_all_collections() -> (_collection_array_len: felt, _collection_array: felt*):
     end
 
-    func get_all_nfts_of_collection(_collection_address: felt) -> (nft_id_list_len: felt, nft_id_list: felt*):
+    func get_all_nfts_of_collection(_collection_address: felt) -> (_nft_id_list_len: felt, _nft_id_list: felt*):
     end
 
     func buy_nfts(_nft_array_len: felt,  _nft_array: NFT*) -> ():

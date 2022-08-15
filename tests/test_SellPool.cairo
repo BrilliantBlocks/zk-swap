@@ -10,11 +10,6 @@ from src.SellPool import NFT
 const FACTORY = 123456789
 const CURRENT_PRICE = 10
 const DELTA = 1
-# const COLLECTION_1 = 1111111111
-# const COLLECTION_2 = 2222222222
-# const NFT_1_1 = 11
-# const NFT_1_2 = 12
-# const NFT_2_1 = 21
 
 
 @view
@@ -64,7 +59,6 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     assert NFT_ARRAY[2] = NFT(address = COLLECTION_1, id = NFT_1_2)
     
     ISellPool.add_nft_to_pool(contract_address, 3, NFT_ARRAY)
-
 
     let (factory) = ISellPool.get_pool_factory(contract_address)
     let (current_price) = ISellPool.get_current_price(contract_address)

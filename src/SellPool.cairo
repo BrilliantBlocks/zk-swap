@@ -7,8 +7,6 @@ from starkware.cairo.common.math import assert_nn, unsigned_div_rem
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.alloc import alloc
 
-from src.IdentityOracle import get_own_address
-
 
 struct NFT:
     member address: felt
@@ -140,7 +138,7 @@ func _add_nft_to_pool{
         # To do: Approve token for pool address in ERC721
         AddTokenToPool.emit(_nft_array[0])
 
-        return _add_nft_to_pool(_nft_array_len - 1, _nft_array + 1)
+        return _add_nft_to_pool(_nft_array_len - 1, _nft_array + 2)
     end
 
     let (last_collection_element) = find_last_collection_element(start_id)
@@ -152,7 +150,7 @@ func _add_nft_to_pool{
     # To do: Approve token for pool address in ERC721
     AddTokenToPool.emit(_nft_array[0])
 
-    return _add_nft_to_pool(_nft_array_len - 1, _nft_array + 1)
+    return _add_nft_to_pool(_nft_array_len - 1, _nft_array + 2)
 
 end
 
@@ -274,7 +272,7 @@ func _remove_nft_from_pool{
         # To do: Remove token approval for pool address in ERC721
         RemoveTokenFromPool.emit(_nft_array[0])
 
-        return _remove_nft_from_pool(_nft_array_len - 1, _nft_array + 1)
+        return _remove_nft_from_pool(_nft_array_len - 1, _nft_array + 2)
     end
 
     let (this_token_id) = get_token_id(this_element)
@@ -287,7 +285,7 @@ func _remove_nft_from_pool{
     # To do: Remove token approval for pool address in ERC721
     RemoveTokenFromPool.emit(_nft_array[0])
 
-    return _remove_nft_from_pool(_nft_array_len - 1, _nft_array + 1)
+    return _remove_nft_from_pool(_nft_array_len - 1, _nft_array + 2)
 
 end
 
@@ -402,11 +400,11 @@ func get_all_nfts_of_collection{
     }(
         _collection_address: felt
     ) -> (
-        nft_id_list_len: felt,
-        nft_id_list: felt*
+        _nft_id_list_len: felt,
+        _nft_id_list: felt*
     ):
     alloc_locals
-    let (nft_id_list: felt*) = alloc()
+    let (_nft_id_list: felt*) = alloc()
 
     with_attr error_message("Collection address cannot be negative."):
         assert_nn(_collection_address)
@@ -415,14 +413,14 @@ func get_all_nfts_of_collection{
     let (start_id) = start_id_by_collection.read(_collection_address)
 
     if start_id == 0:
-        return (0, nft_id_list)
+        return (0, _nft_id_list)
     end
 
     tempvar list_index = 0
     tempvar current_count = 0
-    let (nft_id_list_len) = populate_nfts(nft_id_list, list_index, start_id)
+    let (_nft_id_list_len) = populate_nfts(_nft_id_list, list_index, start_id)
 
-    return (nft_id_list_len, nft_id_list)
+    return (_nft_id_list_len, _nft_id_list)
 
 end
 
