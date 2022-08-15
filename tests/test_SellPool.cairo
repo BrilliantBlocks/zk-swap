@@ -163,10 +163,6 @@ func test_remove_nft_from_pool{syscall_ptr : felt*, range_check_ptr, pedersen_pt
     const NFT_2_2 = 22
     const NFT_3_1 = 31
     const ZERO_ID = 0
-    const COLLECTION_ARRAY_LEN = 3
-    const NFT_COLLECTION_1_ARRAY_LEN = 2
-    const NFT_COLLECTION_2_ARRAY_LEN = 2
-    const NFT_COLLECTION_3_ARRAY_LEN = 1
 
     let (NFT_ARRAY_ADD : NFT*) = alloc()
 
@@ -214,15 +210,18 @@ func test_remove_nft_from_pool{syscall_ptr : felt*, range_check_ptr, pedersen_pt
     assert list_element_5[1] = ZERO_ID
     assert collection_address_1 = COLLECTION_1
     assert collection_address_2 = COLLECTION_2
-    assert collection_array_len = COLLECTION_ARRAY_LEN
+    assert collection_array_len = 3
     assert collection_array[0] = COLLECTION_1
     assert collection_array[1] = COLLECTION_2
-    assert nft_collection_1_id_list_len = NFT_COLLECTION_1_ARRAY_LEN
+    assert collection_array[2] = COLLECTION_3
+    assert nft_collection_1_id_list_len = 2
     assert nft_collection_1_id_list[0] = NFT_1_1
     assert nft_collection_1_id_list[1] = NFT_1_2
-    assert nft_collection_2_id_list_len = NFT_COLLECTION_2_ARRAY_LEN
+    assert nft_collection_2_id_list_len = 2
     assert nft_collection_2_id_list[0] = NFT_2_1
-    assert nft_collection_3_id_list_len = NFT_COLLECTION_3_ARRAY_LEN
+    assert nft_collection_2_id_list[1] = NFT_2_2
+    assert nft_collection_3_id_list_len = 1
+    assert nft_collection_3_id_list[0] = NFT_3_1
 
 
     let (NFT_ARRAY_REMOVE : NFT*) = alloc()
@@ -238,6 +237,10 @@ func test_remove_nft_from_pool{syscall_ptr : felt*, range_check_ptr, pedersen_pt
     let (list_element_2) = ISellPool.get_list_element_by_id(contract_address, 2)
     let (list_element_3) = ISellPool.get_list_element_by_id(contract_address, 3)
     let (list_element_4) = ISellPool.get_list_element_by_id(contract_address, 4)
+    let (collection_array_len, collection_array) = ISellPool.get_all_collections(contract_address)
+    let (nft_collection_1_id_list_len, nft_collection_1_id_list) = ISellPool.get_all_nfts_of_collection(contract_address, COLLECTION_1)
+    let (nft_collection_2_id_list_len, nft_collection_2_id_list) = ISellPool.get_all_nfts_of_collection(contract_address, COLLECTION_2)
+    let (nft_collection_3_id_list_len, nft_collection_3_id_list) = ISellPool.get_all_nfts_of_collection(contract_address, COLLECTION_3)
     
     assert new_start_id_collection_1 = 1
     assert new_start_id_collection_2 = 4
@@ -251,6 +254,16 @@ func test_remove_nft_from_pool{syscall_ptr : felt*, range_check_ptr, pedersen_pt
     assert list_element_4[1] = ZERO_ID
     assert list_element_5[0] = NFT_3_1
     assert list_element_5[1] = ZERO_ID
+    assert collection_array_len = 3
+    assert collection_array[0] = COLLECTION_1
+    assert collection_array[1] = COLLECTION_2
+    assert collection_array[2] = COLLECTION_3
+    assert nft_collection_1_id_list_len = 1
+    assert nft_collection_1_id_list[0] = NFT_1_1
+    assert nft_collection_2_id_list_len = 1
+    assert nft_collection_2_id_list[0] = NFT_2_2
+    assert nft_collection_3_id_list_len = 1
+    assert nft_collection_3_id_list[0] = NFT_3_1
     
     return ()
 end
