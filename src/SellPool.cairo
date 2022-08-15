@@ -4,8 +4,10 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import assert_nn, unsigned_div_rem
-from starkware.starknet.common.syscalls import get_caller_address
+from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
 from starkware.cairo.common.alloc import alloc
+
+from src.IERC721 import IERC721
 
 
 struct NFT:
@@ -233,7 +235,6 @@ func remove_nft_from_pool{
     ) -> ():
     #alloc_locals
     #assert_only_owner()
-    #assert_len_match(_nft_collection_len, _nft_list_len)
 
     _remove_nft_from_pool(_nft_array_len, _nft_array)
 
@@ -461,7 +462,6 @@ func buy_nfts{
         _nft_array : NFT*
     ) -> ():
     alloc_locals
-    #assert_len_match(_nft_collection_len, _nft_list_len)
 
     let (_current_price) = current_price.read()
     let (_delta) = delta.read()
@@ -560,25 +560,18 @@ end
 #         pedersen_ptr: HashBuiltin*,
 #         range_check_ptr
 #     }() -> ():
-#     let (_caller) = get_caller_address()
-#     let (_pool_owner) = pool_owner.read()
+#     let (_caller_address) = get_caller_address()
+#     let (_contract_address) = get_contract_address()
+#     let (_pool_factory_address) = pool_factory.read()
+
+#     let (_pool_token_owner) = IERC721.ownerOf(_pool_factory_address, _contract_address)
+    
 #     with_attr error_message("You must be the pool owner to add NFTs to pool."):
-#         assert _caller = _pool_owner
+#         assert _caller_address = _pool_token_owner
 #     end
+
 #     return ()
 # end
-
-
-func assert_len_match(
-        _nft_collection_len: felt,
-        _nft_list_len: felt,
-    ) -> ():
-    with_attr error_message("Collection and NFT array lengths don't match."):
-        assert _nft_collection_len = _nft_list_len
-    end
-    
-    return ()
-end
 
 
 
