@@ -7,6 +7,8 @@ from starkware.cairo.common.math import assert_nn, unsigned_div_rem
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.alloc import alloc
 
+from src.IdentityOracle import get_own_address
+
 
 struct NFT:
     member address: felt
@@ -31,7 +33,7 @@ end
 # Storage
 
 @storage_var
-func pool_owner() -> (address: felt):
+func pool_factory() -> (address: felt):
 end 
 
 @storage_var
@@ -66,18 +68,16 @@ func constructor{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        _owner: felt,
+        _factory_address: felt,
         _current_price : felt,
-        _delta : felt,
-        _nft_array_len : felt,
-        _nft_array : NFT*
+        _delta : felt
     ):
     alloc_locals
 
-    with_attr error_message("Owner address cannot be zero"):
-        assert_not_zero(_owner)
+    with_attr error_message("Factory address cannot be zero"):
+        assert_not_zero(_factory_address)
     end
-    pool_owner.write(_owner)
+    pool_factory.write(_factory_address)
 
     with_attr error_message("Price cannot be negative."):
         assert_nn(_current_price)
@@ -85,10 +85,6 @@ func constructor{
     current_price.write(_current_price)
 
     delta.write(_delta)
-
-    #assert_len_match(_nft_collection_len, _nft_list_len)
-
-    _add_nft_to_pool(_nft_array_len, _nft_array)
 
     return ()
 end
@@ -107,7 +103,6 @@ func add_nft_to_pool{
     ) -> ():
     #alloc_locals
     #assert_only_owner()
-    #assert_len_match(_nft_collection_len, _nft_list_len)
 
     _add_nft_to_pool(_nft_array_len, _nft_array)
 
@@ -407,11 +402,11 @@ func get_all_nfts_of_collection{
     }(
         _collection_address: felt
     ) -> (
-        _nft_array_len: felt,
-        _nft_array: felt*
+        nft_id_list_len: felt,
+        nft_id_list: felt*
     ):
     alloc_locals
-    let (nft_array: felt*) = alloc()
+    let (nft_id_list: felt*) = alloc()
 
     with_attr error_message("Collection address cannot be negative."):
         assert_nn(_collection_address)
@@ -420,14 +415,14 @@ func get_all_nfts_of_collection{
     let (start_id) = start_id_by_collection.read(_collection_address)
 
     if start_id == 0:
-        return (0, nft_array)
+        return (0, nft_id_list)
     end
 
-    tempvar array_index = 0
+    tempvar list_index = 0
     tempvar current_count = 0
-    let (nft_array_len) = populate_nfts(nft_array, array_index, start_id)
+    let (nft_id_list_len) = populate_nfts(nft_id_list, list_index, start_id)
 
-    return (nft_array_len, nft_array)
+    return (nft_id_list_len, nft_id_list)
 
 end
 
@@ -437,21 +432,21 @@ func populate_nfts{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        _nft_array: felt*,
-        _array_index: felt,
+        _nft_id_list: felt*,
+        _list_index: felt,
         _current_id: felt
     ) -> (
         _nft_count: felt
     ):
 
     let (s) = list_element_by_id.read(_current_id)
-    _nft_array[0] = s[0]
+    _nft_id_list[0] = s[0]
 
     if s[1] == 0:
-        return (_array_index + 1)
+        return (_list_index + 1)
     end
 
-    return populate_nfts(_nft_array + 1, _array_index + 1, s[1])
+    return populate_nfts(_nft_id_list + 1, _list_index + 1, s[1])
 
 end
 
@@ -562,18 +557,18 @@ func get_next_collection_slot{
 end
 
 
-func assert_only_owner{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }() -> ():
-    let (_caller) = get_caller_address()
-    let (_pool_owner) = pool_owner.read()
-    with_attr error_message("You must be the pool owner to add NFTs to pool."):
-        assert _caller = _pool_owner
-    end
-    return ()
-end
+# func assert_only_owner{
+#         syscall_ptr: felt*,
+#         pedersen_ptr: HashBuiltin*,
+#         range_check_ptr
+#     }() -> ():
+#     let (_caller) = get_caller_address()
+#     let (_pool_owner) = pool_owner.read()
+#     with_attr error_message("You must be the pool owner to add NFTs to pool."):
+#         assert _caller = _pool_owner
+#     end
+#     return ()
+# end
 
 
 func assert_len_match(
@@ -592,9 +587,9 @@ end
 # Helper functions 
 
 @view
-func get_pool_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+func get_pool_factory{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
         res : felt):
-    let (res) = pool_owner.read()
+    let (res) = pool_factory.read()
     return (res)
 end
 

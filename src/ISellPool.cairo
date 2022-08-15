@@ -2,10 +2,12 @@
 
 from starkware.cairo.common.uint256 import Uint256
 
+from src.SellPool import NFT
+
 @contract_interface
 namespace ISellPool:
     
-    func get_pool_owner() -> (res : felt):
+    func get_pool_factory() -> (res : felt):
     end
 
     func get_current_price() -> (res : felt):
@@ -20,10 +22,10 @@ namespace ISellPool:
     func get_list_element_by_id(_current_id: felt) -> (res: (felt, felt)):
     end
 
-    func add_nft_to_pool(_nft_collection_len: felt, _nft_collection: felt*, _nft_list_len: felt,  _nft_list: felt*) -> ():
+    func add_nft_to_pool(_nft_array_len: felt,  _nft_array: NFT*) -> ():
     end
 
-    func remove_nft_from_pool(_nft_collection_len: felt, _nft_collection: felt*, _nft_list_len: felt,  _nft_list: felt*) -> ():
+    func remove_nft_from_pool(_nft_array_len: felt,  _nft_array: NFT*) -> ():
     end
 
     func edit_pool(_new_price: felt, _new_delta: felt) -> ():
@@ -35,10 +37,10 @@ namespace ISellPool:
     func get_all_collections() -> (_collection_array_len: felt, _collection_array: felt*):
     end
 
-    func get_all_nfts_of_collection(_collection_address: felt) -> (_nft_array_len: felt, _nft_array: felt*):
+    func get_all_nfts_of_collection(_collection_address: felt) -> (nft_id_list_len: felt, nft_id_list: felt*):
     end
 
-    func buy_nfts(_nft_collection_len: felt, _nft_collection: felt*, _nft_list_len: felt,  _nft_list: felt*) -> ():
+    func buy_nfts(_nft_array_len: felt,  _nft_array: NFT*) -> ():
     end
 
     func get_eth_balance() -> (_eth_balance : felt):
