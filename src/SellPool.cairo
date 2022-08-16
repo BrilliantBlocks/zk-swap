@@ -1,11 +1,12 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import assert_not_zero
+from starkware.cairo.common.math import assert_not_zero, split_felt
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import assert_nn, unsigned_div_rem
 from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.uint256 import Uint256
 
 from src.IERC721 import IERC721
 
@@ -555,23 +556,24 @@ func get_next_collection_slot{
 end
 
 
-# func assert_only_owner{
-#         syscall_ptr: felt*,
-#         pedersen_ptr: HashBuiltin*,
-#         range_check_ptr
-#     }() -> ():
-#     let (_caller_address) = get_caller_address()
-#     let (_contract_address) = get_contract_address()
-#     let (_pool_factory_address) = pool_factory.read()
+func assert_only_owner{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }() -> ():
+    let (_caller_address) = get_caller_address()
+    let (_contract_address) = get_contract_address()
+    let (_contract_address_high, _contract_address_low) = split_felt(_contract_address)
+    let (_pool_factory_address) = pool_factory.read()
 
-#     let (_pool_token_owner) = IERC721.ownerOf(_pool_factory_address, _contract_address)
+    let (_pool_owner) = IERC721.ownerOf(_pool_factory_address, Uint256(_contract_address_low, _contract_address_high))
     
-#     with_attr error_message("You must be the pool owner to add NFTs to pool."):
-#         assert _caller_address = _pool_token_owner
-#     end
+    with_attr error_message("You must be the pool owner to add NFTs to pool."):
+        assert _caller_address = _pool_owner
+    end
 
-#     return ()
-# end
+    return ()
+end
 
 
 
