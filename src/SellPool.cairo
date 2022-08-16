@@ -8,6 +8,7 @@ from starkware.starknet.common.syscalls import get_caller_address, get_contract_
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256
 
+from src.LinearCurve import LinearCurve
 from src.IERC721 import IERC721
 
 
@@ -466,7 +467,7 @@ func buy_nfts{
 
     let (_current_price) = current_price.read()
     let (_delta) = delta.read()
-    let (_total_price) = get_total_price(_nft_array_len, _current_price, _delta)
+    let (_total_price) = LinearCurve.get_total_price(_nft_array_len, _current_price, _delta)
 
     # To do:
     # Call ERC20 contract to check if balanceOf > _total_price
@@ -478,52 +479,12 @@ func buy_nfts{
     local _new_eth_balance = _old_eth_balance + _total_price
     eth_balance.write(_new_eth_balance)
 
-    let (_new_price) = get_new_price(_nft_array_len, _current_price, _delta)
+    let (_new_price) = LinearCurve.get_new_price(_nft_array_len, _current_price, _delta)
     current_price.write(_new_price)
 
     _remove_nft_from_pool(_nft_array_len, _nft_array)
     
     return ()
-end
-
-
-# Linear Bonding curve
-
-
-func get_total_price{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }(
-        _number_items: felt,
-        _current_price: felt,
-        _delta: felt
-    ) -> (
-        _total_price: felt
-    ):
-    alloc_locals
-    local _counter = _number_items * (_number_items - 1) * _delta + 2 * _current_price * _number_items
-    let (_total_price, _) = unsigned_div_rem(_counter, 2)
-    
-    return (_total_price)
-end
-
-
-func get_new_price{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }(
-        _number_items: felt,
-        _current_price: felt,
-        _delta: felt
-    ) -> (
-        _new_price: felt
-    ):
-    alloc_locals
-    local _new_price = _current_price + _delta * _number_items
-    
-    return (_new_price)
 end
 
 
