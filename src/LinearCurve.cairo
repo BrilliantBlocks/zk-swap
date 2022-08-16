@@ -7,7 +7,7 @@ from starkware.cairo.common.math import unsigned_div_rem
 namespace LinearCurve:
 
     @view
-    func get_total_price{
+    func getTotalPrice{
             syscall_ptr: felt*,
             pedersen_ptr: HashBuiltin*,
             range_check_ptr
@@ -26,7 +26,7 @@ namespace LinearCurve:
     end
 
     @view
-    func get_new_price{
+    func getNewPrice{
             syscall_ptr: felt*,
             pedersen_ptr: HashBuiltin*,
             range_check_ptr
@@ -42,5 +42,5 @@ namespace LinearCurve:
         
         return (_new_price)
     end
-    
+
 end

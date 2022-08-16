@@ -95,7 +95,7 @@ end
 # Add NFTs to pool
 
 @external
-func add_nft_to_pool{
+func addNftToPool{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -227,7 +227,7 @@ end
 # Remove NFTs from pool
 
 @external
-func remove_nft_from_pool{
+func removeNftFromPool{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -324,7 +324,7 @@ end
 
 
 @external
-func edit_pool{
+func editPool{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -347,8 +347,9 @@ end
 
 # Get all pool assets
 
+
 @view
-func get_all_collections{
+func getAllCollections{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -396,7 +397,7 @@ end
 
 
 @view
-func get_all_nfts_of_collection{
+func getAllNftsOfCollection{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -455,7 +456,7 @@ end
 # Swap NFTs
 
 @external
-func buy_nfts{
+func buyNfts{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -467,7 +468,7 @@ func buy_nfts{
 
     let (_current_price) = current_price.read()
     let (_delta) = delta.read()
-    let (_total_price) = LinearCurve.get_total_price(_nft_array_len, _current_price, _delta)
+    let (_total_price) = LinearCurve.getTotalPrice(_nft_array_len, _current_price, _delta)
 
     # To do:
     # Call ERC20 contract to check if balanceOf > _total_price
@@ -479,7 +480,7 @@ func buy_nfts{
     local _new_eth_balance = _old_eth_balance + _total_price
     eth_balance.write(_new_eth_balance)
 
-    let (_new_price) = LinearCurve.get_new_price(_nft_array_len, _current_price, _delta)
+    let (_new_price) = LinearCurve.getNewPrice(_nft_array_len, _current_price, _delta)
     current_price.write(_new_price)
 
     _remove_nft_from_pool(_nft_array_len, _nft_array)
@@ -492,7 +493,7 @@ end
 
 
 @view
-func get_pool_factory{
+func getPoolFactory{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*, 
         range_check_ptr
@@ -506,7 +507,7 @@ end
 
 
 @view
-func get_pool_config{
+func getPoolConfig{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -574,7 +575,7 @@ end
 
 
 @view
-func get_start_id_by_collection{
+func getStartIdByCollection{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -588,7 +589,7 @@ end
 
 
 @view
-func get_list_element_by_id{
+func getListElementById{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -602,7 +603,7 @@ end
 
 
 @view
-func get_collection_by_id{
+func getCollectionById{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -616,7 +617,7 @@ end
 
 
 @view
-func get_eth_balance{
+func getEthBalance{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
