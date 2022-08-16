@@ -7,7 +7,7 @@ from src.ISellPool import ISellPool
 from src.SellPool import NFT
 
 
-const FACTORY = 123456789
+const POOL_FACTORY = 123456789
 const CURRENT_PRICE = 10
 const DELTA = 1
 
@@ -17,7 +17,7 @@ func __setup__():
     %{
         context.contract_address = deploy_contract("./src/SellPool.cairo", 
             [
-                ids.FACTORY, ids.CURRENT_PRICE, ids.DELTA
+                ids.POOL_FACTORY, ids.CURRENT_PRICE, ids.DELTA
             ]
         ).contract_address
     %}
@@ -33,18 +33,32 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
     local contract_address
     %{ ids.contract_address = context.contract_address %}
 
-    const FACTORY = 123456789
-    const CURRENT_PRICE = 10
-    const DELTA = 1
-
-    let (factory) = ISellPool.get_pool_factory(contract_address)
-    let (current_price) = ISellPool.get_current_price(contract_address)
-    let (delta) = ISellPool.get_delta(contract_address)
+    let (pool_factory) = ISellPool.get_pool_factory(contract_address)
+    let (current_price, delta) = ISellPool.get_pool_config(contract_address)
     
-    assert factory = FACTORY
+    assert pool_factory = POOL_FACTORY
     assert current_price = CURRENT_PRICE
     assert delta = DELTA
     
+    return ()
+end
+
+
+@external
+func test_get_pool_config_with_expected_output{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals 
+
+    local contract_address
+    %{ ids.contract_address = context.contract_address %}
+
+    let (pool_factory) = ISellPool.get_pool_factory(contract_address)
+    let (current_price, delta) = ISellPool.get_pool_config(contract_address)
+
+    assert pool_factory = POOL_FACTORY
+    assert current_price = CURRENT_PRICE
+    assert delta = DELTA
+
     return ()
 end
 
@@ -57,9 +71,6 @@ func test_add_nft_to_pool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : H
     local contract_address
     %{ ids.contract_address = context.contract_address %}
 
-    const FACTORY = 123456789
-    const CURRENT_PRICE = 10
-    const DELTA = 1
     const COLLECTION_1 = 1111111111
     const COLLECTION_2 = 2222222222
     const COLLECTION_3 = 3333333333
@@ -81,9 +92,8 @@ func test_add_nft_to_pool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : H
     
     ISellPool.add_nft_to_pool(contract_address, 3, NFT_ARRAY_1)
 
-    let (factory) = ISellPool.get_pool_factory(contract_address)
-    let (current_price) = ISellPool.get_current_price(contract_address)
-    let (delta) = ISellPool.get_delta(contract_address)
+    let (pool_factory) = ISellPool.get_pool_factory(contract_address)
+    let (current_price, delta) = ISellPool.get_pool_config(contract_address)
     let (start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
     let (start_id_collection_2) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_2)
     let (list_element_1) = ISellPool.get_list_element_by_id(contract_address, 1)
@@ -96,7 +106,7 @@ func test_add_nft_to_pool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : H
     let (nft_collection_2_id_list_len, nft_collection_2_id_list) = ISellPool.get_all_nfts_of_collection(contract_address, COLLECTION_2)
     let (nft_collection_3_id_list_len, nft_collection_3_id_list) = ISellPool.get_all_nfts_of_collection(contract_address, COLLECTION_3)
 
-    assert factory = FACTORY
+    assert pool_factory = POOL_FACTORY
     assert current_price = CURRENT_PRICE
     assert delta = DELTA
     assert start_id_collection_1 = 1
@@ -151,9 +161,6 @@ func test_remove_nft_from_pool{syscall_ptr : felt*, range_check_ptr, pedersen_pt
     local contract_address
     %{ ids.contract_address = context.contract_address %}
 
-    const FACTORY = 123456789
-    const CURRENT_PRICE = 10
-    const DELTA = 1
     const COLLECTION_1 = 1111111111
     const COLLECTION_2 = 2222222222
     const COLLECTION_3 = 3333333333
@@ -174,9 +181,8 @@ func test_remove_nft_from_pool{syscall_ptr : felt*, range_check_ptr, pedersen_pt
     
     ISellPool.add_nft_to_pool(contract_address, 5, NFT_ARRAY_ADD)
 
-    let (factory) = ISellPool.get_pool_factory(contract_address)
-    let (current_price) = ISellPool.get_current_price(contract_address)
-    let (delta) = ISellPool.get_delta(contract_address)
+    let (pool_factory) = ISellPool.get_pool_factory(contract_address)
+    let (current_price, delta) = ISellPool.get_pool_config(contract_address)
     let (start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
     let (start_id_collection_2) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_2)
     let (start_id_collection_3) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_3)
@@ -192,7 +198,7 @@ func test_remove_nft_from_pool{syscall_ptr : felt*, range_check_ptr, pedersen_pt
     let (nft_collection_2_id_list_len, nft_collection_2_id_list) = ISellPool.get_all_nfts_of_collection(contract_address, COLLECTION_2)
     let (nft_collection_3_id_list_len, nft_collection_3_id_list) = ISellPool.get_all_nfts_of_collection(contract_address, COLLECTION_3)
 
-    assert factory = FACTORY
+    assert pool_factory = POOL_FACTORY
     assert current_price = CURRENT_PRICE
     assert delta = DELTA
     assert start_id_collection_1 = 1
@@ -277,21 +283,17 @@ func test_edit_pool_with_expected_output{syscall_ptr : felt*, range_check_ptr, p
     local contract_address
     %{ ids.contract_address = context.contract_address %}
 
-    const OLD_PRICE = 10
-    const OLD_DELTA = 1 
     const NEW_PRICE = 15
     const NEW_DELTA = 2
 
-    let (old_price) = ISellPool.get_current_price(contract_address)
-    let (old_delta) = ISellPool.get_delta(contract_address)
+    let (old_price, old_delta) = ISellPool.get_pool_config(contract_address)
 
     assert old_price = CURRENT_PRICE
     assert old_delta = DELTA
 
     ISellPool.edit_pool(contract_address, NEW_PRICE, NEW_DELTA)
 
-    let (new_price) = ISellPool.get_current_price(contract_address)
-    let (new_delta) = ISellPool.get_delta(contract_address)
+    let (new_price, new_delta) = ISellPool.get_pool_config(contract_address)
 
     assert new_price = NEW_PRICE
     assert new_delta = NEW_DELTA
@@ -344,7 +346,7 @@ func test_buy_nfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuil
 
     let (old_eth_balance) = ISellPool.get_eth_balance(contract_address)
     let (start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
-    let (old_price) = ISellPool.get_current_price(contract_address)
+    let (old_price, delta) = ISellPool.get_pool_config(contract_address)
     
     assert old_eth_balance = OLD_ETH_BALANCE
     assert start_id_collection_1 = 1
@@ -354,30 +356,11 @@ func test_buy_nfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuil
 
     let (new_eth_balance) = ISellPool.get_eth_balance(contract_address)
     let (new_start_id_collection_1) = ISellPool.get_start_id_by_collection(contract_address, COLLECTION_1)
-    let (new_price) = ISellPool.get_current_price(contract_address)
+    let (new_price, delta) = ISellPool.get_pool_config(contract_address)
     
     assert new_eth_balance = NEW_ETH_BALANCE
     assert new_start_id_collection_1 = ZERO_ID
     assert new_price = NEW_PRICE
-
-    return ()
-end
-
-
-@external
-func test_get_pool_config_with_expected_output{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
-
-    alloc_locals 
-
-    local contract_address
-    %{ ids.contract_address = context.contract_address %}
-
-    let (pool_factory) = ISellPool.get_pool_factory(contract_address)
-    let (current_price, delta) = ISellPool.get_pool_config(contract_address)
-
-    assert pool_factory = FACTORY
-    assert current_price = CURRENT_PRICE
-    assert delta = DELTA
 
     return ()
 end

@@ -10,10 +10,7 @@ namespace ISellPool:
     func get_pool_factory() -> (res : felt):
     end
 
-    func get_current_price() -> (res : felt):
-    end
-
-    func get_delta() -> (res : felt):
+    func get_pool_config() -> (_current_price: felt, _delta: felt):
     end
 
     func get_start_id_by_collection(_collection_address: felt) -> (res: felt):
@@ -44,9 +41,6 @@ namespace ISellPool:
     end
 
     func get_eth_balance() -> (_eth_balance : felt):
-    end
-
-    func get_pool_config() -> (_current_price: felt, _delta: felt):
     end
 
 end

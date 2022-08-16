@@ -613,22 +613,6 @@ end
 
 
 @view
-func get_current_price{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
-        res : felt):
-    let (res) = current_price.read()
-    return (res)
-end
-
-
-@view
-func get_delta{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
-        res : felt):
-    let (res) = delta.read()
-    return (res)
-end
-
-
-@view
 func get_start_id_by_collection{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
