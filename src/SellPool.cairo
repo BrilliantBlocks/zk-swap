@@ -141,7 +141,7 @@ func _add_nft_to_pool{
         # To do: Approve token for pool address in ERC721
         AddTokenToPool.emit(_nft_array[0])
 
-        return _add_nft_to_pool(_nft_array_len - 1, _nft_array + 2)
+        return _add_nft_to_pool(_nft_array_len - 1, _nft_array + NFT.SIZE)
     end
 
     let (last_collection_element) = find_last_collection_element(start_id)
@@ -153,7 +153,7 @@ func _add_nft_to_pool{
     # To do: Approve token for pool address in ERC721
     AddTokenToPool.emit(_nft_array[0])
 
-    return _add_nft_to_pool(_nft_array_len - 1, _nft_array + 2)
+    return _add_nft_to_pool(_nft_array_len - 1, _nft_array + NFT.SIZE)
 
 end
 
@@ -274,7 +274,7 @@ func _remove_nft_from_pool{
         # To do: Remove token approval for pool address in ERC721
         RemoveTokenFromPool.emit(_nft_array[0])
 
-        return _remove_nft_from_pool(_nft_array_len - 1, _nft_array + 2)
+        return _remove_nft_from_pool(_nft_array_len - 1, _nft_array + NFT.SIZE)
     end
 
     let (this_token_id) = get_token_id(this_element)
@@ -287,7 +287,7 @@ func _remove_nft_from_pool{
     # To do: Remove token approval for pool address in ERC721
     RemoveTokenFromPool.emit(_nft_array[0])
 
-    return _remove_nft_from_pool(_nft_array_len - 1, _nft_array + 2)
+    return _remove_nft_from_pool(_nft_array_len - 1, _nft_array + NFT.SIZE)
 
 end
 
