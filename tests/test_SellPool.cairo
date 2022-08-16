@@ -362,3 +362,22 @@ func test_buy_nfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuil
 
     return ()
 end
+
+
+@external
+func test_get_pool_config_with_expected_output{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals 
+
+    local contract_address
+    %{ ids.contract_address = context.contract_address %}
+
+    let (pool_factory) = ISellPool.get_pool_factory(contract_address)
+    let (current_price, delta) = ISellPool.get_pool_config(contract_address)
+
+    assert pool_factory = FACTORY
+    assert current_price = CURRENT_PRICE
+    assert delta = DELTA
+
+    return ()
+end

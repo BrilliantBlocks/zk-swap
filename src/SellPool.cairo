@@ -527,6 +527,39 @@ func get_new_price{
 end
 
 
+# Get pool configuration
+
+
+@view
+func get_pool_factory{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*, 
+        range_check_ptr
+    }() -> (
+        _pool_factory: felt
+    ):
+    let (_pool_factory) = pool_factory.read()
+
+    return (_pool_factory)
+end
+
+
+@view
+func get_pool_config{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }() -> (
+        _current_price: felt,
+        _delta: felt
+    ):
+    let (_current_price) = current_price.read()
+    let (_delta) = delta.read()
+    
+    return (_current_price, _delta)
+end
+
+
 # Further functions
 
 
@@ -568,7 +601,7 @@ func assert_only_owner{
 
     let (_pool_owner) = IERC721.ownerOf(_pool_factory_address, Uint256(_contract_address_low, _contract_address_high))
     
-    with_attr error_message("You must be the pool owner to add NFTs to pool."):
+    with_attr error_message("You must be the pool owner to call this function."):
         assert _caller_address = _pool_owner
     end
 
@@ -576,15 +609,7 @@ func assert_only_owner{
 end
 
 
-
 # Helper functions 
-
-@view
-func get_pool_factory{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
-        res : felt):
-    let (res) = pool_factory.read()
-    return (res)
-end
 
 
 @view

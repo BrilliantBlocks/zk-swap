@@ -46,4 +46,7 @@ namespace ISellPool:
     func get_eth_balance() -> (_eth_balance : felt):
     end
 
+    func get_pool_config() -> (_current_price: felt, _delta: felt):
+    end
+
 end
