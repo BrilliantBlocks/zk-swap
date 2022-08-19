@@ -3,6 +3,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.uint256 import Uint256
 
 from src.ISellPool import ISellPool
 from src.SellPool import NFT
@@ -47,113 +48,113 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
 end
 
 
-# @external
-# func test_getPoolConfig_with_expected_output{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+@external
+func test_getPoolConfig_with_expected_output{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
-#     alloc_locals 
+    alloc_locals 
 
-#     local contract_address
-#     %{ ids.contract_address = context.contract_address %}
+    local contract_address
+    %{ ids.contract_address = context.contract_address %}
 
-#     let (pool_factory) = ISellPool.getPoolFactory(contract_address)
-#     let (current_price, delta) = ISellPool.getPoolConfig(contract_address)
+    let (pool_factory) = ISellPool.getPoolFactory(contract_address)
+    let (current_price, delta) = ISellPool.getPoolConfig(contract_address)
 
-#     assert pool_factory = POOL_FACTORY
-#     assert current_price = CURRENT_PRICE
-#     assert delta = DELTA
+    assert pool_factory = POOL_FACTORY
+    assert current_price = CURRENT_PRICE
+    assert delta = DELTA
 
-#     return ()
-# end
+    return ()
+end
 
 
-# @external
-# func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+@external
+func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
-#     alloc_locals 
+    alloc_locals 
 
-#     local contract_address
-#     %{ ids.contract_address = context.contract_address %}
+    local contract_address
+    %{ ids.contract_address = context.contract_address %}
 
-#     const COLLECTION_1 = 1111111111
-#     const COLLECTION_2 = 2222222222
-#     const COLLECTION_3 = 3333333333
-#     const NFT_1_1 = 11
-#     const NFT_1_2 = 12
-#     const NFT_2_1 = 21
-#     const NFT_2_2 = 22
-#     const NFT_3_1 = 31
-#     const ZERO_ID = 0
-#     const COLLECTION_ARRAY_LEN = 2
-#     const NFT_COLLECTION_1_ARRAY_LEN = 2
-#     const NFT_COLLECTION_2_ARRAY_LEN = 1
+    const COLLECTION_1 = 1111111111
+    const COLLECTION_2 = 2222222222
+    const COLLECTION_3 = 3333333333
+    let NFT_1_1 = Uint256(11, 0)
+    let NFT_1_2 = Uint256(12, 0)
+    let NFT_2_1 = Uint256(21, 0)
+    let NFT_2_2 = Uint256(22, 0)
+    let NFT_3_1 = Uint256(31, 0)
+    let ZERO_ID = 0
+    const COLLECTION_ARRAY_LEN = 2
+    const NFT_COLLECTION_1_ARRAY_LEN = 2
+    const NFT_COLLECTION_2_ARRAY_LEN = 1
 
-#     let (NFT_ARRAY_1 : NFT*) = alloc()
+    let (NFT_ARRAY_1 : NFT*) = alloc()
 
-#     assert NFT_ARRAY_1[0] = NFT(address = COLLECTION_1, id = NFT_1_1)
-#     assert NFT_ARRAY_1[1] = NFT(address = COLLECTION_2, id = NFT_2_1)
-#     assert NFT_ARRAY_1[2] = NFT(address = COLLECTION_1, id = NFT_1_2)
+    assert NFT_ARRAY_1[0] = NFT(address = COLLECTION_1, id = NFT_1_1)
+    assert NFT_ARRAY_1[1] = NFT(address = COLLECTION_2, id = NFT_2_1)
+    assert NFT_ARRAY_1[2] = NFT(address = COLLECTION_1, id = NFT_1_2)
     
-#     ISellPool.addNftToPool(contract_address, 3, NFT_ARRAY_1)
+    ISellPool.addNftToPool(contract_address, 3, NFT_ARRAY_1)
 
-#     let (pool_factory) = ISellPool.getPoolFactory(contract_address)
-#     let (current_price, delta) = ISellPool.getPoolConfig(contract_address)
-#     let (start_id_collection_1) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_1)
-#     let (start_id_collection_2) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_2)
-#     let (list_element_1) = ISellPool.getListElementById(contract_address, 1)
-#     let (list_element_2) = ISellPool.getListElementById(contract_address, 2)
-#     let (list_element_3) = ISellPool.getListElementById(contract_address, 3)
-#     let (collection_address_1) = ISellPool.getCollectionById(contract_address, 0)
-#     let (collection_address_2) = ISellPool.getCollectionById(contract_address, 1)
-#     let (collection_array_len, collection_array) = ISellPool.getAllCollections(contract_address)
-#     let (nft_collection_1_id_list_len, nft_collection_1_id_list) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_1)
-#     let (nft_collection_2_id_list_len, nft_collection_2_id_list) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_2)
-#     let (nft_collection_3_id_list_len, nft_collection_3_id_list) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_3)
+    let (pool_factory) = ISellPool.getPoolFactory(contract_address)
+    let (current_price, delta) = ISellPool.getPoolConfig(contract_address)
+    let (start_id_collection_1) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_1)
+    let (start_id_collection_2) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_2)
+    let list_element_1 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 1)
+    let list_element_2 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 2)
+    let list_element_3 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 3)
+    let (collection_address_1) = ISellPool.getCollectionById(contract_address, 0)
+    let (collection_address_2) = ISellPool.getCollectionById(contract_address, 1)
+    let (collection_array_len, collection_array) = ISellPool.getAllCollections(contract_address)
+    let (nft_collection_1_id_list_len: felt, nft_collection_1_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_1)
+    let (nft_collection_2_id_list_len: felt, nft_collection_2_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_2)
+    let (nft_collection_3_id_list_len: felt, nft_collection_3_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_3)
 
-#     assert pool_factory = POOL_FACTORY
-#     assert current_price = CURRENT_PRICE
-#     assert delta = DELTA
-#     assert start_id_collection_1 = 1
-#     assert start_id_collection_2 = 2
-#     assert list_element_1[0] = NFT_1_1
-#     assert list_element_1[1] = 3
-#     assert list_element_2[0] = NFT_2_1
-#     assert list_element_2[1] = ZERO_ID
-#     assert list_element_3[0] = NFT_1_2
-#     assert list_element_3[1] = ZERO_ID
-#     assert collection_address_1 = COLLECTION_1
-#     assert collection_address_2 = COLLECTION_2
-#     assert collection_array_len = COLLECTION_ARRAY_LEN
-#     assert collection_array[0] = COLLECTION_1
-#     assert collection_array[1] = COLLECTION_2
-#     assert nft_collection_1_id_list_len = NFT_COLLECTION_1_ARRAY_LEN
-#     assert nft_collection_1_id_list[0] = NFT_1_1
-#     assert nft_collection_1_id_list[1] = NFT_1_2
-#     assert nft_collection_2_id_list_len = NFT_COLLECTION_2_ARRAY_LEN
-#     assert nft_collection_2_id_list[0] = NFT_2_1
-#     assert nft_collection_3_id_list_len = ZERO_ID
+    assert pool_factory = POOL_FACTORY
+    assert current_price = CURRENT_PRICE
+    assert delta = DELTA
+    assert start_id_collection_1 = 1
+    assert start_id_collection_2 = 2
+    assert list_element_1[0] = NFT_1_1
+    assert list_element_1[1] = 3
+    assert list_element_2[0] = NFT_2_1
+    assert list_element_2[1] = ZERO_ID
+    assert list_element_3[0] = NFT_1_2
+    assert list_element_3[1] = ZERO_ID
+    assert collection_address_1 = COLLECTION_1
+    assert collection_address_2 = COLLECTION_2
+    assert collection_array_len = COLLECTION_ARRAY_LEN
+    assert collection_array[0] = COLLECTION_1
+    assert collection_array[1] = COLLECTION_2
+    assert nft_collection_1_id_list_len = NFT_COLLECTION_1_ARRAY_LEN
+    assert nft_collection_1_id_list[0] = NFT_1_1
+    assert nft_collection_1_id_list[1] = NFT_1_2
+    assert nft_collection_2_id_list_len = NFT_COLLECTION_2_ARRAY_LEN
+    assert nft_collection_2_id_list[0] = NFT_2_1
+    assert nft_collection_3_id_list_len = ZERO_ID
 
-#     let (NFT_ARRAY_2 : NFT*) = alloc()
+    let (NFT_ARRAY_2 : NFT*) = alloc()
 
-#     assert NFT_ARRAY_2[0] = NFT(address = COLLECTION_2, id = NFT_2_2)
-#     assert NFT_ARRAY_2[1] = NFT(address = COLLECTION_3, id = NFT_3_1)
+    assert NFT_ARRAY_2[0] = NFT(address = COLLECTION_2, id = NFT_2_2)
+    assert NFT_ARRAY_2[1] = NFT(address = COLLECTION_3, id = NFT_3_1)
     
-#     ISellPool.addNftToPool(contract_address, 2, NFT_ARRAY_2)
+    ISellPool.addNftToPool(contract_address, 2, NFT_ARRAY_2)
 
-#     let (start_id_collection_3) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_3)
-#     let (list_element_2) = ISellPool.getListElementById(contract_address, 2)
-#     let (list_element_4) = ISellPool.getListElementById(contract_address, 4)
-#     let (list_element_5) = ISellPool.getListElementById(contract_address, 5)
+    let (start_id_collection_3) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_3)
+    let list_element_2 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 2)
+    let list_element_4 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 4)
+    let list_element_5 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 5)
 
-#     assert start_id_collection_3 = 5
-#     assert list_element_2[0] = NFT_2_1
-#     assert list_element_2[1] = 4
-#     assert list_element_4[0] = NFT_2_2
-#     assert list_element_4[1] = ZERO_ID
-#     assert list_element_5[0] = NFT_3_1
-#     assert list_element_5[1] = ZERO_ID
+    assert start_id_collection_3 = 5
+    assert list_element_2[0] = NFT_2_1
+    assert list_element_2[1] = 4
+    assert list_element_4[0] = NFT_2_2
+    assert list_element_4[1] = ZERO_ID
+    assert list_element_5[0] = NFT_3_1
+    assert list_element_5[1] = ZERO_ID
     
-#     return ()
-# end
+    return ()
+end
 
 
 # @external

@@ -16,7 +16,7 @@ namespace ISellPool:
     func getStartIdByCollection(_collection_address: felt) -> (res: felt):
     end
 
-    func getListElementById(_current_id: felt) -> (res: (felt, felt)):
+    func getListElementById(_current_id: felt) -> (res: (Uint256, felt)):
     end
 
     func addNftToPool(_nft_array_len: felt,  _nft_array: NFT*) -> ():
@@ -34,7 +34,7 @@ namespace ISellPool:
     func getAllCollections() -> (_collection_array_len: felt, _collection_array: felt*):
     end
 
-    func getAllNftsOfCollection(_collection_address: felt) -> (_nft_id_list_len: felt, _nft_id_list: felt*):
+    func getAllNftsOfCollection(_collection_address: felt) -> (_nft_id_list_len: felt, _nft_id_list: Uint256*):
     end
 
     func buyNfts(_nft_array_len: felt,  _nft_array: NFT*) -> ():

@@ -487,7 +487,7 @@ func populate_nfts{
     ):
 
     let (s) = list_element_by_id.read(_current_id)
-    assert _nft_id_list[0] = s[0]
+    _nft_id_list[0] = s[0]
 
     if s[1] == 0:
         return (_list_index + 1)
