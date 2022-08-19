@@ -4,11 +4,10 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_not_zero, split_felt
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import assert_nn, unsigned_div_rem
-from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
+from starkware.starknet.common.syscalls import library_call, get_caller_address, get_contract_address
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256
 
-from src.LinearCurve import LinearCurve
 from src.IERC721 import IERC721
 
 
@@ -47,6 +46,10 @@ func delta() -> (res: felt):
 end 
 
 @storage_var
+func bonding_curve_class_hash() -> (res: felt):
+end 
+
+@storage_var
 func collection_by_id(int: felt) -> (address: felt):
 end
 
@@ -72,7 +75,8 @@ func constructor{
     }(
         _factory_address: felt,
         _current_price : felt,
-        _delta : felt
+        _delta : felt,
+        _class_hash : felt
     ):
     alloc_locals
 
@@ -87,6 +91,14 @@ func constructor{
     current_price.write(_current_price)
 
     delta.write(_delta)
+
+    with_attr error_message("Bonding curve class hash cannot be zero"):
+        assert_not_zero(_class_hash)
+    end
+    # with_attr error_message("Bonding curve class hash cannot be negative."):
+    #     assert_nn(_class_hash)
+    # end
+    bonding_curve_class_hash.write(_class_hash)
 
     return ()
 end
@@ -468,7 +480,22 @@ func buyNfts{
 
     let (_current_price) = current_price.read()
     let (_delta) = delta.read()
-    let (_total_price) = LinearCurve.getTotalPrice(_nft_array_len, _current_price, _delta)
+    let (_class_hash) = bonding_curve_class_hash.read()
+
+    let (_calldata: felt*) = alloc()
+    assert [_calldata] = _nft_array_len
+    assert [_calldata + 1] = _current_price
+    assert [_calldata + 2] = _delta
+    
+    local _function_selector_get_total_price = 162325169460772763346477168287411866553654952715135549492070698764789678722
+    
+    let (retdata_size: felt, retdata: felt*) = library_call(
+        class_hash=_class_hash, 
+        function_selector=_function_selector_get_total_price,
+        calldata_size=3,
+        calldata=_calldata
+    )
+    local _total_price = retdata[0]
 
     # To do:
     # Call ERC20 contract to check if balanceOf > _total_price
@@ -480,7 +507,16 @@ func buyNfts{
     local _new_eth_balance = _old_eth_balance + _total_price
     eth_balance.write(_new_eth_balance)
 
-    let (_new_price) = LinearCurve.getNewPrice(_nft_array_len, _current_price, _delta)
+    local _function_selector_get_new_price = 1427085065996622579194757518833714443103194349812573964832617639352675497406
+
+    let (retdata_size: felt, retdata: felt*) = library_call(
+        class_hash=_class_hash, 
+        function_selector=_function_selector_get_new_price,
+        calldata_size=3,
+        calldata=_calldata
+    )
+    local _new_price = retdata[0]
+
     current_price.write(_new_price)
 
     _remove_nft_from_pool(_nft_array_len, _nft_array)

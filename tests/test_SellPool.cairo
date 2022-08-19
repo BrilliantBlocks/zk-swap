@@ -15,9 +15,11 @@ const DELTA = 1
 @view
 func __setup__():
     %{
+        context.class_hash = declare("./src/LinearCurve.cairo").class_hash
+
         context.contract_address = deploy_contract("./src/SellPool.cairo", 
             [
-                ids.POOL_FACTORY, ids.CURRENT_PRICE, ids.DELTA
+                ids.POOL_FACTORY, ids.CURRENT_PRICE, ids.DELTA, context.class_hash
             ]
         ).contract_address
     %}
