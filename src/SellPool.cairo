@@ -6,14 +6,14 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import assert_nn, unsigned_div_rem
 from starkware.starknet.common.syscalls import library_call, get_caller_address, get_contract_address
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_eq
 
 from src.IERC721 import IERC721
 
 
 struct NFT:
     member address: felt
-    member id: felt
+    member id: Uint256
 end
 
 # Events
@@ -62,7 +62,7 @@ func start_id_by_collection(address: felt) -> (int: felt):
 end
 
 @storage_var
-func list_element_by_id(int: felt) -> (res: (token_id: felt, next_id: felt)):
+func list_element_by_id(int: felt) -> (res: (token_id: Uint256, next_id: felt)):
 end
 
 @storage_var
@@ -168,6 +168,10 @@ func _add_nft_to_pool{
     let (last_collection_element) = find_last_collection_element(start_id)
     let (next_free_slot) = find_next_free_slot(start_slot_element_list)
     let (last_token_id) = get_token_id(last_collection_element)
+
+    #let (last_token_id_high, last_token_id_low) = split_felt(last_token_id)
+
+    #list_element_by_id.write(last_collection_element, (Uint256(last_token_id_low, last_token_id_high), next_free_slot))
     list_element_by_id.write(last_collection_element, (last_token_id, next_free_slot))
     list_element_by_id.write(next_free_slot, (_nft_array[0].id, 0))
 
@@ -188,12 +192,19 @@ func find_next_free_slot{
     ) -> (
         _next_free_slot: felt
     ):
-
+    alloc_locals
     let (s) = list_element_by_id.read(_current_id)
 
-    if s[0] == 0:
+    local zero: Uint256 = Uint256(0, 0)
+    let (is_zero) = uint256_eq(s[0], zero)
+
+    if is_zero == TRUE:
         return (1)
-    end
+    end 
+
+    # if s[0] == 0:
+    #     return (1)
+    # end
 
     let (sum) = find_next_free_slot(_current_id + 1)
     return (sum + 1)
@@ -290,7 +301,7 @@ func _remove_nft_from_pool{
 
     if last_element == 0: 
         start_id_by_collection.write(_nft_array[0].address, this_element)
-        list_element_by_id.write(start_id, (0, 0))
+        list_element_by_id.write(start_id, (Uint256(0,0), 0))
 
         # To do: Remove token approval for pool address in ERC721
         RemoveTokenFromPool.emit(_nft_array[0])
@@ -303,7 +314,7 @@ func _remove_nft_from_pool{
     let (next_collection_slot) = get_next_collection_slot(this_element)
 
     list_element_by_id.write(last_element, (last_token_id, next_collection_slot))
-    list_element_by_id.write(this_element, (0, 0))
+    list_element_by_id.write(this_element, (Uint256(0,0), 0))
 
     # To do: Remove token approval for pool address in ERC721
     RemoveTokenFromPool.emit(_nft_array[0])
@@ -319,21 +330,35 @@ func find_element_to_be_removed{
         range_check_ptr
     }(
         _current_id: felt,
-        _token_id: felt
+        _token_id: Uint256
     ) -> (
         _last_element: felt,
         _this_element: felt
     ):
+    alloc_locals
     let (_last_element) = list_element_by_id.read(_current_id)
     let (_this_element) = list_element_by_id.read(_last_element[1])
 
-    if _last_element[0] == _token_id:
-        return (0, _last_element[1])
-    end
+    
+    let (last_is_equal) = uint256_eq(_last_element[0], _token_id)
 
-    if _this_element[0] == _token_id:
+    if last_is_equal == TRUE:
+        return (0, _last_element[1])
+    end 
+
+    # if _last_element[0] == _token_id:
+    #     return (0, _last_element[1])
+    # end
+
+    let (this_is_equal) = uint256_eq(_this_element[0], _token_id)
+
+    if this_is_equal == TRUE:
         return (_current_id, _last_element[1])
-    end
+    end 
+
+    # if _this_element[0] == _token_id:
+    #     return (_current_id, _last_element[1])
+    # end
 
     return find_element_to_be_removed(_last_element[1], _token_id)
 
@@ -425,10 +450,10 @@ func getAllNftsOfCollection{
         _collection_address: felt
     ) -> (
         _nft_id_list_len: felt,
-        _nft_id_list: felt*
+        _nft_id_list: Uint256*
     ):
     alloc_locals
-    let (_nft_id_list: felt*) = alloc()
+    let (_nft_id_list: Uint256*) = alloc()
 
     with_attr error_message("Collection address cannot be negative."):
         assert_nn(_collection_address)
@@ -454,7 +479,7 @@ func populate_nfts{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        _nft_id_list: felt*,
+        _nft_id_list: Uint256*,
         _list_index: felt,
         _current_id: felt
     ) -> (
@@ -462,7 +487,7 @@ func populate_nfts{
     ):
 
     let (s) = list_element_by_id.read(_current_id)
-    _nft_id_list[0] = s[0]
+    assert _nft_id_list[0] = s[0]
 
     if s[1] == 0:
         return (_list_index + 1)
@@ -602,7 +627,7 @@ func get_token_id{
         range_check_ptr
     }(
         _current_id: felt
-    ) -> (res: felt):
+    ) -> (res: Uint256):
   
     let (x) = list_element_by_id.read(_current_id)
     return (x[0])
@@ -666,7 +691,7 @@ func getListElementById{
         range_check_ptr
     }(
         _current_id: felt
-    ) -> (res: (felt, felt)):
+    ) -> (res: (Uint256, felt)):
     
     let (x) = list_element_by_id.read(_current_id)
     return (x)
