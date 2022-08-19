@@ -30,6 +30,10 @@ end
 func EditPool(_new_price: felt, _new_delta: felt):
 end
 
+@event
+func PausePool(_bool: felt):
+end
+
 
 # Storage
 
@@ -60,6 +64,10 @@ end
 @storage_var
 func list_element_by_id(int: felt) -> (res: (token_id: felt, next_id: felt)):
 end
+
+@storage_var
+func pool_paused() -> (bool: felt):
+end 
 
 @storage_var
 func eth_balance() -> (res: felt):
@@ -478,6 +486,11 @@ func buyNfts{
     ) -> ():
     alloc_locals
 
+    let (_is_paused) = pool_paused.read()
+    with_attr error_message("Pool is currently paused."):
+        assert _is_paused = FALSE
+    end
+
     let (_current_price) = current_price.read()
     let (_delta) = delta.read()
     let (_class_hash) = bonding_curve_class_hash.read()
@@ -521,6 +534,28 @@ func buyNfts{
 
     _remove_nft_from_pool(_nft_array_len, _nft_array)
     
+    return ()
+end
+
+
+@external
+func togglePoolPause{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }() -> ():
+    #assert_only_owner()
+
+    let (_is_paused) = pool_paused.read()
+    
+    if _is_paused == FALSE:
+        pool_paused.write(TRUE)
+        PausePool.emit(TRUE)
+    else:
+        pool_paused.write(FALSE)
+        PausePool.emit(FALSE)
+    end
+
     return ()
 end
 

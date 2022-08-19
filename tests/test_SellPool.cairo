@@ -366,3 +366,56 @@ func test_buyNfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuilt
 
     return ()
 end
+
+
+@external
+func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals 
+
+    local contract_address
+    %{ ids.contract_address = context.contract_address %}
+
+    const COLLECTION_1 = 1111111111
+    const NFT_1_1 = 11
+    const NFT_1_2 = 12
+    const ZERO_ID = 0
+    const OLD_ETH_BALANCE = 0
+    const NEW_ETH_BALANCE = 21
+    const OLD_PRICE = 10
+    const NEW_PRICE = 12
+    
+    let (NFT_ARRAY : NFT*) = alloc()
+
+    assert NFT_ARRAY[0] = NFT(address = COLLECTION_1, id = NFT_1_1)
+    assert NFT_ARRAY[1] = NFT(address = COLLECTION_1, id = NFT_1_2)
+    
+    ISellPool.addNftToPool(contract_address, 2, NFT_ARRAY)
+
+    let (old_eth_balance) = ISellPool.getEthBalance(contract_address)
+    let (start_id_collection_1) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_1)
+    let (old_price, delta) = ISellPool.getPoolConfig(contract_address)
+    
+    assert old_eth_balance = OLD_ETH_BALANCE
+    assert start_id_collection_1 = 1
+    assert old_price = OLD_PRICE
+
+    ISellPool.togglePoolPause(contract_address)
+
+    %{ expect_revert(error_message="Pool is currently paused.") %}
+    ISellPool.buyNfts(contract_address, 2, NFT_ARRAY)
+
+    ISellPool.togglePoolPause(contract_address)
+
+    ISellPool.buyNfts(contract_address, 2, NFT_ARRAY)
+
+    let (new_eth_balance) = ISellPool.getEthBalance(contract_address)
+    let (new_start_id_collection_1) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_1)
+    let (new_price, delta) = ISellPool.getPoolConfig(contract_address)
+    
+    assert new_eth_balance = NEW_ETH_BALANCE
+    assert new_start_id_collection_1 = ZERO_ID
+    assert new_price = NEW_PRICE
+
+    return ()
+end
