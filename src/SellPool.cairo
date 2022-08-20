@@ -123,9 +123,8 @@ func addNftToPool{
         _nft_array_len : felt,
         _nft_array : NFT*
     ) -> ():
-    #alloc_locals
-    #assert_only_owner()
 
+    #assert_only_owner()
     _add_nft_to_pool(_nft_array_len, _nft_array)
 
     return ()
@@ -169,9 +168,6 @@ func _add_nft_to_pool{
     let (next_free_slot) = find_next_free_slot(start_slot_element_list)
     let (last_token_id) = get_token_id(last_collection_element)
 
-    #let (last_token_id_high, last_token_id_low) = split_felt(last_token_id)
-
-    #list_element_by_id.write(last_collection_element, (Uint256(last_token_id_low, last_token_id_high), next_free_slot))
     list_element_by_id.write(last_collection_element, (last_token_id, next_free_slot))
     list_element_by_id.write(next_free_slot, (_nft_array[0].id, 0))
 
@@ -201,10 +197,6 @@ func find_next_free_slot{
     if is_zero == TRUE:
         return (1)
     end 
-
-    # if s[0] == 0:
-    #     return (1)
-    # end
 
     let (sum) = find_next_free_slot(_current_id + 1)
     return (sum + 1)
@@ -266,9 +258,8 @@ func removeNftFromPool{
         _nft_array_len : felt,
         _nft_array : NFT*
     ) -> ():
-    #alloc_locals
-    #assert_only_owner()
 
+    #assert_only_owner()
     _remove_nft_from_pool(_nft_array_len, _nft_array)
 
     return ()
@@ -339,26 +330,15 @@ func find_element_to_be_removed{
     let (_last_element) = list_element_by_id.read(_current_id)
     let (_this_element) = list_element_by_id.read(_last_element[1])
 
-    
     let (last_is_equal) = uint256_eq(_last_element[0], _token_id)
-
     if last_is_equal == TRUE:
         return (0, _last_element[1])
     end 
 
-    # if _last_element[0] == _token_id:
-    #     return (0, _last_element[1])
-    # end
-
     let (this_is_equal) = uint256_eq(_this_element[0], _token_id)
-
     if this_is_equal == TRUE:
         return (_current_id, _last_element[1])
     end 
-
-    # if _this_element[0] == _token_id:
-    #     return (_current_id, _last_element[1])
-    # end
 
     return find_element_to_be_removed(_last_element[1], _token_id)
 
@@ -485,7 +465,7 @@ func populate_nfts{
     ) -> (
         _nft_count: felt
     ):
-    
+
     let (s) = list_element_by_id.read(_current_id)
     assert _nft_id_list[0] = s[0]
 
