@@ -485,15 +485,15 @@ func populate_nfts{
     ) -> (
         _nft_count: felt
     ):
-
+    
     let (s) = list_element_by_id.read(_current_id)
-    _nft_id_list[0] = s[0]
+    assert _nft_id_list[0] = s[0]
 
     if s[1] == 0:
         return (_list_index + 1)
     end
 
-    return populate_nfts(_nft_id_list + 1, _list_index + 1, s[1])
+    return populate_nfts(_nft_id_list + Uint256.SIZE, _list_index + 1, s[1])
 
 end
 
