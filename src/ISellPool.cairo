@@ -46,4 +46,7 @@ namespace ISellPool:
     func getEthBalance() -> (_eth_balance : felt):
     end
 
+    func getNextPrice() -> (_next_price : felt):
+    end
+
 end

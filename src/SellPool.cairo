@@ -598,7 +598,40 @@ func getPoolConfig{
 end
 
 
-# Further functions
+@view
+func getNextPrice{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }() -> (
+        _next_price: felt
+    ):
+    alloc_locals
+    const _number_items = 1
+    let (_current_price) = current_price.read()
+    let (_delta) = delta.read()
+    let (_class_hash) = bonding_curve_class_hash.read()
+
+    let (_calldata: felt*) = alloc()
+    assert [_calldata] = _number_items
+    assert [_calldata + 1] = _current_price
+    assert [_calldata + 2] = _delta
+
+    local _function_selector_get_new_price = 1427085065996622579194757518833714443103194349812573964832617639352675497406
+
+    let (retdata_size: felt, retdata: felt*) = library_call(
+        class_hash=_class_hash, 
+        function_selector=_function_selector_get_new_price,
+        calldata_size=3,
+        calldata=_calldata
+    )
+    local _next_price = retdata[0]
+
+    return (_next_price)
+end
+
+
+# Internal functions
 
 
 func get_token_id{
@@ -647,7 +680,7 @@ func assert_only_owner{
 end
 
 
-# Helper functions 
+# Helper functions for test purposes
 
 
 @view

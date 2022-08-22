@@ -423,3 +423,21 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
 
     return ()
 end
+
+
+@external
+func test_getNextPrice_with_expected_output{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals 
+
+    local contract_address
+    %{ ids.contract_address = context.contract_address %}
+
+    const NEXT_PRICE = 11
+
+    let (next_price) = ISellPool.getNextPrice(contract_address)
+
+    assert next_price = NEXT_PRICE
+
+    return ()
+end
