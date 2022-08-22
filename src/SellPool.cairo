@@ -573,6 +573,20 @@ func togglePause{
 end
 
 
+@view
+func isPaused{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }() -> (
+        _is_paused: felt
+    ):
+    let (_is_paused) = pool_paused.read()
+    
+    return (_is_paused)
+end
+
+
 # Get pool configuration
 
 

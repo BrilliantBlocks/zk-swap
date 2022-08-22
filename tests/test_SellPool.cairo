@@ -4,6 +4,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.bool import TRUE, FALSE
 
 from src.ISellPool import ISellPool
 from src.SellPool import NFT
@@ -399,12 +400,16 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
     let (old_eth_balance) = ISellPool.getEthBalance(contract_address)
     let (start_id_collection_1) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_1)
     let (old_price, delta) = ISellPool.getPoolConfig(contract_address)
+    let (is_paused) = ISellPool.isPaused(contract_address)
     
     assert old_eth_balance = OLD_ETH_BALANCE
     assert start_id_collection_1 = 1
     assert old_price = OLD_PRICE
+    assert is_paused = FALSE
 
     ISellPool.togglePause(contract_address)
+    let (is_paused) = ISellPool.isPaused(contract_address)
+    assert is_paused = TRUE
 
     %{ expect_revert(error_message="Pool is currently paused.") %}
     ISellPool.buyNfts(contract_address, 2, NFT_ARRAY)
@@ -416,10 +421,12 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
     let (new_eth_balance) = ISellPool.getEthBalance(contract_address)
     let (new_start_id_collection_1) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_1)
     let (new_price, delta) = ISellPool.getPoolConfig(contract_address)
+    let (is_paused) = ISellPool.isPaused(contract_address)
     
     assert new_eth_balance = NEW_ETH_BALANCE
     assert new_start_id_collection_1 = ZERO_FELT
     assert new_price = NEW_PRICE
+    assert is_paused = FALSE
 
     return ()
 end

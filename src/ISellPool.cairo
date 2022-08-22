@@ -49,4 +49,7 @@ namespace ISellPool:
     func getNextPrice() -> (_next_price : felt):
     end
 
+    func isPaused() -> (_is_paused : felt):
+    end
+
 end
