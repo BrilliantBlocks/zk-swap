@@ -27,15 +27,15 @@ func TokenWithdrawal(nft: NFT):
 end
 
 @event
-func PriceUpdate(_new_price: felt):
+func PriceUpdate(new_price: felt):
 end
 
 @event
-func DeltaUpdate(_new_delta: felt):
+func DeltaUpdate(new_delta: felt):
 end
 
 @event
-func PausePool(_bool: felt):
+func PausePool(bool: felt):
 end
 
 
