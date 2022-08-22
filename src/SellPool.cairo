@@ -552,7 +552,7 @@ end
 
 
 @external
-func togglePoolPause{
+func togglePause{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr

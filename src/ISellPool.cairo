@@ -40,7 +40,7 @@ namespace ISellPool:
     func buyNfts(_nft_array_len: felt,  _nft_array: NFT*) -> ():
     end
 
-    func togglePoolPause() -> ():
+    func togglePause() -> ():
     end
 
     func getEthBalance() -> (_eth_balance : felt):

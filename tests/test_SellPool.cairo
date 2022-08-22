@@ -404,12 +404,12 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
     assert start_id_collection_1 = 1
     assert old_price = OLD_PRICE
 
-    ISellPool.togglePoolPause(contract_address)
+    ISellPool.togglePause(contract_address)
 
     %{ expect_revert(error_message="Pool is currently paused.") %}
     ISellPool.buyNfts(contract_address, 2, NFT_ARRAY)
 
-    ISellPool.togglePoolPause(contract_address)
+    ISellPool.togglePause(contract_address)
 
     ISellPool.buyNfts(contract_address, 2, NFT_ARRAY)
 
