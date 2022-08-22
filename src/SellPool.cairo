@@ -19,15 +19,19 @@ end
 # Events
 
 @event
-func AddTokenToPool(nft: NFT):
+func TokenDeposit(nft: NFT):
 end
 
 @event
-func RemoveTokenFromPool(nft: NFT):
+func TokenWithdrawal(nft: NFT):
 end
 
 @event
-func EditPool(_new_price: felt, _new_delta: felt):
+func PriceUpdate(_new_price: felt):
+end
+
+@event
+func DeltaUpdate(_new_delta: felt):
 end
 
 @event
@@ -159,7 +163,7 @@ func _add_nft_to_pool{
         list_element_by_id.write(next_free_slot, (_nft_array[0].id, 0))
 
         # To do: Approve token for pool address in ERC721
-        AddTokenToPool.emit(_nft_array[0])
+        TokenDeposit.emit(_nft_array[0])
 
         return _add_nft_to_pool(_nft_array_len - 1, _nft_array + NFT.SIZE)
     end
@@ -172,7 +176,7 @@ func _add_nft_to_pool{
     list_element_by_id.write(next_free_slot, (_nft_array[0].id, 0))
 
     # To do: Approve token for pool address in ERC721
-    AddTokenToPool.emit(_nft_array[0])
+    TokenDeposit.emit(_nft_array[0])
 
     return _add_nft_to_pool(_nft_array_len - 1, _nft_array + NFT.SIZE)
 
@@ -295,7 +299,7 @@ func _remove_nft_from_pool{
         list_element_by_id.write(start_id, (Uint256(0,0), 0))
 
         # To do: Remove token approval for pool address in ERC721
-        RemoveTokenFromPool.emit(_nft_array[0])
+        TokenWithdrawal.emit(_nft_array[0])
 
         return _remove_nft_from_pool(_nft_array_len - 1, _nft_array + NFT.SIZE)
     end
@@ -308,7 +312,7 @@ func _remove_nft_from_pool{
     list_element_by_id.write(this_element, (Uint256(0,0), 0))
 
     # To do: Remove token approval for pool address in ERC721
-    RemoveTokenFromPool.emit(_nft_array[0])
+    TokenWithdrawal.emit(_nft_array[0])
 
     return _remove_nft_from_pool(_nft_array_len - 1, _nft_array + NFT.SIZE)
 
@@ -361,10 +365,13 @@ func editPool{
     with_attr error_message("Price cannot be negative."):
         assert_nn(_new_price)
     end
+
+    # To do: Check if price and delta were actually changed
     current_price.write(_new_price)
     delta.write(_new_delta)
 
-    EditPool.emit(_new_price, _new_delta)
+    PriceUpdate.emit(_new_price)
+    DeltaUpdate.emit(_new_delta)
 
     return ()
 end
@@ -536,6 +543,7 @@ func buyNfts{
     local _new_price = retdata[0]
 
     current_price.write(_new_price)
+    PriceUpdate.emit(_new_price)
 
     _remove_nft_from_pool(_nft_array_len, _nft_array)
     
