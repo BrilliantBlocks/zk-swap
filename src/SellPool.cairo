@@ -88,7 +88,7 @@ func constructor{
         _factory_address: felt,
         _current_price : felt,
         _delta : felt,
-        _class_hash : felt
+        _bonding_curve_class_hash : felt
     ):
     alloc_locals
 
@@ -105,12 +105,12 @@ func constructor{
     delta.write(_delta)
 
     with_attr error_message("Bonding curve class hash cannot be zero"):
-        assert_not_zero(_class_hash)
+        assert_not_zero(_bonding_curve_class_hash)
     end
     # with_attr error_message("Bonding curve class hash cannot be negative."):
     #     assert_nn(_class_hash)
     # end
-    bonding_curve_class_hash.write(_class_hash)
+    bonding_curve_class_hash.write(_bonding_curve_class_hash)
 
     return ()
 end
