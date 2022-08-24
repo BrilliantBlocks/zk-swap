@@ -78,6 +78,10 @@ func eth_balance() -> (res: felt):
 end
 
 
+# To do:
+# Separate linked list functions and import as tested library in pool contract
+# Refactor internal functions in SellPool with more purity for better testing after importing them
+
 
 @constructor
 func constructor{
@@ -108,7 +112,7 @@ func constructor{
         assert_not_zero(_bonding_curve_class_hash)
     end
     # with_attr error_message("Bonding curve class hash cannot be negative."):
-    #     assert_nn(_class_hash)
+    #     assert_nn(_bonding_curve_class_hash)
     # end
     bonding_curve_class_hash.write(_bonding_curve_class_hash)
 

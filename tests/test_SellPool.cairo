@@ -16,7 +16,7 @@ const DELTA = 1
 
 
 @view
-func __setup__():
+func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
     %{
         context.class_hash = declare("./src/LinearCurve.cairo").class_hash
 
@@ -27,7 +27,7 @@ func __setup__():
         ).contract_address
     %}
     return ()
-end
+end 
 
 
 @external
