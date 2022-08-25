@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.uint256 import Uint256
 
-from src.SellPool import NFT
+from src.pools.sell.SellPool import NFT
 
 @contract_interface
 namespace ISellPool:

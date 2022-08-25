@@ -6,8 +6,8 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.bool import TRUE, FALSE
 
-from src.ISellPool import ISellPool
-from src.SellPool import NFT
+from src.pools.sell.ISellPool import ISellPool
+from src.pools.sell.SellPool import NFT
 
 
 const POOL_FACTORY = 123456789
@@ -18,9 +18,9 @@ const DELTA = 1
 @view
 func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
     %{
-        context.class_hash = declare("./src/LinearCurve.cairo").class_hash
+        context.class_hash = declare("./src/bonding-curves/linear/LinearCurve.cairo").class_hash
 
-        context.contract_address = deploy_contract("./src/SellPool.cairo", 
+        context.contract_address = deploy_contract("./src/pools/sell/SellPool.cairo", 
             [
                 ids.POOL_FACTORY, ids.CURRENT_PRICE, ids.DELTA, context.class_hash
             ]
