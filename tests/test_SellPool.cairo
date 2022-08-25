@@ -9,10 +9,16 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from src.pools.sell.ISellPool import ISellPool
 from src.pools.sell.SellPool import NFT
 
+from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721Metadata import IERC721Metadata
+
 
 const POOL_FACTORY = 123456789
 const CURRENT_PRICE = 10
 const DELTA = 1
+
+const ERC721_NAME = 1
+const ERC721_SYMBOL = 2
+const ERC721_OWNER = 3
 
 
 @view
@@ -25,9 +31,35 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
                 ids.POOL_FACTORY, ids.CURRENT_PRICE, ids.DELTA, context.class_hash
             ]
         ).contract_address
+
+        context.ERC721_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
+            [ 
+                ids.ERC721_NAME, ids.ERC721_SYMBOL, ids.ERC721_OWNER
+            ]
+        ).contract_address
+
+
     %}
     return ()
 end 
+
+
+@external
+func test_initialization_ERC721{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals 
+
+    local contract_address
+    %{ ids.contract_address = context.ERC721_contract_address %}
+
+    let (erc721_name) = IERC721Metadata.name(contract_address)
+    let (erc721_symbol) = IERC721Metadata.symbol(contract_address)
+    
+    assert erc721_name = ERC721_NAME
+    assert erc721_symbol = ERC721_SYMBOL
+    
+    return ()
+end
 
 
 @external

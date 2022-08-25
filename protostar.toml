@@ -2,9 +2,12 @@
 protostar_version = "0.3.2"
 
 ["protostar.project"]
-libs_path = "lib"
+libs_path = "./lib"
 
 ["protostar.contracts"]
 main = [
-    "src/main.cairo",
+    "./src/pools/sell/SellPool.cairo",
 ]
+
+["protostar.shared_command_configs"]
+cairo-path = ["./lib/cairo_contracts/src"]
