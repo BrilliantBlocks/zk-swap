@@ -10,15 +10,16 @@ from src.pools.sell.ISellPool import ISellPool
 from src.pools.sell.SellPool import NFT
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721Metadata import IERC721Metadata
+from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 
 
 const POOL_FACTORY = 123456789
 const CURRENT_PRICE = 10
 const DELTA = 1
 
-const ERC721_NAME = 1
-const ERC721_SYMBOL = 2
-const ERC721_OWNER = 3
+const ERC721_NAME = 'TEST ERC721 CONTRACT'
+const ERC721_SYMBOL = 'TERC721'
+const ERC721_OWNER = 123
 
 
 @view
@@ -32,12 +33,12 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
             ]
         ).contract_address
 
+
         context.ERC721_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
             [ 
                 ids.ERC721_NAME, ids.ERC721_SYMBOL, ids.ERC721_OWNER
             ]
         ).contract_address
-
 
     %}
     return ()
@@ -52,11 +53,21 @@ func test_initialization_ERC721{syscall_ptr : felt*, range_check_ptr, pedersen_p
     local contract_address
     %{ ids.contract_address = context.ERC721_contract_address %}
 
+    let TEST_0 = Uint256(50, 0)
+    %{  
+        ERC721_OWNER = 123
+        stop_prank_callable = start_prank(ERC721_OWNER, target_contract_address=ids.contract_address)
+    %}
+    ISellPool.mint(contract_address, ERC721_OWNER, TEST_0)
+    %{ stop_prank_callable() %}
+
     let (erc721_name) = IERC721Metadata.name(contract_address)
     let (erc721_symbol) = IERC721Metadata.symbol(contract_address)
+    let (test_balance) = IERC721.balanceOf(contract_address, ERC721_OWNER)
     
     assert erc721_name = ERC721_NAME
     assert erc721_symbol = ERC721_SYMBOL
+    assert test_balance = Uint256(1, 0)
     
     return ()
 end

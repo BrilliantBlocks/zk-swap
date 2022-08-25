@@ -52,4 +52,7 @@ namespace ISellPool:
     func isPaused() -> (_is_paused : felt):
     end
 
+    func mint(to: felt, token_id: Uint256) -> ():
+    end
+
 end
