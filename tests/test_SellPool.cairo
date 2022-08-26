@@ -23,50 +23,50 @@ const C3_NAME = 'COLLECTION 3'
 const C1_SYMBOL = 'C1'
 const C2_SYMBOL = 'C2'
 const C3_SYMBOL = 'C3'
-const OWNER = 123
-const BENEFICIARY = 321
+const ERC721_CONTRACT_OWNER = 123
+const ERC721_TOKEN_OWNER = 321
 
 
 @view
 func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
     %{
-        context.class_hash = declare("./src/bonding-curves/linear/LinearCurve.cairo").class_hash
+        context.linear_curve_class_hash = declare("./src/bonding-curves/linear/LinearCurve.cairo").class_hash
 
-        context.contract_address = deploy_contract("./src/pools/sell/SellPool.cairo", 
+        context.sell_pool_contract_address = deploy_contract("./src/pools/sell/SellPool.cairo", 
             [
-                ids.POOL_FACTORY, ids.CURRENT_PRICE, ids.DELTA, context.class_hash
+                ids.POOL_FACTORY, ids.CURRENT_PRICE, ids.DELTA, context.linear_curve_class_hash
             ]
         ).contract_address
 
 
-        context.C1_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
+        context.c1_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
             [ 
-                ids.C1_NAME, ids.C1_SYMBOL, ids.OWNER
+                ids.C1_NAME, ids.C1_SYMBOL, ids.ERC721_CONTRACT_OWNER
             ]
         ).contract_address
 
-        context.C2_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
+        context.c2_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
             [ 
-                ids.C2_NAME, ids.C2_SYMBOL, ids.OWNER
+                ids.C2_NAME, ids.C2_SYMBOL, ids.ERC721_CONTRACT_OWNER
             ]
         ).contract_address
 
-        context.C3_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
+        context.c3_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
             [ 
-                ids.C3_NAME, ids.C3_SYMBOL, ids.OWNER
+                ids.C3_NAME, ids.C3_SYMBOL, ids.ERC721_CONTRACT_OWNER
             ]
         ).contract_address
 
     %}
 
     alloc_locals
-    local C1_contract_address
-    local C2_contract_address
-    local C3_contract_address
+    local c1_contract_address
+    local c2_contract_address
+    local c3_contract_address
     %{ 
-        ids.C1_contract_address = context.C1_contract_address 
-        ids.C2_contract_address = context.C2_contract_address
-        ids.C3_contract_address = context.C3_contract_address
+        ids.c1_contract_address = context.c1_contract_address 
+        ids.c2_contract_address = context.c2_contract_address
+        ids.c3_contract_address = context.c3_contract_address
     %}
     let NFT_1_1 = Uint256(11, 0)
     let NFT_1_2 = Uint256(12, 0)
@@ -74,16 +74,16 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
     let NFT_2_2 = Uint256(22, 0)
     let NFT_3_1 = Uint256(31, 0)
     %{  
-        PRANK_OWNER = 123
-        stop_prank_callable = start_prank(PRANK_OWNER, target_contract_address=ids.C1_contract_address)
-        stop_prank_callable = start_prank(PRANK_OWNER, target_contract_address=ids.C2_contract_address)
-        stop_prank_callable = start_prank(PRANK_OWNER, target_contract_address=ids.C3_contract_address)
+        PRANK_ERC721_CONTRACT_OWNER = 123
+        stop_prank_callable = start_prank(PRANK_ERC721_CONTRACT_OWNER, target_contract_address=ids.c1_contract_address)
+        stop_prank_callable = start_prank(PRANK_ERC721_CONTRACT_OWNER, target_contract_address=ids.c2_contract_address)
+        stop_prank_callable = start_prank(PRANK_ERC721_CONTRACT_OWNER, target_contract_address=ids.c3_contract_address)
     %}
-    ISellPool.mint(C1_contract_address, BENEFICIARY, NFT_1_1)
-    ISellPool.mint(C1_contract_address, BENEFICIARY, NFT_1_2)
-    ISellPool.mint(C2_contract_address, BENEFICIARY, NFT_2_1)
-    ISellPool.mint(C2_contract_address, BENEFICIARY, NFT_2_2)
-    ISellPool.mint(C3_contract_address, BENEFICIARY, NFT_3_1)
+    ISellPool.mint(c1_contract_address, ERC721_TOKEN_OWNER, NFT_1_1)
+    ISellPool.mint(c1_contract_address, ERC721_TOKEN_OWNER, NFT_1_2)
+    ISellPool.mint(c2_contract_address, ERC721_TOKEN_OWNER, NFT_2_1)
+    ISellPool.mint(c2_contract_address, ERC721_TOKEN_OWNER, NFT_2_2)
+    ISellPool.mint(c3_contract_address, ERC721_TOKEN_OWNER, NFT_3_1)
     %{ stop_prank_callable() %}
 
     return ()
@@ -95,13 +95,13 @@ func test_initialization_ERC721{syscall_ptr : felt*, range_check_ptr, pedersen_p
 
     alloc_locals 
 
-    local C1_contract_address
-    local C2_contract_address
-    local C3_contract_address
+    local c1_contract_address
+    local c2_contract_address
+    local c3_contract_address
     %{ 
-        ids.C1_contract_address = context.C1_contract_address 
-        ids.C2_contract_address = context.C2_contract_address
-        ids.C3_contract_address = context.C3_contract_address
+        ids.c1_contract_address = context.c1_contract_address 
+        ids.c2_contract_address = context.c2_contract_address
+        ids.c3_contract_address = context.c3_contract_address
     %}
 
     let NFT_1_1 = Uint256(11, 0)
@@ -110,19 +110,19 @@ func test_initialization_ERC721{syscall_ptr : felt*, range_check_ptr, pedersen_p
     let NFT_2_2 = Uint256(22, 0)
     let NFT_3_1 = Uint256(31, 0)
 
-    let (c1_balance) = IERC721.balanceOf(C1_contract_address, BENEFICIARY)
-    let (c2_balance) = IERC721.balanceOf(C2_contract_address, BENEFICIARY)
-    let (c3_balance) = IERC721.balanceOf(C3_contract_address, BENEFICIARY)
-    let (c1_token_owner) = IERC721.ownerOf(C1_contract_address, NFT_1_1)
-    let (c2_token_owner) = IERC721.ownerOf(C2_contract_address, NFT_2_1)
-    let (c3_token_owner) = IERC721.ownerOf(C3_contract_address, NFT_3_1)
+    let (c1_balance) = IERC721.balanceOf(c1_contract_address, ERC721_TOKEN_OWNER)
+    let (c2_balance) = IERC721.balanceOf(c2_contract_address, ERC721_TOKEN_OWNER)
+    let (c3_balance) = IERC721.balanceOf(c3_contract_address, ERC721_TOKEN_OWNER)
+    let (c1_token_owner) = IERC721.ownerOf(c1_contract_address, NFT_1_1)
+    let (c2_token_owner) = IERC721.ownerOf(c2_contract_address, NFT_2_1)
+    let (c3_token_owner) = IERC721.ownerOf(c3_contract_address, NFT_3_1)
     
     assert c1_balance = Uint256(2, 0)
     assert c2_balance = Uint256(2, 0)
     assert c3_balance = Uint256(1, 0)
-    assert c1_token_owner = BENEFICIARY
-    assert c2_token_owner = BENEFICIARY
-    assert c3_token_owner = BENEFICIARY
+    assert c1_token_owner = ERC721_TOKEN_OWNER
+    assert c2_token_owner = ERC721_TOKEN_OWNER
+    assert c3_token_owner = ERC721_TOKEN_OWNER
     
     return ()
 end
@@ -133,11 +133,11 @@ func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_p
 
     alloc_locals 
 
-    local contract_address
-    %{ ids.contract_address = context.contract_address %}
+    local sell_pool_contract_address
+    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
-    let (pool_factory) = ISellPool.getPoolFactory(contract_address)
-    let (current_price, delta) = ISellPool.getPoolConfig(contract_address)
+    let (pool_factory) = ISellPool.getPoolFactory(sell_pool_contract_address)
+    let (current_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
     
     assert pool_factory = POOL_FACTORY
     assert current_price = CURRENT_PRICE
@@ -152,11 +152,11 @@ func test_getPoolConfig_with_expected_output{syscall_ptr : felt*, range_check_pt
 
     alloc_locals 
 
-    local contract_address
-    %{ ids.contract_address = context.contract_address %}
+    local sell_pool_contract_address
+    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
-    let (pool_factory) = ISellPool.getPoolFactory(contract_address)
-    let (current_price, delta) = ISellPool.getPoolConfig(contract_address)
+    let (pool_factory) = ISellPool.getPoolFactory(sell_pool_contract_address)
+    let (current_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
 
     assert pool_factory = POOL_FACTORY
     assert current_price = CURRENT_PRICE
@@ -171,8 +171,8 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
 
     alloc_locals 
 
-    local contract_address
-    %{ ids.contract_address = context.contract_address %}
+    local sell_pool_contract_address
+    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
     const COLLECTION_1 = 1111111111
     const COLLECTION_2 = 2222222222
@@ -194,21 +194,28 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
     assert NFT_ARRAY_1[1] = NFT(address = COLLECTION_2, id = NFT_2_1)
     assert NFT_ARRAY_1[2] = NFT(address = COLLECTION_1, id = NFT_1_2)
     
-    ISellPool.addNftToPool(contract_address, 3, NFT_ARRAY_1)
+    ISellPool.addNftToPool(sell_pool_contract_address, 3, NFT_ARRAY_1)
 
-    let (pool_factory) = ISellPool.getPoolFactory(contract_address)
-    let (current_price, delta) = ISellPool.getPoolConfig(contract_address)
-    let (start_id_collection_1) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_1)
-    let (start_id_collection_2) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_2)
-    let list_element_1 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 1)
-    let list_element_2 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 2)
-    let list_element_3 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 3)
-    let (collection_address_1) = ISellPool.getCollectionById(contract_address, 0)
-    let (collection_address_2) = ISellPool.getCollectionById(contract_address, 1)
-    let (collection_array_len, collection_array) = ISellPool.getAllCollections(contract_address)
-    let (nft_collection_1_id_list_len: felt, nft_collection_1_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_1)
-    let (nft_collection_2_id_list_len: felt, nft_collection_2_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_2)
-    let (nft_collection_3_id_list_len: felt, nft_collection_3_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_3)
+    # %{  
+    #     PRANK_ERC721_CONTRACT_OWNER = 123
+    #     stop_prank_callable = start_prank(PRANK_ERC721_CONTRACT_OWNER, target_contract_address=ids.contract_address)
+    # %}
+    # ISellPool.mint(C1_contract_address, ERC721_TOKEN_OWNER, NFT_1_1)
+    # %{ stop_prank_callable() %}
+
+    let (pool_factory) = ISellPool.getPoolFactory(sell_pool_contract_address)
+    let (current_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
+    let (start_id_collection_2) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_2)
+    let list_element_1 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 1)
+    let list_element_2 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 2)
+    let list_element_3 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 3)
+    let (collection_address_1) = ISellPool.getCollectionById(sell_pool_contract_address, 0)
+    let (collection_address_2) = ISellPool.getCollectionById(sell_pool_contract_address, 1)
+    let (collection_array_len, collection_array) = ISellPool.getAllCollections(sell_pool_contract_address)
+    let (nft_collection_1_id_list_len: felt, nft_collection_1_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(sell_pool_contract_address, COLLECTION_1)
+    let (nft_collection_2_id_list_len: felt, nft_collection_2_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(sell_pool_contract_address, COLLECTION_2)
+    let (nft_collection_3_id_list_len: felt, nft_collection_3_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(sell_pool_contract_address, COLLECTION_3)
 
     assert pool_factory = POOL_FACTORY
     assert current_price = CURRENT_PRICE
@@ -238,12 +245,12 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
     assert NFT_ARRAY_2[0] = NFT(address = COLLECTION_2, id = NFT_2_2)
     assert NFT_ARRAY_2[1] = NFT(address = COLLECTION_3, id = NFT_3_1)
     
-    ISellPool.addNftToPool(contract_address, 2, NFT_ARRAY_2)
+    ISellPool.addNftToPool(sell_pool_contract_address, 2, NFT_ARRAY_2)
 
-    let (start_id_collection_3) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_3)
-    let list_element_2 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 2)
-    let list_element_4 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 4)
-    let list_element_5 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 5)
+    let (start_id_collection_3) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_3)
+    let list_element_2 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 2)
+    let list_element_4 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 4)
+    let list_element_5 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 5)
 
     assert start_id_collection_3 = 5
     assert list_element_2[0] = NFT_2_1
@@ -262,8 +269,8 @@ func test_removeNftFromPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr :
 
     alloc_locals 
 
-    local contract_address
-    %{ ids.contract_address = context.contract_address %}
+    local sell_pool_contract_address
+    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
     const COLLECTION_1 = 1111111111
     const COLLECTION_2 = 2222222222
@@ -284,24 +291,24 @@ func test_removeNftFromPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr :
     assert NFT_ARRAY_ADD[3] = NFT(address = COLLECTION_2, id = NFT_2_2)
     assert NFT_ARRAY_ADD[4] = NFT(address = COLLECTION_3, id = NFT_3_1)
     
-    ISellPool.addNftToPool(contract_address, 5, NFT_ARRAY_ADD)
+    ISellPool.addNftToPool(sell_pool_contract_address, 5, NFT_ARRAY_ADD)
 
-    let (pool_factory) = ISellPool.getPoolFactory(contract_address)
-    let (current_price, delta) = ISellPool.getPoolConfig(contract_address)
-    let (start_id_collection_1) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_1)
-    let (start_id_collection_2) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_2)
-    let (start_id_collection_3) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_3)
-    let list_element_1 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 1)
-    let list_element_2 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 2)
-    let list_element_3 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 3)
-    let list_element_4 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 4)
-    let list_element_5 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 5)
-    let (collection_address_1) = ISellPool.getCollectionById(contract_address, 0)
-    let (collection_address_2) = ISellPool.getCollectionById(contract_address, 1)
-    let (collection_array_len, collection_array) = ISellPool.getAllCollections(contract_address)
-    let (nft_collection_1_id_list_len: felt, nft_collection_1_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_1)
-    let (nft_collection_2_id_list_len: felt, nft_collection_2_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_2)
-    let (nft_collection_3_id_list_len: felt, nft_collection_3_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_3)
+    let (pool_factory) = ISellPool.getPoolFactory(sell_pool_contract_address)
+    let (current_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
+    let (start_id_collection_2) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_2)
+    let (start_id_collection_3) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_3)
+    let list_element_1 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 1)
+    let list_element_2 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 2)
+    let list_element_3 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 3)
+    let list_element_4 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 4)
+    let list_element_5 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 5)
+    let (collection_address_1) = ISellPool.getCollectionById(sell_pool_contract_address, 0)
+    let (collection_address_2) = ISellPool.getCollectionById(sell_pool_contract_address, 1)
+    let (collection_array_len, collection_array) = ISellPool.getAllCollections(sell_pool_contract_address)
+    let (nft_collection_1_id_list_len: felt, nft_collection_1_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(sell_pool_contract_address, COLLECTION_1)
+    let (nft_collection_2_id_list_len: felt, nft_collection_2_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(sell_pool_contract_address, COLLECTION_2)
+    let (nft_collection_3_id_list_len: felt, nft_collection_3_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(sell_pool_contract_address, COLLECTION_3)
 
     assert pool_factory = POOL_FACTORY
     assert current_price = CURRENT_PRICE
@@ -340,18 +347,18 @@ func test_removeNftFromPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr :
     assert NFT_ARRAY_REMOVE[0] = NFT(address = COLLECTION_1, id = NFT_1_2)
     assert NFT_ARRAY_REMOVE[1] = NFT(address = COLLECTION_2, id = NFT_2_1)
     
-    ISellPool.removeNftFromPool(contract_address, 2, NFT_ARRAY_REMOVE)
+    ISellPool.removeNftFromPool(sell_pool_contract_address, 2, NFT_ARRAY_REMOVE)
 
-    let (new_start_id_collection_1) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_1)
-    let (new_start_id_collection_2) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_2)
-    let list_element_1 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 1)
-    let list_element_2 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 2)
-    let list_element_3 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 3)
-    let list_element_4 : (Uint256, felt) = ISellPool.getListElementById(contract_address, 4)
-    let (collection_array_len, collection_array) = ISellPool.getAllCollections(contract_address)
-    let (nft_collection_1_id_list_len: felt, nft_collection_1_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_1)
-    let (nft_collection_2_id_list_len: felt, nft_collection_2_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_2)
-    let (nft_collection_3_id_list_len: felt, nft_collection_3_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(contract_address, COLLECTION_3)
+    let (new_start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
+    let (new_start_id_collection_2) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_2)
+    let list_element_1 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 1)
+    let list_element_2 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 2)
+    let list_element_3 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 3)
+    let list_element_4 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 4)
+    let (collection_array_len, collection_array) = ISellPool.getAllCollections(sell_pool_contract_address)
+    let (nft_collection_1_id_list_len: felt, nft_collection_1_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(sell_pool_contract_address, COLLECTION_1)
+    let (nft_collection_2_id_list_len: felt, nft_collection_2_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(sell_pool_contract_address, COLLECTION_2)
+    let (nft_collection_3_id_list_len: felt, nft_collection_3_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(sell_pool_contract_address, COLLECTION_3)
     
     assert new_start_id_collection_1 = 1
     assert new_start_id_collection_2 = 4
@@ -385,20 +392,20 @@ func test_editPool_with_expected_output{syscall_ptr : felt*, range_check_ptr, pe
 
     alloc_locals 
 
-    local contract_address
-    %{ ids.contract_address = context.contract_address %}
+    local sell_pool_contract_address
+    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
     const NEW_PRICE = 15
     const NEW_DELTA = 2
 
-    let (old_price, old_delta) = ISellPool.getPoolConfig(contract_address)
+    let (old_price, old_delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
 
     assert old_price = CURRENT_PRICE
     assert old_delta = DELTA
 
-    ISellPool.editPool(contract_address, NEW_PRICE, NEW_DELTA)
+    ISellPool.editPool(sell_pool_contract_address, NEW_PRICE, NEW_DELTA)
 
-    let (new_price, new_delta) = ISellPool.getPoolConfig(contract_address)
+    let (new_price, new_delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
 
     assert new_price = NEW_PRICE
     assert new_delta = NEW_DELTA
@@ -412,14 +419,14 @@ func test_editPool_with_negative_price{syscall_ptr : felt*, range_check_ptr, ped
 
     alloc_locals 
 
-    local contract_address
-    %{ ids.contract_address = context.contract_address %}
+    local sell_pool_contract_address
+    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
     const NEW_NEGATIVE_PRICE = -15
     const NEW_DELTA = 2
 
     %{ expect_revert(error_message="Price cannot be negative.") %}
-    ISellPool.editPool(contract_address, NEW_NEGATIVE_PRICE, NEW_DELTA)
+    ISellPool.editPool(sell_pool_contract_address, NEW_NEGATIVE_PRICE, NEW_DELTA)
 
     return ()
 end
@@ -430,8 +437,8 @@ func test_buyNfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuilt
 
     alloc_locals 
 
-    local contract_address
-    %{ ids.contract_address = context.contract_address %}
+    local sell_pool_contract_address
+    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
     const COLLECTION_1 = 1111111111
     let NFT_1_1 = Uint256(11, 0)
@@ -447,21 +454,21 @@ func test_buyNfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuilt
     assert NFT_ARRAY[0] = NFT(address = COLLECTION_1, id = NFT_1_1)
     assert NFT_ARRAY[1] = NFT(address = COLLECTION_1, id = NFT_1_2)
     
-    ISellPool.addNftToPool(contract_address, 2, NFT_ARRAY)
+    ISellPool.addNftToPool(sell_pool_contract_address, 2, NFT_ARRAY)
 
-    let (old_eth_balance) = ISellPool.getEthBalance(contract_address)
-    let (start_id_collection_1) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_1)
-    let (old_price, delta) = ISellPool.getPoolConfig(contract_address)
+    let (old_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
+    let (start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
+    let (old_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
     
     assert old_eth_balance = OLD_ETH_BALANCE
     assert start_id_collection_1 = 1
     assert old_price = OLD_PRICE
 
-    ISellPool.buyNfts(contract_address, 2, NFT_ARRAY)
+    ISellPool.buyNfts(sell_pool_contract_address, 2, NFT_ARRAY)
 
-    let (new_eth_balance) = ISellPool.getEthBalance(contract_address)
-    let (new_start_id_collection_1) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_1)
-    let (new_price, delta) = ISellPool.getPoolConfig(contract_address)
+    let (new_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
+    let (new_start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
+    let (new_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
     
     assert new_eth_balance = NEW_ETH_BALANCE
     assert new_start_id_collection_1 = ZERO_FELT
@@ -476,8 +483,8 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
 
     alloc_locals 
 
-    local contract_address
-    %{ ids.contract_address = context.contract_address %}
+    local sell_pool_contract_address
+    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
     const COLLECTION_1 = 1111111111
     let NFT_1_1 = Uint256(11, 0)
@@ -493,33 +500,33 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
     assert NFT_ARRAY[0] = NFT(address = COLLECTION_1, id = NFT_1_1)
     assert NFT_ARRAY[1] = NFT(address = COLLECTION_1, id = NFT_1_2)
     
-    ISellPool.addNftToPool(contract_address, 2, NFT_ARRAY)
+    ISellPool.addNftToPool(sell_pool_contract_address, 2, NFT_ARRAY)
 
-    let (old_eth_balance) = ISellPool.getEthBalance(contract_address)
-    let (start_id_collection_1) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_1)
-    let (old_price, delta) = ISellPool.getPoolConfig(contract_address)
-    let (is_paused) = ISellPool.isPaused(contract_address)
+    let (old_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
+    let (start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
+    let (old_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (is_paused) = ISellPool.isPaused(sell_pool_contract_address)
     
     assert old_eth_balance = OLD_ETH_BALANCE
     assert start_id_collection_1 = 1
     assert old_price = OLD_PRICE
     assert is_paused = FALSE
 
-    ISellPool.togglePause(contract_address)
-    let (is_paused) = ISellPool.isPaused(contract_address)
+    ISellPool.togglePause(sell_pool_contract_address)
+    let (is_paused) = ISellPool.isPaused(sell_pool_contract_address)
     assert is_paused = TRUE
 
     %{ expect_revert(error_message="Pool is currently paused.") %}
-    ISellPool.buyNfts(contract_address, 2, NFT_ARRAY)
+    ISellPool.buyNfts(sell_pool_contract_address, 2, NFT_ARRAY)
 
-    ISellPool.togglePause(contract_address)
+    ISellPool.togglePause(sell_pool_contract_address)
 
-    ISellPool.buyNfts(contract_address, 2, NFT_ARRAY)
+    ISellPool.buyNfts(sell_pool_contract_address, 2, NFT_ARRAY)
 
-    let (new_eth_balance) = ISellPool.getEthBalance(contract_address)
-    let (new_start_id_collection_1) = ISellPool.getStartIdByCollection(contract_address, COLLECTION_1)
-    let (new_price, delta) = ISellPool.getPoolConfig(contract_address)
-    let (is_paused) = ISellPool.isPaused(contract_address)
+    let (new_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
+    let (new_start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
+    let (new_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (is_paused) = ISellPool.isPaused(sell_pool_contract_address)
     
     assert new_eth_balance = NEW_ETH_BALANCE
     assert new_start_id_collection_1 = ZERO_FELT
@@ -535,12 +542,12 @@ func test_getNextPrice_with_expected_output{syscall_ptr : felt*, range_check_ptr
 
     alloc_locals 
 
-    local contract_address
-    %{ ids.contract_address = context.contract_address %}
+    local sell_pool_contract_address
+    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
     const NEXT_PRICE = 11
 
-    let (next_price) = ISellPool.getNextPrice(contract_address)
+    let (next_price) = ISellPool.getNextPrice(sell_pool_contract_address)
 
     assert next_price = NEXT_PRICE
 

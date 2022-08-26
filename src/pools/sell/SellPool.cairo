@@ -150,6 +150,9 @@ func _add_nft_to_pool{
     ) -> ():
     alloc_locals
 
+    let (caller_address) = get_caller_address()
+    let (contract_address) = get_contract_address()
+
     if _nft_array_len == 0:
         return ()
     end
@@ -166,7 +169,13 @@ func _add_nft_to_pool{
         start_id_by_collection.write(_nft_array[0].address, next_free_slot)
         list_element_by_id.write(next_free_slot, (_nft_array[0].id, 0))
 
-        # To do: Approve token for pool address in ERC721
+        # Check if pool isApprovedForAll and transferFrom token owner to pool
+        # let (is_approved) = IERC721.isApprovedForAll(_nft_array[0].address, caller_address, contract_address)
+        # with_attr error_message("You have to sign approval transaction in your wallet."):
+        #     is_approved = TRUE
+        # end
+        # IERC721.transferFrom(_nft_array[0].address, caller_address, contract_address, _nft_array[0].id)
+
         TokenDeposit.emit(_nft_array[0])
 
         return _add_nft_to_pool(_nft_array_len - 1, _nft_array + NFT.SIZE)
@@ -179,7 +188,13 @@ func _add_nft_to_pool{
     list_element_by_id.write(last_collection_element, (last_token_id, next_free_slot))
     list_element_by_id.write(next_free_slot, (_nft_array[0].id, 0))
 
-    # To do: Approve token for pool address in ERC721
+    # Check if pool isApprovedForAll and transferFrom token owner to pool
+    # let (is_approved) = IERC721.isApprovedForAll(_nft_array[0].address, caller_address, contract_address)
+    # with_attr error_message("You have to sign approval transaction in your wallet."):
+    #     is_approved = TRUE
+    # end
+    # IERC721.transferFrom(_nft_array[0].address, caller_address, contract_address, _nft_array[0].id)
+    
     TokenDeposit.emit(_nft_array[0])
 
     return _add_nft_to_pool(_nft_array_len - 1, _nft_array + NFT.SIZE)
