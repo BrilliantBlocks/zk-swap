@@ -170,11 +170,11 @@ func _add_nft_to_pool{
         list_element_by_id.write(next_free_slot, (_nft_array[0].id, 0))
 
         # Check if pool isApprovedForAll and transferFrom token owner to pool
-        # let (is_approved) = IERC721.isApprovedForAll(_nft_array[0].address, caller_address, contract_address)
-        # with_attr error_message("You have to sign approval transaction in your wallet."):
-        #     is_approved = TRUE
-        # end
-        # IERC721.transferFrom(_nft_array[0].address, caller_address, contract_address, _nft_array[0].id)
+        let (is_approved) = IERC721.isApprovedForAll(_nft_array[0].address, caller_address, contract_address)
+        with_attr error_message("You have to sign approval transaction in your wallet."):
+            is_approved = TRUE
+        end
+        IERC721.transferFrom(_nft_array[0].address, caller_address, contract_address, _nft_array[0].id)
 
         TokenDeposit.emit(_nft_array[0])
 
@@ -189,11 +189,11 @@ func _add_nft_to_pool{
     list_element_by_id.write(next_free_slot, (_nft_array[0].id, 0))
 
     # Check if pool isApprovedForAll and transferFrom token owner to pool
-    # let (is_approved) = IERC721.isApprovedForAll(_nft_array[0].address, caller_address, contract_address)
-    # with_attr error_message("You have to sign approval transaction in your wallet."):
-    #     is_approved = TRUE
-    # end
-    # IERC721.transferFrom(_nft_array[0].address, caller_address, contract_address, _nft_array[0].id)
+    let (is_approved) = IERC721.isApprovedForAll(_nft_array[0].address, caller_address, contract_address)
+    with_attr error_message("You have to sign approval transaction in your wallet."):
+        is_approved = TRUE
+    end
+    IERC721.transferFrom(_nft_array[0].address, caller_address, contract_address, _nft_array[0].id)
     
     TokenDeposit.emit(_nft_array[0])
 
@@ -461,9 +461,9 @@ func getAllNftsOfCollection{
     alloc_locals
     let (_nft_id_list: Uint256*) = alloc()
 
-    with_attr error_message("Collection address cannot be negative."):
-        assert_nn(_collection_address)
-    end
+    # with_attr error_message("Collection address cannot be negative."):
+    #     assert_nn(_collection_address)
+    # end
 
     let (start_id) = start_id_by_collection.read(_collection_address)
 

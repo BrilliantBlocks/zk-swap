@@ -5,6 +5,7 @@ from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.starknet.common.syscalls import get_contract_address
 
 from src.pools.sell.ISellPool import ISellPool
 from src.pools.sell.SellPool import NFT
@@ -23,12 +24,15 @@ const C3_NAME = 'COLLECTION 3'
 const C1_SYMBOL = 'C1'
 const C2_SYMBOL = 'C2'
 const C3_SYMBOL = 'C3'
-const ERC721_CONTRACT_OWNER = 123
 const ERC721_TOKEN_OWNER = 321
 
 
 @view
 func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals
+    let (ERC721_CONTRACT_OWNER) = get_contract_address()
+
     %{
         context.linear_curve_class_hash = declare("./src/bonding-curves/linear/LinearCurve.cairo").class_hash
 
@@ -59,7 +63,6 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
 
     %}
 
-    alloc_locals
     local c1_contract_address
     local c2_contract_address
     local c3_contract_address
@@ -73,18 +76,12 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
     let NFT_2_1 = Uint256(21, 0)
     let NFT_2_2 = Uint256(22, 0)
     let NFT_3_1 = Uint256(31, 0)
-    %{  
-        PRANK_ERC721_CONTRACT_OWNER = 123
-        stop_prank_callable = start_prank(PRANK_ERC721_CONTRACT_OWNER, target_contract_address=ids.c1_contract_address)
-        stop_prank_callable = start_prank(PRANK_ERC721_CONTRACT_OWNER, target_contract_address=ids.c2_contract_address)
-        stop_prank_callable = start_prank(PRANK_ERC721_CONTRACT_OWNER, target_contract_address=ids.c3_contract_address)
-    %}
+    
     ISellPool.mint(c1_contract_address, ERC721_TOKEN_OWNER, NFT_1_1)
     ISellPool.mint(c1_contract_address, ERC721_TOKEN_OWNER, NFT_1_2)
     ISellPool.mint(c2_contract_address, ERC721_TOKEN_OWNER, NFT_2_1)
     ISellPool.mint(c2_contract_address, ERC721_TOKEN_OWNER, NFT_2_2)
     ISellPool.mint(c3_contract_address, ERC721_TOKEN_OWNER, NFT_3_1)
-    %{ stop_prank_callable() %}
 
     return ()
 end 
@@ -170,13 +167,21 @@ end
 func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
     alloc_locals 
-
     local sell_pool_contract_address
-    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
+    local c1_contract_address
+    local c2_contract_address
+    local c3_contract_address
 
-    const COLLECTION_1 = 1111111111
-    const COLLECTION_2 = 2222222222
-    const COLLECTION_3 = 3333333333
+    %{ 
+        ids.sell_pool_contract_address = context.sell_pool_contract_address
+        ids.c1_contract_address = context.c1_contract_address 
+        ids.c2_contract_address = context.c2_contract_address
+        ids.c3_contract_address = context.c3_contract_address
+    %}
+
+    let COLLECTION_1 = c1_contract_address
+    let COLLECTION_2 = c2_contract_address
+    let COLLECTION_3 = c3_contract_address
     let NFT_1_1 = Uint256(11, 0)
     let NFT_1_2 = Uint256(12, 0)
     let NFT_2_1 = Uint256(21, 0)
@@ -189,19 +194,20 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
     const NFT_COLLECTION_2_ARRAY_LEN = 1
 
     let (NFT_ARRAY_1 : NFT*) = alloc()
-
     assert NFT_ARRAY_1[0] = NFT(address = COLLECTION_1, id = NFT_1_1)
     assert NFT_ARRAY_1[1] = NFT(address = COLLECTION_2, id = NFT_2_1)
     assert NFT_ARRAY_1[2] = NFT(address = COLLECTION_1, id = NFT_1_2)
-    
-    ISellPool.addNftToPool(sell_pool_contract_address, 3, NFT_ARRAY_1)
 
-    # %{  
-    #     PRANK_ERC721_CONTRACT_OWNER = 123
-    #     stop_prank_callable = start_prank(PRANK_ERC721_CONTRACT_OWNER, target_contract_address=ids.contract_address)
-    # %}
-    # ISellPool.mint(C1_contract_address, ERC721_TOKEN_OWNER, NFT_1_1)
-    # %{ stop_prank_callable() %}
+    %{  
+        PRANK_ERC721_TOKEN_OWNER = 321
+        stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c1_contract_address)
+        stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c2_contract_address)
+        stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IERC721.setApprovalForAll(c1_contract_address, sell_pool_contract_address, 1)
+    IERC721.setApprovalForAll(c2_contract_address, sell_pool_contract_address, 1)
+    ISellPool.addNftToPool(sell_pool_contract_address, 3, NFT_ARRAY_1)
+    %{ stop_prank_callable() %}
 
     let (pool_factory) = ISellPool.getPoolFactory(sell_pool_contract_address)
     let (current_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
@@ -216,6 +222,10 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
     let (nft_collection_1_id_list_len: felt, nft_collection_1_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(sell_pool_contract_address, COLLECTION_1)
     let (nft_collection_2_id_list_len: felt, nft_collection_2_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(sell_pool_contract_address, COLLECTION_2)
     let (nft_collection_3_id_list_len: felt, nft_collection_3_id_list: Uint256*) = ISellPool.getAllNftsOfCollection(sell_pool_contract_address, COLLECTION_3)
+    let (pool_balance_c1) = IERC721.balanceOf(c1_contract_address, sell_pool_contract_address)
+    let (pool_balance_c2) = IERC721.balanceOf(c2_contract_address, sell_pool_contract_address)
+    let (new_owner_c1) = IERC721.ownerOf(c1_contract_address, NFT_1_1)
+    let (new_owner_c2) = IERC721.ownerOf(c2_contract_address, NFT_2_1)
 
     assert pool_factory = POOL_FACTORY
     assert current_price = CURRENT_PRICE
@@ -239,18 +249,30 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
     assert nft_collection_2_id_list_len = NFT_COLLECTION_2_ARRAY_LEN
     assert nft_collection_2_id_list[0] = NFT_2_1
     assert nft_collection_3_id_list_len = ZERO_FELT
+    assert pool_balance_c1 = Uint256(2, 0)
+    assert pool_balance_c2 = Uint256(1, 0)
+    assert new_owner_c1 = sell_pool_contract_address
+    assert new_owner_c2 = sell_pool_contract_address
 
     let (NFT_ARRAY_2 : NFT*) = alloc()
-
     assert NFT_ARRAY_2[0] = NFT(address = COLLECTION_2, id = NFT_2_2)
     assert NFT_ARRAY_2[1] = NFT(address = COLLECTION_3, id = NFT_3_1)
-    
+
+    %{  
+        PRANK_ERC721_TOKEN_OWNER = 321
+        stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c3_contract_address)
+        stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IERC721.setApprovalForAll(c3_contract_address, sell_pool_contract_address, 1)
     ISellPool.addNftToPool(sell_pool_contract_address, 2, NFT_ARRAY_2)
+    %{ stop_prank_callable() %}
 
     let (start_id_collection_3) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_3)
     let list_element_2 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 2)
     let list_element_4 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 4)
     let list_element_5 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 5)
+    let (pool_balance_c3) = IERC721.balanceOf(c3_contract_address, sell_pool_contract_address)
+    let (new_owner_c3) = IERC721.ownerOf(c3_contract_address, NFT_3_1)
 
     assert start_id_collection_3 = 5
     assert list_element_2[0] = NFT_2_1
@@ -259,6 +281,8 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
     assert list_element_4[1] = ZERO_FELT
     assert list_element_5[0] = NFT_3_1
     assert list_element_5[1] = ZERO_FELT
+    assert pool_balance_c3 = Uint256(1, 0)
+    assert new_owner_c3 = sell_pool_contract_address
     
     return ()
 end
@@ -268,13 +292,21 @@ end
 func test_removeNftFromPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
     alloc_locals 
-
     local sell_pool_contract_address
-    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
+    local c1_contract_address
+    local c2_contract_address
+    local c3_contract_address
 
-    const COLLECTION_1 = 1111111111
-    const COLLECTION_2 = 2222222222
-    const COLLECTION_3 = 3333333333
+    %{ 
+        ids.sell_pool_contract_address = context.sell_pool_contract_address
+        ids.c1_contract_address = context.c1_contract_address 
+        ids.c2_contract_address = context.c2_contract_address
+        ids.c3_contract_address = context.c3_contract_address
+    %}
+
+    let COLLECTION_1 = c1_contract_address
+    let COLLECTION_2 = c2_contract_address
+    let COLLECTION_3 = c3_contract_address
     let NFT_1_1 = Uint256(11, 0)
     let NFT_1_2 = Uint256(12, 0)
     let NFT_2_1 = Uint256(21, 0)
@@ -290,8 +322,19 @@ func test_removeNftFromPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr :
     assert NFT_ARRAY_ADD[2] = NFT(address = COLLECTION_1, id = NFT_1_2)
     assert NFT_ARRAY_ADD[3] = NFT(address = COLLECTION_2, id = NFT_2_2)
     assert NFT_ARRAY_ADD[4] = NFT(address = COLLECTION_3, id = NFT_3_1)
-    
+
+    %{  
+        PRANK_ERC721_TOKEN_OWNER = 321
+        stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c1_contract_address)
+        stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c2_contract_address)
+        stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c3_contract_address)
+        stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IERC721.setApprovalForAll(c1_contract_address, sell_pool_contract_address, 1)
+    IERC721.setApprovalForAll(c2_contract_address, sell_pool_contract_address, 1)
+    IERC721.setApprovalForAll(c3_contract_address, sell_pool_contract_address, 1)
     ISellPool.addNftToPool(sell_pool_contract_address, 5, NFT_ARRAY_ADD)
+    %{ stop_prank_callable() %}
 
     let (pool_factory) = ISellPool.getPoolFactory(sell_pool_contract_address)
     let (current_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
@@ -436,11 +479,15 @@ end
 func test_buyNfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
     alloc_locals 
-
     local sell_pool_contract_address
-    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
+    local c1_contract_address
 
-    const COLLECTION_1 = 1111111111
+    %{ 
+        ids.sell_pool_contract_address = context.sell_pool_contract_address
+        ids.c1_contract_address = context.c1_contract_address 
+    %}
+
+    let COLLECTION_1 = c1_contract_address
     let NFT_1_1 = Uint256(11, 0)
     let NFT_1_2 = Uint256(12, 0)
     const ZERO_FELT = 0
@@ -450,11 +497,17 @@ func test_buyNfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuilt
     const NEW_PRICE = 12
     
     let (NFT_ARRAY : NFT*) = alloc()
-
     assert NFT_ARRAY[0] = NFT(address = COLLECTION_1, id = NFT_1_1)
     assert NFT_ARRAY[1] = NFT(address = COLLECTION_1, id = NFT_1_2)
-    
+
+    %{  
+        PRANK_ERC721_TOKEN_OWNER = 321
+        stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c1_contract_address)
+        stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IERC721.setApprovalForAll(c1_contract_address, sell_pool_contract_address, 1)
     ISellPool.addNftToPool(sell_pool_contract_address, 2, NFT_ARRAY)
+    %{ stop_prank_callable() %}
 
     let (old_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
     let (start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
@@ -482,11 +535,15 @@ end
 func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
     alloc_locals 
-
     local sell_pool_contract_address
-    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
+    local c1_contract_address
 
-    const COLLECTION_1 = 1111111111
+    %{ 
+        ids.sell_pool_contract_address = context.sell_pool_contract_address
+        ids.c1_contract_address = context.c1_contract_address 
+    %}
+
+    let COLLECTION_1 = c1_contract_address
     let NFT_1_1 = Uint256(11, 0)
     let NFT_1_2 = Uint256(12, 0)
     const ZERO_FELT = 0
@@ -496,11 +553,17 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
     const NEW_PRICE = 12
     
     let (NFT_ARRAY : NFT*) = alloc()
-
     assert NFT_ARRAY[0] = NFT(address = COLLECTION_1, id = NFT_1_1)
     assert NFT_ARRAY[1] = NFT(address = COLLECTION_1, id = NFT_1_2)
     
+    %{  
+        PRANK_ERC721_TOKEN_OWNER = 321
+        stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c1_contract_address)
+        stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IERC721.setApprovalForAll(c1_contract_address, sell_pool_contract_address, 1)
     ISellPool.addNftToPool(sell_pool_contract_address, 2, NFT_ARRAY)
+    %{ stop_prank_callable() %}
 
     let (old_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
     let (start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
