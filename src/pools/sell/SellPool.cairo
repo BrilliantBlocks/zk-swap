@@ -169,10 +169,9 @@ func _add_nft_to_pool{
         start_id_by_collection.write(_nft_array[0].address, next_free_slot)
         list_element_by_id.write(next_free_slot, (_nft_array[0].id, 0))
 
-        # Check if pool isApprovedForAll and transferFrom token owner to pool
         let (is_approved) = IERC721.isApprovedForAll(_nft_array[0].address, caller_address, contract_address)
         with_attr error_message("You have to sign approval transaction in your wallet."):
-            is_approved = TRUE
+            assert is_approved = TRUE
         end
         IERC721.transferFrom(_nft_array[0].address, caller_address, contract_address, _nft_array[0].id)
 
@@ -188,10 +187,9 @@ func _add_nft_to_pool{
     list_element_by_id.write(last_collection_element, (last_token_id, next_free_slot))
     list_element_by_id.write(next_free_slot, (_nft_array[0].id, 0))
 
-    # Check if pool isApprovedForAll and transferFrom token owner to pool
     let (is_approved) = IERC721.isApprovedForAll(_nft_array[0].address, caller_address, contract_address)
     with_attr error_message("You have to sign approval transaction in your wallet."):
-        is_approved = TRUE
+        assert is_approved = TRUE
     end
     IERC721.transferFrom(_nft_array[0].address, caller_address, contract_address, _nft_array[0].id)
     
@@ -298,8 +296,10 @@ func _remove_nft_from_pool{
         _nft_array_len : felt,
         _nft_array : NFT*
     ) -> ():
-    
     alloc_locals
+
+    let (caller_address) = get_caller_address()
+    let (contract_address) = get_contract_address()
 
     if _nft_array_len == 0:
         return ()
@@ -317,7 +317,12 @@ func _remove_nft_from_pool{
         start_id_by_collection.write(_nft_array[0].address, this_element)
         list_element_by_id.write(start_id, (Uint256(0,0), 0))
 
-        # To do: Remove token approval for pool address in ERC721
+        # let (token_owner) = IERC721.ownerOf(_nft_array[0].address, _nft_array[0].id)
+        # with_attr error_message("Pool is not the contract owner"):
+        #     assert token_owner = contract_address
+        # end
+        IERC721.transferFrom(_nft_array[0].address, contract_address, caller_address, _nft_array[0].id)
+        
         TokenWithdrawal.emit(_nft_array[0])
 
         return _remove_nft_from_pool(_nft_array_len - 1, _nft_array + NFT.SIZE)
@@ -330,7 +335,12 @@ func _remove_nft_from_pool{
     list_element_by_id.write(last_element, (last_token_id, next_collection_slot))
     list_element_by_id.write(this_element, (Uint256(0,0), 0))
 
-    # To do: Remove token approval for pool address in ERC721
+    # let (token_owner) = IERC721.ownerOf(_nft_array[0].address, _nft_array[0].id)
+    # with_attr error_message("Pool is not the contract owner"):
+    #     assert token_owner = contract_address
+    # end
+    IERC721.transferFrom(_nft_array[0].address, contract_address, caller_address, _nft_array[0].id)
+
     TokenWithdrawal.emit(_nft_array[0])
 
     return _remove_nft_from_pool(_nft_array_len - 1, _nft_array + NFT.SIZE)
