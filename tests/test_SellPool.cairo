@@ -17,9 +17,10 @@ const POOL_FACTORY = 123456789
 const CURRENT_PRICE = 10
 const DELTA = 1
 
-const ERC721_NAME = 'TEST ERC721 CONTRACT'
-const ERC721_SYMBOL = 'TERC721'
-const ERC721_OWNER = 123
+const C1_NAME = 'COLLECTION 1'
+const C1_SYMBOL = 'C1'
+const C1_OWNER = 123
+const C1_BENEFICIARY = 321
 
 
 @view
@@ -34,13 +35,25 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
         ).contract_address
 
 
-        context.ERC721_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
+        context.C1_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
             [ 
-                ids.ERC721_NAME, ids.ERC721_SYMBOL, ids.ERC721_OWNER
+                ids.C1_NAME, ids.C1_SYMBOL, ids.C1_OWNER
             ]
         ).contract_address
-
     %}
+
+    alloc_locals
+    local C1_contract_address
+    %{ ids.C1_contract_address = context.C1_contract_address %}
+
+    let INITIAL_NFT = Uint256(1, 0)
+    %{  
+        PRANK_ERC721_OWNER = 123
+        stop_prank_callable = start_prank(PRANK_ERC721_OWNER, target_contract_address=ids.C1_contract_address)
+    %}
+    ISellPool.mint(C1_contract_address, C1_BENEFICIARY, INITIAL_NFT)
+    %{ stop_prank_callable() %}
+
     return ()
 end 
 
@@ -50,24 +63,20 @@ func test_initialization_ERC721{syscall_ptr : felt*, range_check_ptr, pedersen_p
 
     alloc_locals 
 
-    local contract_address
-    %{ ids.contract_address = context.ERC721_contract_address %}
+    local C1_contract_address
+    %{ ids.C1_contract_address = context.C1_contract_address %}
 
-    let TEST_0 = Uint256(50, 0)
-    %{  
-        ERC721_OWNER = 123
-        stop_prank_callable = start_prank(ERC721_OWNER, target_contract_address=ids.contract_address)
-    %}
-    ISellPool.mint(contract_address, ERC721_OWNER, TEST_0)
-    %{ stop_prank_callable() %}
+    let INITIAL_NFT = Uint256(1, 0)
 
-    let (erc721_name) = IERC721Metadata.name(contract_address)
-    let (erc721_symbol) = IERC721Metadata.symbol(contract_address)
-    let (test_balance) = IERC721.balanceOf(contract_address, ERC721_OWNER)
+    let (erc721_name) = IERC721Metadata.name(C1_contract_address)
+    let (erc721_symbol) = IERC721Metadata.symbol(C1_contract_address)
+    let (token_balance) = IERC721.balanceOf(C1_contract_address, C1_BENEFICIARY)
+    let (token_owner) = IERC721.ownerOf(C1_contract_address, INITIAL_NFT)
     
-    assert erc721_name = ERC721_NAME
-    assert erc721_symbol = ERC721_SYMBOL
-    assert test_balance = Uint256(1, 0)
+    assert erc721_name = C1_NAME
+    assert erc721_symbol = C1_SYMBOL
+    assert token_balance = Uint256(1, 0)
+    assert token_owner = C1_BENEFICIARY
     
     return ()
 end
