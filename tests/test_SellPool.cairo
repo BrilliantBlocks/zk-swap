@@ -384,7 +384,6 @@ func test_removeNftFromPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr :
     assert nft_collection_3_id_list_len = 1
     assert nft_collection_3_id_list[0] = NFT_3_1
 
-
     let (NFT_ARRAY_REMOVE : NFT*) = alloc()
     assert NFT_ARRAY_REMOVE[0] = NFT(address = COLLECTION_1, id = NFT_1_2)
     assert NFT_ARRAY_REMOVE[1] = NFT(address = COLLECTION_2, id = NFT_2_1)
