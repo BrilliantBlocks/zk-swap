@@ -317,11 +317,7 @@ func _remove_nft_from_pool{
         start_id_by_collection.write(_nft_array[0].address, this_element)
         list_element_by_id.write(start_id, (Uint256(0,0), 0))
 
-        # let (token_owner) = IERC721.ownerOf(_nft_array[0].address, _nft_array[0].id)
-        # with_attr error_message("Pool is not the contract owner"):
-        #     assert token_owner = contract_address
-        # end
-        #IERC721.transferFrom(_nft_array[0].address, contract_address, caller_address, _nft_array[0].id)
+        IERC721.transferFrom(_nft_array[0].address, contract_address, caller_address, _nft_array[0].id)
         
         TokenWithdrawal.emit(_nft_array[0])
 
@@ -335,11 +331,7 @@ func _remove_nft_from_pool{
     list_element_by_id.write(last_element, (last_token_id, next_collection_slot))
     list_element_by_id.write(this_element, (Uint256(0,0), 0))
 
-    # let (token_owner) = IERC721.ownerOf(_nft_array[0].address, _nft_array[0].id)
-    # with_attr error_message("Pool is not the contract owner"):
-    #     assert token_owner = contract_address
-    # end
-    #IERC721.transferFrom(_nft_array[0].address, contract_address, caller_address, _nft_array[0].id)
+    IERC721.transferFrom(_nft_array[0].address, contract_address, caller_address, _nft_array[0].id)
 
     TokenWithdrawal.emit(_nft_array[0])
 
