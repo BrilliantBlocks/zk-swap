@@ -1,7 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import assert_not_zero, split_felt
+from starkware.cairo.common.math import assert_not_zero, assert_not_equal, split_felt
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import assert_nn, unsigned_div_rem
 from starkware.starknet.common.syscalls import library_call, get_caller_address, get_contract_address
@@ -317,6 +317,10 @@ func _remove_nft_from_pool{
         start_id_by_collection.write(_nft_array[0].address, this_element)
         list_element_by_id.write(start_id, (Uint256(0,0), 0))
 
+        let (token_owner) = IERC721.ownerOf(_nft_array[0].address, _nft_array[0].id)
+        with_attr error_message("Pool is not the token owner"):
+            assert token_owner = contract_address
+        end
         IERC721.transferFrom(_nft_array[0].address, contract_address, caller_address, _nft_array[0].id)
         
         TokenWithdrawal.emit(_nft_array[0])
@@ -331,6 +335,10 @@ func _remove_nft_from_pool{
     list_element_by_id.write(last_element, (last_token_id, next_collection_slot))
     list_element_by_id.write(this_element, (Uint256(0,0), 0))
 
+    let (token_owner) = IERC721.ownerOf(_nft_array[0].address, _nft_array[0].id)
+    with_attr error_message("Pool is not the token owner"):
+        assert token_owner = contract_address
+    end
     IERC721.transferFrom(_nft_array[0].address, contract_address, caller_address, _nft_array[0].id)
 
     TokenWithdrawal.emit(_nft_array[0])
@@ -518,6 +526,8 @@ func buyNfts{
         _nft_array : NFT*
     ) -> ():
     alloc_locals
+
+    #assert_not_owner()
 
     let (_is_paused) = pool_paused.read()
     with_attr error_message("Pool is currently paused."):
@@ -717,6 +727,26 @@ func assert_only_owner{
     
     with_attr error_message("You must be the pool owner to call this function."):
         assert _caller_address = _pool_owner
+    end
+
+    return ()
+end
+
+
+func assert_not_owner{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }() -> ():
+    let (_caller_address) = get_caller_address()
+    let (_contract_address) = get_contract_address()
+    let (_contract_address_high, _contract_address_low) = split_felt(_contract_address)
+    let (_pool_factory_address) = pool_factory.read()
+
+    let (_pool_owner) = IERC721.ownerOf(_pool_factory_address, Uint256(_contract_address_low, _contract_address_high))
+    
+    with_attr error_message("You cannot be the pool owner to call this function."):
+        assert_not_equal(_caller_address, _pool_owner)
     end
 
     return ()

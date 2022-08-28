@@ -416,105 +416,114 @@ func test_removeNftFromPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr :
 end
 
 
-# @external
-# func test_editPool_with_expected_output{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+@external
+func test_editPool_with_expected_output{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
-#     alloc_locals 
+    alloc_locals 
 
-#     local sell_pool_contract_address
-#     %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
+    local sell_pool_contract_address
+    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
-#     const NEW_PRICE = 15
-#     const NEW_DELTA = 2
+    const NEW_PRICE = 15
+    const NEW_DELTA = 2
 
-#     let (old_price, old_delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (old_price, old_delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
 
-#     assert old_price = CURRENT_PRICE
-#     assert old_delta = DELTA
+    assert old_price = CURRENT_PRICE
+    assert old_delta = DELTA
 
-#     ISellPool.editPool(sell_pool_contract_address, NEW_PRICE, NEW_DELTA)
+    ISellPool.editPool(sell_pool_contract_address, NEW_PRICE, NEW_DELTA)
 
-#     let (new_price, new_delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (new_price, new_delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
 
-#     assert new_price = NEW_PRICE
-#     assert new_delta = NEW_DELTA
+    assert new_price = NEW_PRICE
+    assert new_delta = NEW_DELTA
 
-#     return ()
-# end
-
-
-# @external
-# func test_editPool_with_negative_price{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
-
-#     alloc_locals 
-
-#     local sell_pool_contract_address
-#     %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
-
-#     const NEW_NEGATIVE_PRICE = -15
-#     const NEW_DELTA = 2
-
-#     %{ expect_revert(error_message="Price cannot be negative.") %}
-#     ISellPool.editPool(sell_pool_contract_address, NEW_NEGATIVE_PRICE, NEW_DELTA)
-
-#     return ()
-# end
+    return ()
+end
 
 
-# @external
-# func test_buyNfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+@external
+func test_editPool_with_negative_price{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
-#     alloc_locals 
-#     local sell_pool_contract_address
-#     local c1_contract_address
+    alloc_locals 
 
-#     %{ 
-#         ids.sell_pool_contract_address = context.sell_pool_contract_address
-#         ids.c1_contract_address = context.c1_contract_address 
-#     %}
+    local sell_pool_contract_address
+    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
-#     let COLLECTION_1 = c1_contract_address
-#     let NFT_1_1 = Uint256(11, 0)
-#     let NFT_1_2 = Uint256(12, 0)
-#     const ZERO_FELT = 0
-#     const OLD_ETH_BALANCE = 0
-#     const NEW_ETH_BALANCE = 21
-#     const OLD_PRICE = 10
-#     const NEW_PRICE = 12
+    const NEW_NEGATIVE_PRICE = -15
+    const NEW_DELTA = 2
+
+    %{ expect_revert(error_message="Price cannot be negative.") %}
+    ISellPool.editPool(sell_pool_contract_address, NEW_NEGATIVE_PRICE, NEW_DELTA)
+
+    return ()
+end
+
+
+@external
+func test_buyNfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals 
+    local sell_pool_contract_address
+    local c1_contract_address
+
+    %{ 
+        ids.sell_pool_contract_address = context.sell_pool_contract_address
+        ids.c1_contract_address = context.c1_contract_address 
+    %}
+
+    let COLLECTION_1 = c1_contract_address
+    let (ERC721_CONTRACT_AND_TOKEN_OWNER) = get_contract_address()
+    let NFT_1_1 = Uint256(11, 0)
+    let NFT_1_2 = Uint256(12, 0)
+    const ZERO_FELT = 0
+    const OLD_ETH_BALANCE = 0
+    const NEW_ETH_BALANCE = 21
+    const OLD_PRICE = 10
+    const NEW_PRICE = 12
     
-#     let (NFT_ARRAY : NFT*) = alloc()
-#     assert NFT_ARRAY[0] = NFT(address = COLLECTION_1, id = NFT_1_1)
-#     assert NFT_ARRAY[1] = NFT(address = COLLECTION_1, id = NFT_1_2)
+    let (NFT_ARRAY : NFT*) = alloc()
+    assert NFT_ARRAY[0] = NFT(address = COLLECTION_1, id = NFT_1_1)
+    assert NFT_ARRAY[1] = NFT(address = COLLECTION_1, id = NFT_1_2)
 
-#     %{  
-#         PRANK_ERC721_TOKEN_OWNER = 321
-#         stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c1_contract_address)
-#         stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
-#     %}
-#     IERC721.setApprovalForAll(c1_contract_address, sell_pool_contract_address, 1)
-#     ISellPool.addNftToPool(sell_pool_contract_address, 2, NFT_ARRAY)
-#     %{ stop_prank_callable() %}
+    # %{  
+    #     PRANK_ERC721_TOKEN_OWNER = 321
+    #     stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c1_contract_address)
+    #     stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    # %}
+    IERC721.setApprovalForAll(c1_contract_address, sell_pool_contract_address, 1)
+    ISellPool.addNftToPool(sell_pool_contract_address, 2, NFT_ARRAY)
+    #%{ stop_prank_callable() %}
 
-#     let (old_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
-#     let (start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
-#     let (old_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (old_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
+    let (start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
+    let (old_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (pool_balance_before) = IERC721.balanceOf(c1_contract_address, sell_pool_contract_address)
+    let (owner_before) = IERC721.ownerOf(c1_contract_address, NFT_1_1)
     
-#     assert old_eth_balance = OLD_ETH_BALANCE
-#     assert start_id_collection_1 = 1
-#     assert old_price = OLD_PRICE
+    assert old_eth_balance = OLD_ETH_BALANCE
+    assert start_id_collection_1 = 1
+    assert old_price = OLD_PRICE
+    assert pool_balance_before = Uint256(2, 0)
+    assert owner_before = sell_pool_contract_address
 
-#     ISellPool.buyNfts(sell_pool_contract_address, 2, NFT_ARRAY)
+    ISellPool.buyNfts(sell_pool_contract_address, 2, NFT_ARRAY)
 
-#     let (new_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
-#     let (new_start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
-#     let (new_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (new_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
+    let (new_start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
+    let (new_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (pool_balance_after) = IERC721.balanceOf(c1_contract_address, sell_pool_contract_address)
+    let (owner_after) = IERC721.ownerOf(c1_contract_address, NFT_1_1)
     
-#     assert new_eth_balance = NEW_ETH_BALANCE
-#     assert new_start_id_collection_1 = ZERO_FELT
-#     assert new_price = NEW_PRICE
+    assert new_eth_balance = NEW_ETH_BALANCE
+    assert new_start_id_collection_1 = ZERO_FELT
+    assert new_price = NEW_PRICE
+    assert pool_balance_after = Uint256(0, 0)
+    assert owner_after = ERC721_CONTRACT_AND_TOKEN_OWNER
 
-#     return ()
-# end
+    return ()
+end
 
 
 # @external
