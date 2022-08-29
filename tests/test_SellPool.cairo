@@ -21,16 +21,21 @@ const DELTA = 1
 const C1_NAME = 'COLLECTION 1'
 const C2_NAME = 'COLLECTION 2'
 const C3_NAME = 'COLLECTION 3'
+const ERC20_NAME = 'ERC20 Test Contract'
 const C1_SYMBOL = 'C1'
 const C2_SYMBOL = 'C2'
 const C3_SYMBOL = 'C3'
+const ERC20_SYMBOL = 'ERC20'
+const DECIMALS = 18
+const INITIAL_SUPPLY_LOW = 0
+const INITIAL_SUPPLY_HIGH = 0 
 
 
 @view
 func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
     alloc_locals
-    let (ERC721_CONTRACT_AND_TOKEN_OWNER) = get_contract_address()
+    let (ERC_CONTRACT_AND_TOKEN_OWNER) = get_contract_address()
 
     %{
         context.linear_curve_class_hash = declare("./src/bonding-curves/linear/LinearCurve.cairo").class_hash
@@ -44,19 +49,25 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
 
         context.c1_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
             [ 
-                ids.C1_NAME, ids.C1_SYMBOL, ids.ERC721_CONTRACT_AND_TOKEN_OWNER
+                ids.C1_NAME, ids.C1_SYMBOL, ids.ERC_CONTRACT_AND_TOKEN_OWNER
             ]
         ).contract_address
 
         context.c2_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
             [ 
-                ids.C2_NAME, ids.C2_SYMBOL, ids.ERC721_CONTRACT_AND_TOKEN_OWNER
+                ids.C2_NAME, ids.C2_SYMBOL, ids.ERC_CONTRACT_AND_TOKEN_OWNER
             ]
         ).contract_address
 
         context.c3_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
             [ 
-                ids.C3_NAME, ids.C3_SYMBOL, ids.ERC721_CONTRACT_AND_TOKEN_OWNER
+                ids.C3_NAME, ids.C3_SYMBOL, ids.ERC_CONTRACT_AND_TOKEN_OWNER
+            ]
+        ).contract_address
+
+        context.erc20_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc20/presets/ERC20Mintable.cairo", 
+            [ 
+                ids.ERC20_NAME, ids.ERC20_SYMBOL, ids.DECIMALS, ids.INITIAL_SUPPLY_LOW, ids.INITIAL_SUPPLY_HIGH, ids.ERC_CONTRACT_AND_TOKEN_OWNER, ids.ERC_CONTRACT_AND_TOKEN_OWNER
             ]
         ).contract_address
 
@@ -76,11 +87,11 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
     let NFT_2_2 = Uint256(22, 0)
     let NFT_3_1 = Uint256(31, 0)
     
-    ISellPool.mint(c1_contract_address, ERC721_CONTRACT_AND_TOKEN_OWNER, NFT_1_1)
-    ISellPool.mint(c1_contract_address, ERC721_CONTRACT_AND_TOKEN_OWNER, NFT_1_2)
-    ISellPool.mint(c2_contract_address, ERC721_CONTRACT_AND_TOKEN_OWNER, NFT_2_1)
-    ISellPool.mint(c2_contract_address, ERC721_CONTRACT_AND_TOKEN_OWNER, NFT_2_2)
-    ISellPool.mint(c3_contract_address, ERC721_CONTRACT_AND_TOKEN_OWNER, NFT_3_1)
+    ISellPool.mint(c1_contract_address, ERC_CONTRACT_AND_TOKEN_OWNER, NFT_1_1)
+    ISellPool.mint(c1_contract_address, ERC_CONTRACT_AND_TOKEN_OWNER, NFT_1_2)
+    ISellPool.mint(c2_contract_address, ERC_CONTRACT_AND_TOKEN_OWNER, NFT_2_1)
+    ISellPool.mint(c2_contract_address, ERC_CONTRACT_AND_TOKEN_OWNER, NFT_2_2)
+    ISellPool.mint(c3_contract_address, ERC_CONTRACT_AND_TOKEN_OWNER, NFT_3_1)
 
     return ()
 end 
@@ -100,16 +111,16 @@ func test_initialization_ERC721{syscall_ptr : felt*, range_check_ptr, pedersen_p
         ids.c3_contract_address = context.c3_contract_address
     %}
 
-    let (ERC721_CONTRACT_AND_TOKEN_OWNER) = get_contract_address()
+    let (ERC_CONTRACT_AND_TOKEN_OWNER) = get_contract_address()
     let NFT_1_1 = Uint256(11, 0)
     let NFT_1_2 = Uint256(12, 0)
     let NFT_2_1 = Uint256(21, 0)
     let NFT_2_2 = Uint256(22, 0)
     let NFT_3_1 = Uint256(31, 0)
 
-    let (c1_balance) = IERC721.balanceOf(c1_contract_address, ERC721_CONTRACT_AND_TOKEN_OWNER)
-    let (c2_balance) = IERC721.balanceOf(c2_contract_address, ERC721_CONTRACT_AND_TOKEN_OWNER)
-    let (c3_balance) = IERC721.balanceOf(c3_contract_address, ERC721_CONTRACT_AND_TOKEN_OWNER)
+    let (c1_balance) = IERC721.balanceOf(c1_contract_address, ERC_CONTRACT_AND_TOKEN_OWNER)
+    let (c2_balance) = IERC721.balanceOf(c2_contract_address, ERC_CONTRACT_AND_TOKEN_OWNER)
+    let (c3_balance) = IERC721.balanceOf(c3_contract_address, ERC_CONTRACT_AND_TOKEN_OWNER)
     let (c1_token_owner) = IERC721.ownerOf(c1_contract_address, NFT_1_1)
     let (c2_token_owner) = IERC721.ownerOf(c2_contract_address, NFT_2_1)
     let (c3_token_owner) = IERC721.ownerOf(c3_contract_address, NFT_3_1)
@@ -117,9 +128,9 @@ func test_initialization_ERC721{syscall_ptr : felt*, range_check_ptr, pedersen_p
     assert c1_balance = Uint256(2, 0)
     assert c2_balance = Uint256(2, 0)
     assert c3_balance = Uint256(1, 0)
-    assert c1_token_owner = ERC721_CONTRACT_AND_TOKEN_OWNER
-    assert c2_token_owner = ERC721_CONTRACT_AND_TOKEN_OWNER
-    assert c3_token_owner = ERC721_CONTRACT_AND_TOKEN_OWNER
+    assert c1_token_owner = ERC_CONTRACT_AND_TOKEN_OWNER
+    assert c2_token_owner = ERC_CONTRACT_AND_TOKEN_OWNER
+    assert c3_token_owner = ERC_CONTRACT_AND_TOKEN_OWNER
     
     return ()
 end
@@ -294,7 +305,7 @@ func test_removeNftFromPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr :
     let COLLECTION_1 = c1_contract_address
     let COLLECTION_2 = c2_contract_address
     let COLLECTION_3 = c3_contract_address
-    let (ERC721_CONTRACT_AND_TOKEN_OWNER) = get_contract_address()
+    let (ERC_CONTRACT_AND_TOKEN_OWNER) = get_contract_address()
     let NFT_1_1 = Uint256(11, 0)
     let NFT_1_2 = Uint256(12, 0)
     let NFT_2_1 = Uint256(21, 0)
@@ -409,8 +420,8 @@ func test_removeNftFromPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr :
     assert nft_collection_3_id_list[0] = NFT_3_1
     assert pool_balance_c1 = Uint256(1, 0)
     assert pool_balance_c2 = Uint256(1, 0)
-    assert new_owner_c1 = ERC721_CONTRACT_AND_TOKEN_OWNER
-    assert new_owner_c2 = ERC721_CONTRACT_AND_TOKEN_OWNER
+    assert new_owner_c1 = ERC_CONTRACT_AND_TOKEN_OWNER
+    assert new_owner_c2 = ERC_CONTRACT_AND_TOKEN_OWNER
     
     return ()
 end
@@ -474,7 +485,7 @@ func test_buyNfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuilt
     %}
 
     let COLLECTION_1 = c1_contract_address
-    let (ERC721_CONTRACT_AND_TOKEN_OWNER) = get_contract_address()
+    let (ERC_CONTRACT_AND_TOKEN_OWNER) = get_contract_address()
     let NFT_1_1 = Uint256(11, 0)
     let NFT_1_2 = Uint256(12, 0)
     const ZERO_FELT = 0
@@ -515,7 +526,7 @@ func test_buyNfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuilt
     assert new_start_id_collection_1 = ZERO_FELT
     assert new_price = NEW_PRICE
     assert pool_balance_after = Uint256(0, 0)
-    assert owner_after = ERC721_CONTRACT_AND_TOKEN_OWNER
+    assert owner_after = ERC_CONTRACT_AND_TOKEN_OWNER
 
     return ()
 end
