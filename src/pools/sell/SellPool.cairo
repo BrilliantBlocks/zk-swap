@@ -77,6 +77,10 @@ end
 func eth_balance() -> (res: felt):
 end
 
+@storage_var
+func erc20_address() -> (res: felt):
+end
+
 
 # To do:
 # Separate linked list functions and import as tested library in pool contract
@@ -92,7 +96,8 @@ func constructor{
         _factory_address: felt,
         _current_price : felt,
         _delta : felt,
-        _bonding_curve_class_hash : felt
+        _bonding_curve_class_hash : felt,
+        _erc20_address : felt
     ):
     alloc_locals
 
@@ -115,6 +120,11 @@ func constructor{
     #     assert_nn(_bonding_curve_class_hash)
     # end
     bonding_curve_class_hash.write(_bonding_curve_class_hash)
+
+    with_attr error_message("ERC20 contract address cannot be zero"):
+        assert_not_zero(_erc20_address)
+    end
+    erc20_address.write(_erc20_address)
 
     return ()
 end

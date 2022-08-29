@@ -41,15 +41,7 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
     let (ERC_CONTRACT_OWNER) = get_contract_address()
 
     %{
-        context.linear_curve_class_hash = declare("./src/bonding-curves/linear/LinearCurve.cairo").class_hash
-
-        context.sell_pool_contract_address = deploy_contract("./src/pools/sell/SellPool.cairo", 
-            [
-                ids.POOL_FACTORY, ids.CURRENT_PRICE, ids.DELTA, context.linear_curve_class_hash
-            ]
-        ).contract_address
-
-
+    
         context.c1_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
             [ 
                 ids.C1_NAME, ids.C1_SYMBOL, ids.ERC_CONTRACT_OWNER
@@ -71,6 +63,14 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
         context.erc20_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc20/presets/ERC20Mintable.cairo", 
             [ 
                 ids.ERC20_NAME, ids.ERC20_SYMBOL, ids.DECIMALS, ids.INITIAL_SUPPLY_LOW, ids.INITIAL_SUPPLY_HIGH, ids.ERC721_TOKEN_BUYER, ids.ERC_CONTRACT_OWNER
+            ]
+        ).contract_address
+
+        context.linear_curve_class_hash = declare("./src/bonding-curves/linear/LinearCurve.cairo").class_hash
+
+        context.sell_pool_contract_address = deploy_contract("./src/pools/sell/SellPool.cairo", 
+            [
+                ids.POOL_FACTORY, ids.CURRENT_PRICE, ids.DELTA, context.linear_curve_class_hash, context.erc20_contract_address
             ]
         ).contract_address
 
