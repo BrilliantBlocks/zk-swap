@@ -1,7 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import assert_not_zero, assert_not_equal, split_felt
+from starkware.cairo.common.math import assert_not_zero, assert_not_equal, assert_nn_le, split_felt
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import assert_nn, unsigned_div_rem
 from starkware.starknet.common.syscalls import library_call, get_caller_address, get_contract_address
@@ -681,6 +681,79 @@ func getNextPrice{
     local _next_price = retdata[0]
 
     return (_next_price)
+end
+
+
+# Deposit and withdraw ETH 
+
+
+@external
+func deposit_eth{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(_amount: felt) -> ():
+    alloc_locals
+    #assert_only_owner()
+    
+    # To do:
+    # Call ERC20 contract to check if balanceOf (owner) > _amount
+    # Check if pool is approved for amount
+    # -> Transfer ETH amount from owner to pool address
+
+    let (_old_balance) = eth_balance.read()
+    local _new_balance = _old_balance + _amount
+    eth_balance.write(_new_balance)
+
+    return ()
+end
+
+
+@external
+func withdraw_eth{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(_amount: felt) -> ():
+    alloc_locals
+    #assert_only_owner()
+
+    let (_eth_balance) = eth_balance.read()
+    assert_nn_le(_amount, _eth_balance)
+
+    # To do:
+    # Call ERC20 contract to check if balanceOf (pool) > _amount
+    # -> Transfer ETH amount from pool to owner address
+
+    let (_old_balance) = eth_balance.read()
+    local _new_balance = _old_balance + _amount
+    eth_balance.write(_new_balance)
+
+    return ()
+end
+
+
+@external
+func withdraw_all_eth{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }() -> ():
+    alloc_locals
+    #assert_only_owner()
+
+    let (_eth_balance) = eth_balance.read()
+    with_attr error_message("You have no ETH to withdraw."):
+        assert_not_zero(_eth_balance)
+    end
+
+    # To do:
+    # Call ERC20 contract to check if balanceOf (pool) = _eth_balance
+    # -> Transfer whole ETH balance from pool to owner address
+
+    eth_balance.write(0)
+
+    return ()
 end
 
 
