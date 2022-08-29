@@ -12,6 +12,7 @@ from src.pools.sell.SellPool import NFT
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721Metadata import IERC721Metadata
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
+from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 
 
 const POOL_FACTORY = 123456789
@@ -27,7 +28,7 @@ const C2_SYMBOL = 'C2'
 const C3_SYMBOL = 'C3'
 const ERC20_SYMBOL = 'ERC20'
 const DECIMALS = 18
-const INITIAL_SUPPLY_LOW = 0
+const INITIAL_SUPPLY_LOW = 10
 const INITIAL_SUPPLY_HIGH = 0 
 const ERC721_TOKEN_OWNER = 321
 const ERC20_TOKEN_OWNER = 123
@@ -101,17 +102,19 @@ end
 
 
 @external
-func test_initialization_ERC721{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+func test_initialization_ERC_contracts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
     alloc_locals 
 
     local c1_contract_address
     local c2_contract_address
     local c3_contract_address
+    local erc20_contract_address
     %{ 
         ids.c1_contract_address = context.c1_contract_address 
         ids.c2_contract_address = context.c2_contract_address
         ids.c3_contract_address = context.c3_contract_address
+        ids.erc20_contract_address = context.erc20_contract_address
     %}
 
     let NFT_1_1 = Uint256(11, 0)
@@ -123,13 +126,17 @@ func test_initialization_ERC721{syscall_ptr : felt*, range_check_ptr, pedersen_p
     let (c1_balance) = IERC721.balanceOf(c1_contract_address, ERC721_TOKEN_OWNER)
     let (c2_balance) = IERC721.balanceOf(c2_contract_address, ERC721_TOKEN_OWNER)
     let (c3_balance) = IERC721.balanceOf(c3_contract_address, ERC721_TOKEN_OWNER)
+    let (erc20_owner_balance) = IERC20.balanceOf(erc20_contract_address, ERC20_TOKEN_OWNER)
     let (c1_token_owner) = IERC721.ownerOf(c1_contract_address, NFT_1_1)
     let (c2_token_owner) = IERC721.ownerOf(c2_contract_address, NFT_2_1)
     let (c3_token_owner) = IERC721.ownerOf(c3_contract_address, NFT_3_1)
+    let (erc20_total_supply) = IERC20.totalSupply(erc20_contract_address)
     
     assert c1_balance = Uint256(2, 0)
     assert c2_balance = Uint256(2, 0)
     assert c3_balance = Uint256(1, 0)
+    assert erc20_owner_balance = Uint256(10, 0)
+    assert erc20_total_supply = Uint256(10, 0)
     assert c1_token_owner = ERC721_TOKEN_OWNER
     assert c2_token_owner = ERC721_TOKEN_OWNER
     assert c3_token_owner = ERC721_TOKEN_OWNER
