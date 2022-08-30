@@ -41,7 +41,7 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
     let (ERC_CONTRACT_OWNER) = get_contract_address()
 
     %{
-    
+
         context.c1_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
             [ 
                 ids.C1_NAME, ids.C1_SYMBOL, ids.ERC_CONTRACT_OWNER
@@ -70,20 +70,28 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
 
         context.sell_pool_contract_address = deploy_contract("./src/pools/sell/SellPool.cairo", 
             [
-                ids.POOL_FACTORY, ids.CURRENT_PRICE, ids.DELTA, context.linear_curve_class_hash, context.erc20_contract_address
+                ids.POOL_FACTORY, context.linear_curve_class_hash
             ]
         ).contract_address
 
     %}
 
+    local sell_pool_contract_address
     local c1_contract_address
     local c2_contract_address
     local c3_contract_address
+    local erc20_contract_address
     %{ 
+        ids.sell_pool_contract_address = context.sell_pool_contract_address
         ids.c1_contract_address = context.c1_contract_address 
         ids.c2_contract_address = context.c2_contract_address
         ids.c3_contract_address = context.c3_contract_address
+        ids.erc20_contract_address = context.erc20_contract_address
     %}
+
+    ISellPool.addPriceAndDelta(sell_pool_contract_address, CURRENT_PRICE, DELTA)
+    ISellPool.addERC20Address(sell_pool_contract_address, erc20_contract_address)
+
     let NFT_1_1 = Uint256(11, 0)
     let NFT_1_2 = Uint256(12, 0)
     let NFT_2_1 = Uint256(21, 0)

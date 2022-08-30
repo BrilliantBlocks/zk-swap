@@ -94,10 +94,7 @@ func constructor{
         range_check_ptr
     }(
         _factory_address: felt,
-        _current_price : felt,
-        _delta : felt,
-        _bonding_curve_class_hash : felt,
-        _erc20_address : felt
+        _bonding_curve_class_hash : felt
     ):
     alloc_locals
 
@@ -106,13 +103,6 @@ func constructor{
     end
     pool_factory.write(_factory_address)
 
-    with_attr error_message("Price cannot be negative."):
-        assert_nn(_current_price)
-    end
-    current_price.write(_current_price)
-
-    delta.write(_delta)
-
     with_attr error_message("Bonding curve class hash cannot be zero"):
         assert_not_zero(_bonding_curve_class_hash)
     end
@@ -120,6 +110,44 @@ func constructor{
     #     assert_nn(_bonding_curve_class_hash)
     # end
     bonding_curve_class_hash.write(_bonding_curve_class_hash)
+
+    return ()
+end
+
+
+# Add pool parameters
+
+@external
+func addPriceAndDelta{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        _current_price : felt,
+        _delta : felt
+    ) -> ():
+    #assert_only_owner()
+
+    with_attr error_message("Price cannot be negative."):
+        assert_nn(_current_price)
+    end
+    current_price.write(_current_price)
+
+    delta.write(_delta)
+
+    return ()
+end
+
+
+@external
+func addERC20Address{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        _erc20_address: felt
+    ) -> ():
+    #assert_only_owner()
 
     with_attr error_message("ERC20 contract address cannot be zero"):
         assert_not_zero(_erc20_address)

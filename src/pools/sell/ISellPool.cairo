@@ -55,4 +55,10 @@ namespace ISellPool:
     func mint(to: felt, token_id: Uint256) -> ():
     end
 
+    func addPriceAndDelta(_current_price: felt, _delta: felt) -> ():
+    end
+
+    func addERC20Address(_erc20_address: felt) -> ():
+    end
+
 end
