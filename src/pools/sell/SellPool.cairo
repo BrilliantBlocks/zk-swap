@@ -207,9 +207,9 @@ func _add_nft_to_pool{
         start_id_by_collection.write(_nft_array[0].address, next_free_slot)
         list_element_by_id.write(next_free_slot, (_nft_array[0].id, 0))
 
-        let (is_approved) = IERC721.isApprovedForAll(_nft_array[0].address, caller_address, contract_address)
+        let (approved_address) = IERC721.getApproved(_nft_array[0].address, _nft_array[0].id)
         with_attr error_message("You have to sign approval transaction in your wallet."):
-            assert is_approved = TRUE
+            assert approved_address = contract_address
         end
         IERC721.transferFrom(_nft_array[0].address, caller_address, contract_address, _nft_array[0].id)
 
@@ -225,9 +225,9 @@ func _add_nft_to_pool{
     list_element_by_id.write(last_collection_element, (last_token_id, next_free_slot))
     list_element_by_id.write(next_free_slot, (_nft_array[0].id, 0))
 
-    let (is_approved) = IERC721.isApprovedForAll(_nft_array[0].address, caller_address, contract_address)
+    let (approved_address) = IERC721.getApproved(_nft_array[0].address, _nft_array[0].id)
     with_attr error_message("You have to sign approval transaction in your wallet."):
-        assert is_approved = TRUE
+        assert approved_address = contract_address
     end
     IERC721.transferFrom(_nft_array[0].address, caller_address, contract_address, _nft_array[0].id)
     

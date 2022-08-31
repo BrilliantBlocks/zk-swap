@@ -231,8 +231,9 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
         stop_prank_callable_2 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c2_contract_address)
         stop_prank_callable_3 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
     %}
-    IERC721.setApprovalForAll(c1_contract_address, sell_pool_contract_address, 1)
-    IERC721.setApprovalForAll(c2_contract_address, sell_pool_contract_address, 1)
+    IERC721.approve(c1_contract_address, sell_pool_contract_address, NFT_1_1)
+    IERC721.approve(c1_contract_address, sell_pool_contract_address, NFT_1_2)
+    IERC721.approve(c2_contract_address, sell_pool_contract_address, NFT_2_1)
     %{ 
         stop_prank_callable_1() 
         stop_prank_callable_2() 
@@ -293,16 +294,19 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
 
     %{  
         PRANK_ERC721_TOKEN_OWNER = 321
-        stop_prank_callable_1 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c3_contract_address)
-        stop_prank_callable_2 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
+        stop_prank_callable_1 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c2_contract_address)
+        stop_prank_callable_2 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c3_contract_address)
+        stop_prank_callable_3 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
     %}
-    IERC721.setApprovalForAll(c3_contract_address, sell_pool_contract_address, 1)
+    IERC721.approve(c2_contract_address, sell_pool_contract_address, NFT_2_2)
+    IERC721.approve(c3_contract_address, sell_pool_contract_address, NFT_3_1)
     %{ 
         stop_prank_callable_1()  
+        stop_prank_callable_2()
     %}
     ISellPool.addNftToPool(sell_pool_contract_address, 2, NFT_ARRAY_2)
     %{ 
-        stop_prank_callable_2() 
+        stop_prank_callable_3() 
     %}
 
     let (start_id_collection_3) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_3)
@@ -368,9 +372,11 @@ func test_removeNftFromPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr :
         stop_prank_callable_3 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c3_contract_address)
         stop_prank_callable_4 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
     %}
-    IERC721.setApprovalForAll(c1_contract_address, sell_pool_contract_address, 1)
-    IERC721.setApprovalForAll(c2_contract_address, sell_pool_contract_address, 1)
-    IERC721.setApprovalForAll(c3_contract_address, sell_pool_contract_address, 1)
+    IERC721.approve(c1_contract_address, sell_pool_contract_address, NFT_1_1)
+    IERC721.approve(c1_contract_address, sell_pool_contract_address, NFT_1_2)
+    IERC721.approve(c2_contract_address, sell_pool_contract_address, NFT_2_1)
+    IERC721.approve(c2_contract_address, sell_pool_contract_address, NFT_2_2)
+    IERC721.approve(c3_contract_address, sell_pool_contract_address, NFT_3_1)
     %{ 
         stop_prank_callable_1() 
         stop_prank_callable_2() 
@@ -564,7 +570,8 @@ func test_buyNfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuilt
         stop_prank_callable_1 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c1_contract_address)
         stop_prank_callable_2 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
     %}
-    IERC721.setApprovalForAll(c1_contract_address, sell_pool_contract_address, 1)
+    IERC721.approve(c1_contract_address, sell_pool_contract_address, NFT_1_1)
+    IERC721.approve(c1_contract_address, sell_pool_contract_address, NFT_1_2)
     %{ 
         stop_prank_callable_1() 
     %}
@@ -638,7 +645,8 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
         stop_prank_callable_1 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c1_contract_address)
         stop_prank_callable_2 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
     %}
-    IERC721.setApprovalForAll(c1_contract_address, sell_pool_contract_address, 1)
+    IERC721.approve(c1_contract_address, sell_pool_contract_address, NFT_1_1)
+    IERC721.approve(c1_contract_address, sell_pool_contract_address, NFT_1_2)
     %{ 
         stop_prank_callable_1() 
     %}
