@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.starknet.common.syscalls import get_contract_address
 
 from src.pools.sell.ISellPool import ISellPool
-from src.pools.sell.SellPool import NFT
+from src.pools.sell.SellPool import NFT, PoolParams
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721Metadata import IERC721Metadata
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
@@ -70,27 +70,22 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
 
         context.sell_pool_contract_address = deploy_contract("./src/pools/sell/SellPool.cairo", 
             [
-                ids.POOL_FACTORY, context.linear_curve_class_hash
+                ids.POOL_FACTORY, context.linear_curve_class_hash, context.erc20_contract_address, ids.CURRENT_PRICE, ids.DELTA
             ]
         ).contract_address
 
     %}
 
-    local sell_pool_contract_address
     local c1_contract_address
     local c2_contract_address
     local c3_contract_address
     local erc20_contract_address
     %{ 
-        ids.sell_pool_contract_address = context.sell_pool_contract_address
         ids.c1_contract_address = context.c1_contract_address 
         ids.c2_contract_address = context.c2_contract_address
         ids.c3_contract_address = context.c3_contract_address
         ids.erc20_contract_address = context.erc20_contract_address
     %}
-
-    ISellPool.addPriceAndDelta(sell_pool_contract_address, CURRENT_PRICE, DELTA)
-    ISellPool.addERC20Address(sell_pool_contract_address, erc20_contract_address)
 
     let NFT_1_1 = Uint256(11, 0)
     let NFT_1_2 = Uint256(12, 0)
@@ -153,25 +148,6 @@ end
 
 
 @external
-func test_initialization_with_expected_output{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
-
-    alloc_locals 
-
-    local sell_pool_contract_address
-    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
-
-    let (pool_factory) = ISellPool.getPoolFactory(sell_pool_contract_address)
-    let (current_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
-    
-    assert pool_factory = POOL_FACTORY
-    assert current_price = CURRENT_PRICE
-    assert delta = DELTA
-    
-    return ()
-end
-
-
-@external
 func test_getPoolConfig_with_expected_output{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
     alloc_locals 
@@ -179,13 +155,15 @@ func test_getPoolConfig_with_expected_output{syscall_ptr : felt*, range_check_pt
     local sell_pool_contract_address
     %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
+    tempvar POOL_PARAMS : PoolParams = PoolParams(price=10, delta=1)
+
     let (pool_factory) = ISellPool.getPoolFactory(sell_pool_contract_address)
-    let (current_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
-
+    let (pool_params: PoolParams) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    
     assert pool_factory = POOL_FACTORY
-    assert current_price = CURRENT_PRICE
-    assert delta = DELTA
-
+    assert pool_params.price = POOL_PARAMS.price
+    assert pool_params.delta = POOL_PARAMS.delta
+    
     return ()
 end
 
@@ -206,6 +184,7 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
         ids.c3_contract_address = context.c3_contract_address
     %}
 
+    tempvar POOL_PARAMS : PoolParams = PoolParams(price=10, delta=1)
     let COLLECTION_1 = c1_contract_address
     let COLLECTION_2 = c2_contract_address
     let COLLECTION_3 = c3_contract_address
@@ -244,7 +223,7 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
     %}
 
     let (pool_factory) = ISellPool.getPoolFactory(sell_pool_contract_address)
-    let (current_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (pool_params) = ISellPool.getPoolConfig(sell_pool_contract_address)
     let (start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
     let (start_id_collection_2) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_2)
     let list_element_1 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 1)
@@ -262,8 +241,8 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
     let (new_owner_c2) = IERC721.ownerOf(c2_contract_address, NFT_2_1)
 
     assert pool_factory = POOL_FACTORY
-    assert current_price = CURRENT_PRICE
-    assert delta = DELTA
+    assert pool_params.price = POOL_PARAMS.price
+    assert pool_params.delta = POOL_PARAMS.delta
     assert start_id_collection_1 = 1
     assert start_id_collection_2 = 2
     assert list_element_1[0] = NFT_1_1
@@ -346,6 +325,7 @@ func test_removeNftFromPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr :
         ids.c3_contract_address = context.c3_contract_address
     %}
 
+    tempvar POOL_PARAMS : PoolParams = PoolParams(price=10, delta=1)
     let COLLECTION_1 = c1_contract_address
     let COLLECTION_2 = c2_contract_address
     let COLLECTION_3 = c3_contract_address
@@ -388,7 +368,7 @@ func test_removeNftFromPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr :
     %}
 
     let (pool_factory) = ISellPool.getPoolFactory(sell_pool_contract_address)
-    let (current_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (pool_params) = ISellPool.getPoolConfig(sell_pool_contract_address)
     let (start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
     let (start_id_collection_2) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_2)
     let (start_id_collection_3) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_3)
@@ -406,8 +386,8 @@ func test_removeNftFromPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr :
     let (pool_balance_c1) = IERC721.balanceOf(c1_contract_address, sell_pool_contract_address)
 
     assert pool_factory = POOL_FACTORY
-    assert current_price = CURRENT_PRICE
-    assert delta = DELTA
+    assert pool_params.price = POOL_PARAMS.price
+    assert pool_params.delta = POOL_PARAMS.delta
     assert start_id_collection_1 = 1
     assert start_id_collection_2 = 2
     assert start_id_collection_3 = 5
@@ -502,20 +482,20 @@ func test_editPool_with_expected_output{syscall_ptr : felt*, range_check_ptr, pe
     local sell_pool_contract_address
     %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
-    const NEW_PRICE = 15
-    const NEW_DELTA = 2
+    tempvar POOL_PARAMS : PoolParams = PoolParams(price=10, delta=1)
+    tempvar NEW_POOL_PARAMS : PoolParams = PoolParams(price=15, delta=2)
 
-    let (old_price, old_delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (old_pool_params) = ISellPool.getPoolConfig(sell_pool_contract_address)
 
-    assert old_price = CURRENT_PRICE
-    assert old_delta = DELTA
+    assert old_pool_params.price = POOL_PARAMS.price
+    assert old_pool_params.delta = POOL_PARAMS.delta
 
-    ISellPool.editPool(sell_pool_contract_address, NEW_PRICE, NEW_DELTA)
+    ISellPool.editPool(sell_pool_contract_address, NEW_POOL_PARAMS)
 
-    let (new_price, new_delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (new_pool_params) = ISellPool.getPoolConfig(sell_pool_contract_address)
 
-    assert new_price = NEW_PRICE
-    assert new_delta = NEW_DELTA
+    assert new_pool_params.price = NEW_POOL_PARAMS.price
+    assert new_pool_params.delta = NEW_POOL_PARAMS.delta
 
     return ()
 end
@@ -529,11 +509,10 @@ func test_editPool_with_negative_price{syscall_ptr : felt*, range_check_ptr, ped
     local sell_pool_contract_address
     %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
-    const NEW_NEGATIVE_PRICE = -15
-    const NEW_DELTA = 2
+    tempvar NEW_POOL_PARAMS : PoolParams = PoolParams(price=-15, delta=2)
 
     %{ expect_revert(error_message="Price cannot be negative.") %}
-    ISellPool.editPool(sell_pool_contract_address, NEW_NEGATIVE_PRICE, NEW_DELTA)
+    ISellPool.editPool(sell_pool_contract_address, NEW_POOL_PARAMS)
 
     return ()
 end
@@ -582,13 +561,13 @@ func test_buyNfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuilt
 
     let (old_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
     let (start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
-    let (old_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (old_pool_params) = ISellPool.getPoolConfig(sell_pool_contract_address)
     let (pool_balance_before) = IERC721.balanceOf(c1_contract_address, sell_pool_contract_address)
     let (owner_before) = IERC721.ownerOf(c1_contract_address, NFT_1_1)
     
     assert old_eth_balance = OLD_ETH_BALANCE
     assert start_id_collection_1 = 1
-    assert old_price = OLD_PRICE
+    assert old_pool_params.price = OLD_PRICE
     assert pool_balance_before = Uint256(2, 0)
     assert owner_before = sell_pool_contract_address
 
@@ -601,13 +580,13 @@ func test_buyNfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuilt
 
     let (new_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
     let (new_start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
-    let (new_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (new_pool_params) = ISellPool.getPoolConfig(sell_pool_contract_address)
     let (pool_balance_after) = IERC721.balanceOf(c1_contract_address, sell_pool_contract_address)
     let (owner_after) = IERC721.ownerOf(c1_contract_address, NFT_1_1)
     
     assert new_eth_balance = NEW_ETH_BALANCE
     assert new_start_id_collection_1 = ZERO_FELT
-    assert new_price = NEW_PRICE
+    assert new_pool_params.price = NEW_PRICE
     assert pool_balance_after = Uint256(0, 0)
     assert owner_after = ERC721_TOKEN_BUYER
 
@@ -657,12 +636,12 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
 
     let (old_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
     let (start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
-    let (old_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (old_pool_params) = ISellPool.getPoolConfig(sell_pool_contract_address)
     let (is_paused) = ISellPool.isPaused(sell_pool_contract_address)
     
     assert old_eth_balance = OLD_ETH_BALANCE
     assert start_id_collection_1 = 1
-    assert old_price = OLD_PRICE
+    assert old_pool_params.price = OLD_PRICE
     assert is_paused = FALSE
 
     ISellPool.togglePause(sell_pool_contract_address)
@@ -684,12 +663,12 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
 
     let (new_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
     let (new_start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
-    let (new_price, delta) = ISellPool.getPoolConfig(sell_pool_contract_address)
+    let (new_pool_params) = ISellPool.getPoolConfig(sell_pool_contract_address)
     let (is_paused) = ISellPool.isPaused(sell_pool_contract_address)
     
     assert new_eth_balance = NEW_ETH_BALANCE
     assert new_start_id_collection_1 = ZERO_FELT
-    assert new_price = NEW_PRICE
+    assert new_pool_params.price = NEW_PRICE
     assert is_paused = FALSE
 
     return ()

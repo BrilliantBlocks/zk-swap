@@ -16,6 +16,11 @@ struct NFT:
     member id: Uint256
 end
 
+struct PoolParams:
+    member price: felt
+    member delta: felt
+end
+
 # Events
 
 @event
@@ -94,65 +99,24 @@ func constructor{
         range_check_ptr
     }(
         _factory_address: felt,
-        _bonding_curve_class_hash : felt
+        _bonding_curve_class_hash: felt,
+        _erc20_address: felt,
+        _pool_params: PoolParams
     ):
     alloc_locals
 
-    with_attr error_message("Factory address cannot be zero"):
-        assert_not_zero(_factory_address)
+    with_attr error_message("Address and class hash cannot be zero."):
+        assert_not_zero(_factory_address * _bonding_curve_class_hash * _erc20_address)
     end
     pool_factory.write(_factory_address)
-
-    with_attr error_message("Bonding curve class hash cannot be zero"):
-        assert_not_zero(_bonding_curve_class_hash)
-    end
-    # with_attr error_message("Bonding curve class hash cannot be negative."):
-    #     assert_nn(_bonding_curve_class_hash)
-    # end
     bonding_curve_class_hash.write(_bonding_curve_class_hash)
-
-    return ()
-end
-
-
-# Add pool parameters
-
-@external
-func addPriceAndDelta{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }(
-        _current_price : felt,
-        _delta : felt
-    ) -> ():
-    #assert_only_owner()
+    erc20_address.write(_erc20_address)
 
     with_attr error_message("Price cannot be negative."):
-        assert_nn(_current_price)
+        assert_nn(_pool_params.price)
     end
-    current_price.write(_current_price)
-
-    delta.write(_delta)
-
-    return ()
-end
-
-
-@external
-func addERC20Address{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }(
-        _erc20_address: felt
-    ) -> ():
-    #assert_only_owner()
-
-    with_attr error_message("ERC20 contract address cannot be zero"):
-        assert_not_zero(_erc20_address)
-    end
-    erc20_address.write(_erc20_address)
+    current_price.write(_pool_params.price)
+    delta.write(_pool_params.delta)
 
     return ()
 end
@@ -425,20 +389,19 @@ func editPool{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        _new_price: felt,
-        _new_delta: felt
+        _new_pool_params: PoolParams
     ) -> ():
     #assert_only_owner()
     with_attr error_message("Price cannot be negative."):
-        assert_nn(_new_price)
+        assert_nn(_new_pool_params.price)
     end
 
     # To do: Check if price and delta were actually changed
-    current_price.write(_new_price)
-    delta.write(_new_delta)
+    current_price.write(_new_pool_params.price)
+    delta.write(_new_pool_params.delta)
 
-    PriceUpdate.emit(_new_price)
-    DeltaUpdate.emit(_new_delta)
+    PriceUpdate.emit(_new_pool_params.price)
+    DeltaUpdate.emit(_new_pool_params.delta)
 
     return ()
 end
@@ -679,13 +642,13 @@ func getPoolConfig{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }() -> (
-        _current_price: felt,
-        _delta: felt
+        _pool_params: PoolParams
     ):
     let (_current_price) = current_price.read()
     let (_delta) = delta.read()
-    
-    return (_current_price, _delta)
+    let _pool_params = PoolParams(price = _current_price, delta = _delta)
+
+    return (_pool_params)
 end
 
 

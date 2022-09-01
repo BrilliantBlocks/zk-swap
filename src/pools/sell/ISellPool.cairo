@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.uint256 import Uint256
 
-from src.pools.sell.SellPool import NFT
+from src.pools.sell.SellPool import NFT, PoolParams
 
 @contract_interface
 namespace ISellPool:
@@ -10,7 +10,7 @@ namespace ISellPool:
     func getPoolFactory() -> (res : felt):
     end
 
-    func getPoolConfig() -> (_current_price: felt, _delta: felt):
+    func getPoolConfig() -> (_pool_params: PoolParams):
     end
 
     func getStartIdByCollection(_collection_address: felt) -> (res: felt):
@@ -25,7 +25,7 @@ namespace ISellPool:
     func removeNftFromPool(_nft_array_len: felt,  _nft_array: NFT*) -> ():
     end
 
-    func editPool(_new_price: felt, _new_delta: felt) -> ():
+    func editPool(_new_pool_params: PoolParams) -> ():
     end
 
     func getCollectionById(_collection_id: felt) -> (_collection_address: felt):
@@ -53,12 +53,6 @@ namespace ISellPool:
     end
 
     func mint(to: felt, token_id: Uint256) -> ():
-    end
-
-    func addPriceAndDelta(_current_price: felt, _delta: felt) -> ():
-    end
-
-    func addERC20Address(_erc20_address: felt) -> ():
     end
 
 end
