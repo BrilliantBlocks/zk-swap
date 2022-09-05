@@ -6,7 +6,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import assert_nn, unsigned_div_rem
 from starkware.starknet.common.syscalls import library_call, get_caller_address, get_contract_address
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.uint256 import Uint256, uint256_eq
+from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_signed_nn, uint256_add, uint256_signed_nn_le
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 
@@ -17,7 +17,13 @@ struct NFT:
 end
 
 struct PoolParams:
-    member price: felt
+    member price: Uint256
+    member delta: felt
+end
+
+struct PriceCalcParams:
+    member tokens: felt
+    member price: Uint256
     member delta: felt
 end
 
@@ -32,7 +38,7 @@ func TokenWithdrawal(nft: NFT):
 end
 
 @event
-func PriceUpdate(new_price: felt):
+func PriceUpdate(new_price: Uint256):
 end
 
 @event
@@ -51,7 +57,7 @@ func pool_factory() -> (address: felt):
 end 
 
 @storage_var
-func current_price() -> (res: felt):
+func current_price() -> (res: Uint256):
 end 
 
 @storage_var
@@ -79,7 +85,7 @@ func pool_paused() -> (bool: felt):
 end 
 
 @storage_var
-func eth_balance() -> (res: felt):
+func eth_balance() -> (res: Uint256):
 end
 
 @storage_var
@@ -112,8 +118,9 @@ func constructor{
     bonding_curve_class_hash.write(_bonding_curve_class_hash)
     erc20_address.write(_erc20_address)
 
+    let (not_negative) = uint256_signed_nn(_pool_params.price)
     with_attr error_message("Price cannot be negative."):
-        assert_nn(_pool_params.price)
+        assert not_negative = TRUE
     end
     current_price.write(_pool_params.price)
     delta.write(_pool_params.delta)
@@ -392,8 +399,9 @@ func editPool{
         _new_pool_params: PoolParams
     ) -> ():
     #assert_only_owner()
+    let (not_negative) = uint256_signed_nn(_new_pool_params.price)
     with_attr error_message("Price cannot be negative."):
-        assert_nn(_new_pool_params.price)
+        assert not_negative = TRUE
     end
 
     # To do: Check if price and delta were actually changed
@@ -539,10 +547,8 @@ func buyNfts{
     let (_delta) = delta.read()
     let (_class_hash) = bonding_curve_class_hash.read()
 
-    let (_calldata: felt*) = alloc()
-    assert [_calldata] = _nft_array_len
-    assert [_calldata + 1] = _current_price
-    assert [_calldata + 2] = _delta
+    let (_calldata: PriceCalcParams*) = alloc()
+    assert _calldata[0] = PriceCalcParams(tokens=_nft_array_len, price=_current_price, delta=_delta)
     
     local _function_selector_get_total_price = 162325169460772763346477168287411866553654952715135549492070698764789678722
     
@@ -552,7 +558,9 @@ func buyNfts{
         calldata_size=3,
         calldata=_calldata
     )
-    local _total_price = retdata[0]
+    local _total_price_low = retdata[0]
+    local _total_price_high = retdata[1]
+    let _total_price = Uint256(_total_price_low, _total_price_high)
 
     # To do:
     # Call ERC20 contract to check if balanceOf > _total_price
@@ -561,7 +569,7 @@ func buyNfts{
     # Call ERC721 contract to transfer NFTs to caller address
 
     let (_old_eth_balance) = eth_balance.read()
-    local _new_eth_balance = _old_eth_balance + _total_price
+    let (_new_eth_balance, _) = uint256_add(_old_eth_balance, _total_price)
     eth_balance.write(_new_eth_balance)
 
     local _function_selector_get_new_price = 1427085065996622579194757518833714443103194349812573964832617639352675497406
@@ -572,7 +580,9 @@ func buyNfts{
         calldata_size=3,
         calldata=_calldata
     )
-    local _new_price = retdata[0]
+    local _new_price_low = retdata[0]
+    local _new_price_high = retdata[1]
+    let _new_price = Uint256(_new_price_low, _new_price_high)
 
     current_price.write(_new_price)
     PriceUpdate.emit(_new_price)
@@ -658,7 +668,7 @@ func getNextPrice{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }() -> (
-        _next_price: felt
+        _next_price: Uint256
     ):
     alloc_locals
     const _number_items = 1
@@ -666,10 +676,13 @@ func getNextPrice{
     let (_delta) = delta.read()
     let (_class_hash) = bonding_curve_class_hash.read()
 
-    let (_calldata: felt*) = alloc()
-    assert [_calldata] = _number_items
-    assert [_calldata + 1] = _current_price
-    assert [_calldata + 2] = _delta
+    let (_calldata: PriceCalcParams*) = alloc()
+    assert _calldata[0] = PriceCalcParams(tokens=_number_items, price=_current_price, delta=_delta)
+
+    # let (_calldata: felt*) = alloc()
+    # assert [_calldata] = _number_items
+    # assert [_calldata + 1] = _current_price
+    # assert [_calldata + 2] = _delta
 
     local _function_selector_get_new_price = 1427085065996622579194757518833714443103194349812573964832617639352675497406
 
@@ -679,7 +692,9 @@ func getNextPrice{
         calldata_size=3,
         calldata=_calldata
     )
-    local _next_price = retdata[0]
+    local _next_price_low = retdata[0]
+    local _next_price_high = retdata[1]
+    let _next_price = Uint256(_next_price_low, _next_price_high)
 
     return (_next_price)
 end
@@ -693,7 +708,7 @@ func deposit_eth{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
-    }(_amount: felt) -> ():
+    }(_amount: Uint256) -> ():
     alloc_locals
     #assert_only_owner()
     
@@ -703,7 +718,7 @@ func deposit_eth{
     # -> Transfer ETH amount from owner to pool address
 
     let (_old_balance) = eth_balance.read()
-    local _new_balance = _old_balance + _amount
+    let (_new_balance, _) = uint256_add(_old_balance, _amount)
     eth_balance.write(_new_balance)
 
     return ()
@@ -715,19 +730,22 @@ func withdraw_eth{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
-    }(_amount: felt) -> ():
+    }(_amount: Uint256) -> ():
     alloc_locals
     #assert_only_owner()
 
     let (_eth_balance) = eth_balance.read()
-    assert_nn_le(_amount, _eth_balance)
+    let (_sufficient_eth) = uint256_signed_nn_le(_amount, _eth_balance)
+    with_attr error_message("Your ETH balance is not sufficient"):
+        assert _sufficient_eth = TRUE
+    end
 
     # To do:
     # Call ERC20 contract to check if balanceOf (pool) > _amount
     # -> Transfer ETH amount from pool to owner address
 
-    let (_old_balance) = eth_balance.read()
-    local _new_balance = _old_balance + _amount
+    #let (_old_balance) = eth_balance.read()
+    let (_new_balance, _) = uint256_add(_eth_balance, _amount)
     eth_balance.write(_new_balance)
 
     return ()
@@ -744,15 +762,19 @@ func withdraw_all_eth{
     #assert_only_owner()
 
     let (_eth_balance) = eth_balance.read()
+
+    local zero: Uint256 = Uint256(0, 0)
+    let (is_zero) = uint256_eq(_eth_balance, zero)
     with_attr error_message("You have no ETH to withdraw."):
-        assert_not_zero(_eth_balance)
+        assert is_zero = FALSE
     end
+
 
     # To do:
     # Call ERC20 contract to check if balanceOf (pool) = _eth_balance
     # -> Transfer whole ETH balance from pool to owner address
 
-    eth_balance.write(0)
+    eth_balance.write(Uint256(0, 0))
 
     return ()
 end
@@ -877,7 +899,7 @@ func getEthBalance{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
-    }() -> (_eth_balance: felt):
+    }() -> (_eth_balance: Uint256):
     
     let (_eth_balance) = eth_balance.read()
     return (_eth_balance)
