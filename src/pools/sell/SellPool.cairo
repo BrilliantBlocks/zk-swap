@@ -5,7 +5,7 @@ from starkware.cairo.common.math import assert_not_zero, assert_not_equal, asser
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.starknet.common.syscalls import library_call, get_caller_address, get_contract_address
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_signed_nn, uint256_add, uint256_signed_nn_le, uint256_neg, uint256_le
+from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_add, uint256_le
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
@@ -697,18 +697,24 @@ end
 
 
 @external
-func deposit_eth{
+func depositEth{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(_amount: Uint256) -> ():
     alloc_locals
     #assert_only_owner()
-    
-    # To do:
-    # Call ERC20 contract to check if balanceOf (owner) > _amount
-    # Check if pool is approved for amount
-    # -> Transfer ETH amount from owner to pool address
+
+    let (_erc20_address) = erc20_address.read()
+    let (_caller_address) = get_caller_address()
+    let (_contract_address) = get_contract_address()
+    let (_caller_balance) = IERC20.balanceOf(_erc20_address, _caller_address)
+    let (_sufficient_balance) = uint256_le(_amount, _caller_balance)
+    with_attr error_message("Your ETH balance is unsufficient."):
+        assert _sufficient_balance = TRUE
+    end
+
+    IERC20.transferFrom(_erc20_address, _caller_address, _contract_address, _amount)
 
     let (_old_balance) = eth_balance.read()
     let (_new_balance, _) = uint256_add(_old_balance, _amount)
@@ -719,7 +725,7 @@ end
 
 
 @external
-func withdraw_eth{
+func withdrawEth{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -728,16 +734,16 @@ func withdraw_eth{
     #assert_only_owner()
 
     let (_eth_balance) = eth_balance.read()
-    let (_sufficient_eth) = uint256_signed_nn_le(_amount, _eth_balance)
-    with_attr error_message("Your ETH balance is not sufficient"):
-        assert _sufficient_eth = TRUE
+    let (_sufficient_balance) = uint256_le(_amount, _eth_balance)
+    with_attr error_message("Your ETH balance is unsufficient."):
+        assert _sufficient_balance = TRUE
     end
 
-    # To do:
-    # Call ERC20 contract to check if balanceOf (pool) > _amount
-    # -> Transfer ETH amount from pool to owner address
+    let (_erc20_address) = erc20_address.read()
+    let (_caller_address) = get_caller_address()
+    let (_contract_address) = get_contract_address()
+    IERC20.transferFrom(_erc20_address, _contract_address, _caller_address, _amount)
 
-    #let (_old_balance) = eth_balance.read()
     let (_new_balance, _) = uint256_add(_eth_balance, _amount)
     eth_balance.write(_new_balance)
 
@@ -746,7 +752,7 @@ end
 
 
 @external
-func withdraw_all_eth{
+func withdrawAllEth{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
@@ -762,10 +768,10 @@ func withdraw_all_eth{
         assert is_zero = FALSE
     end
 
-
-    # To do:
-    # Call ERC20 contract to check if balanceOf (pool) = _eth_balance
-    # -> Transfer whole ETH balance from pool to owner address
+    let (_erc20_address) = erc20_address.read()
+    let (_caller_address) = get_caller_address()
+    let (_contract_address) = get_contract_address()
+    IERC20.transferFrom(_erc20_address, _contract_address, _caller_address, _eth_balance)
 
     eth_balance.write(Uint256(0, 0))
 

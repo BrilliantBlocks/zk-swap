@@ -55,4 +55,13 @@ namespace ISellPool:
     func mint(to: felt, token_id: Uint256) -> ():
     end
 
+    func depositEth(_amount: Uint256) -> ():
+    end
+
+    func withdrawEth(_amount: Uint256) -> ():
+    end
+
+    func withdrawAllEth() -> ():
+    end
+
 end

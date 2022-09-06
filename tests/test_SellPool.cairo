@@ -848,3 +848,47 @@ func test_getNextPrice_with_expected_output{syscall_ptr : felt*, range_check_ptr
 
     return ()
 end
+
+
+@external
+func test_depositEth{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals 
+    local sell_pool_contract_address
+    local erc20_contract_address
+    %{ 
+        ids.sell_pool_contract_address = context.sell_pool_contract_address
+        ids.erc20_contract_address = context.erc20_contract_address
+    %}
+
+    let ERC721_TOKEN_OWNER_BALANCE = Uint256(30, 0)
+    let EXCEEDING_AMOUNT = Uint256(40, 0)
+    let POOL_BALANCE_BEFORE = Uint256(0, 0)
+    let POOL_BALANCE_AFTER = Uint256(30, 0)
+
+    let (pool_balance_before) = ISellPool.getEthBalance(sell_pool_contract_address)
+    assert pool_balance_before = POOL_BALANCE_BEFORE
+
+    %{  
+        PRANK_ERC721_TOKEN_OWNER = 321
+        stop_prank_callable_1 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.erc20_contract_address)
+        stop_prank_callable_2 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IERC20.approve(erc20_contract_address, sell_pool_contract_address, ERC721_TOKEN_OWNER_BALANCE)
+    %{ 
+        stop_prank_callable_1() 
+    %}
+
+    %{ expect_revert(error_message="Your ETH balance is unsufficient.") %}
+    ISellPool.depositEth(sell_pool_contract_address, EXCEEDING_AMOUNT)
+
+    ISellPool.depositEth(sell_pool_contract_address, ERC721_TOKEN_OWNER_BALANCE)
+    %{ 
+        stop_prank_callable_2()
+    %}
+
+    let (pool_balance_after) = ISellPool.getEthBalance(sell_pool_contract_address)
+    assert pool_balance_after = POOL_BALANCE_AFTER
+
+    return ()
+end
