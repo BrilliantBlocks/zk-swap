@@ -556,17 +556,8 @@ func buyNfts{
 
     let (_erc20_address) = erc20_address.read()
     let (_caller_address) = get_caller_address()
-    #let (_caller_balance) = IERC20.balanceOf(_erc20_address, _caller_address)
     let (_contract_address) = get_contract_address()
-    #let (_approved_amount) = IERC20.allowance(_erc20_address, _caller_address, _contract_address)
     IERC20.transferFrom(_erc20_address, _caller_address, _contract_address, _total_price)
-    
-
-    # To do:
-    # Call ERC20 contract to check if balanceOf > _total_price
-    # Check if pool is approved for amount
-    # -> Transfer ETH amount to pool address
-    # Call ERC721 contract to transfer NFTs to caller address
 
     let (_old_eth_balance) = eth_balance.read()
     let (_new_eth_balance, _) = uint256_add(_old_eth_balance, _total_price)
