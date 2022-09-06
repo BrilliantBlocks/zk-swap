@@ -8,6 +8,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_signed_nn, uint256_add, uint256_signed_nn_le, uint256_neg
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
+from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 
 
 struct NFT:
@@ -553,6 +554,14 @@ func buyNfts{
     local _total_price_high = retdata[1]
     let _total_price = Uint256(_total_price_low, _total_price_high)
 
+    let (_erc20_address) = erc20_address.read()
+    let (_caller_address) = get_caller_address()
+    #let (_caller_balance) = IERC20.balanceOf(_erc20_address, _caller_address)
+    let (_contract_address) = get_contract_address()
+    #let (_approved_amount) = IERC20.allowance(_erc20_address, _caller_address, _contract_address)
+    IERC20.transferFrom(_erc20_address, _caller_address, _contract_address, _total_price)
+    
+
     # To do:
     # Call ERC20 contract to check if balanceOf > _total_price
     # Check if pool is approved for amount
@@ -669,11 +678,6 @@ func getNextPrice{
 
     let (_calldata: PriceCalcParams*) = alloc()
     assert _calldata[0] = PriceCalcParams(tokens=_number_items, price=_current_price, delta=_delta)
-
-    # let (_calldata: felt*) = alloc()
-    # assert [_calldata] = _number_items
-    # assert [_calldata + 1] = _current_price
-    # assert [_calldata + 2] = _delta
 
     local _function_selector_get_new_price = 1427085065996622579194757518833714443103194349812573964832617639352675497406
 
