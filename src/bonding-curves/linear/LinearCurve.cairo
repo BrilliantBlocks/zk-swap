@@ -19,6 +19,7 @@ func getTotalPrice{
         _total_price: Uint256
     ):
     alloc_locals
+
     local _counter = _number_items * (_number_items - 1) * _delta + 2 * _current_price.low * _number_items
     let (_total_price_low, _) = unsigned_div_rem(_counter, 2)
     let _total_price = Uint256(_total_price_low, 0)

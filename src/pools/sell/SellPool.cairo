@@ -1,12 +1,11 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import assert_not_zero, assert_not_equal, assert_nn_le, split_felt
+from starkware.cairo.common.math import assert_not_zero, assert_not_equal, assert_nn, assert_nn_le, split_felt
 from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.math import assert_nn, unsigned_div_rem
 from starkware.starknet.common.syscalls import library_call, get_caller_address, get_contract_address
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_signed_nn, uint256_add, uint256_signed_nn_le
+from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_signed_nn, uint256_add, uint256_signed_nn_le, uint256_neg
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 
@@ -118,10 +117,6 @@ func constructor{
     bonding_curve_class_hash.write(_bonding_curve_class_hash)
     erc20_address.write(_erc20_address)
 
-    let (not_negative) = uint256_signed_nn(_pool_params.price)
-    with_attr error_message("Price cannot be negative."):
-        assert not_negative = TRUE
-    end
     current_price.write(_pool_params.price)
     delta.write(_pool_params.delta)
 
@@ -399,10 +394,6 @@ func editPool{
         _new_pool_params: PoolParams
     ) -> ():
     #assert_only_owner()
-    let (not_negative) = uint256_signed_nn(_new_pool_params.price)
-    with_attr error_message("Price cannot be negative."):
-        assert not_negative = TRUE
-    end
 
     # To do: Check if price and delta were actually changed
     current_price.write(_new_pool_params.price)
@@ -555,7 +546,7 @@ func buyNfts{
     let (retdata_size: felt, retdata: felt*) = library_call(
         class_hash=_class_hash, 
         function_selector=_function_selector_get_total_price,
-        calldata_size=3,
+        calldata_size=4,
         calldata=_calldata
     )
     local _total_price_low = retdata[0]
@@ -577,7 +568,7 @@ func buyNfts{
     let (retdata_size: felt, retdata: felt*) = library_call(
         class_hash=_class_hash, 
         function_selector=_function_selector_get_new_price,
-        calldata_size=3,
+        calldata_size=4,
         calldata=_calldata
     )
     local _new_price_low = retdata[0]
@@ -689,7 +680,7 @@ func getNextPrice{
     let (retdata_size: felt, retdata: felt*) = library_call(
         class_hash=_class_hash, 
         function_selector=_function_selector_get_new_price,
-        calldata_size=3,
+        calldata_size=4,
         calldata=_calldata
     )
     local _next_price_low = retdata[0]

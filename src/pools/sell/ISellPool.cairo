@@ -43,10 +43,10 @@ namespace ISellPool:
     func togglePause() -> ():
     end
 
-    func getEthBalance() -> (_eth_balance : felt):
+    func getEthBalance() -> (_eth_balance : Uint256):
     end
 
-    func getNextPrice() -> (_next_price : felt):
+    func getNextPrice() -> (_next_price : Uint256):
     end
 
     func isPaused() -> (_is_paused : felt):

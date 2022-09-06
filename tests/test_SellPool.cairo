@@ -16,7 +16,8 @@ from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 
 
 const POOL_FACTORY = 123456789
-const CURRENT_PRICE = 10
+const CURRENT_PRICE_LOW = 10
+const CURRENT_PRICE_HIGH = 0
 const DELTA = 1
 
 const C1_NAME = 'COLLECTION 1'
@@ -70,7 +71,7 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
 
         context.sell_pool_contract_address = deploy_contract("./src/pools/sell/SellPool.cairo", 
             [
-                ids.POOL_FACTORY, context.linear_curve_class_hash, context.erc20_contract_address, ids.CURRENT_PRICE, ids.DELTA
+                ids.POOL_FACTORY, context.linear_curve_class_hash, context.erc20_contract_address, ids.CURRENT_PRICE_LOW, ids.CURRENT_PRICE_HIGH, ids.DELTA
             ]
         ).contract_address
 
@@ -155,7 +156,7 @@ func test_getPoolConfig_with_expected_output{syscall_ptr : felt*, range_check_pt
     local sell_pool_contract_address
     %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
-    tempvar POOL_PARAMS : PoolParams = PoolParams(price=10, delta=1)
+    tempvar POOL_PARAMS : PoolParams = PoolParams(price=Uint256(10, 0), delta=1)
 
     let (pool_factory) = ISellPool.getPoolFactory(sell_pool_contract_address)
     let (pool_params: PoolParams) = ISellPool.getPoolConfig(sell_pool_contract_address)
@@ -184,7 +185,7 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
         ids.c3_contract_address = context.c3_contract_address
     %}
 
-    tempvar POOL_PARAMS : PoolParams = PoolParams(price=10, delta=1)
+    tempvar POOL_PARAMS : PoolParams = PoolParams(price=Uint256(10, 0), delta=1)
     let COLLECTION_1 = c1_contract_address
     let COLLECTION_2 = c2_contract_address
     let COLLECTION_3 = c3_contract_address
@@ -325,7 +326,7 @@ func test_removeNftFromPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr :
         ids.c3_contract_address = context.c3_contract_address
     %}
 
-    tempvar POOL_PARAMS : PoolParams = PoolParams(price=10, delta=1)
+    tempvar POOL_PARAMS : PoolParams = PoolParams(price=Uint256(10, 0), delta=1)
     let COLLECTION_1 = c1_contract_address
     let COLLECTION_2 = c2_contract_address
     let COLLECTION_3 = c3_contract_address
@@ -482,8 +483,8 @@ func test_editPool_with_expected_output{syscall_ptr : felt*, range_check_ptr, pe
     local sell_pool_contract_address
     %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
-    tempvar POOL_PARAMS : PoolParams = PoolParams(price=10, delta=1)
-    tempvar NEW_POOL_PARAMS : PoolParams = PoolParams(price=15, delta=2)
+    tempvar POOL_PARAMS : PoolParams = PoolParams(price=Uint256(10, 0), delta=1)
+    tempvar NEW_POOL_PARAMS : PoolParams = PoolParams(price=Uint256(15, 0), delta=2)
 
     let (old_pool_params) = ISellPool.getPoolConfig(sell_pool_contract_address)
 
@@ -496,23 +497,6 @@ func test_editPool_with_expected_output{syscall_ptr : felt*, range_check_ptr, pe
 
     assert new_pool_params.price = NEW_POOL_PARAMS.price
     assert new_pool_params.delta = NEW_POOL_PARAMS.delta
-
-    return ()
-end
-
-
-@external
-func test_editPool_with_negative_price{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
-
-    alloc_locals 
-
-    local sell_pool_contract_address
-    %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
-
-    tempvar NEW_POOL_PARAMS : PoolParams = PoolParams(price=-15, delta=2)
-
-    %{ expect_revert(error_message="Price cannot be negative.") %}
-    ISellPool.editPool(sell_pool_contract_address, NEW_POOL_PARAMS)
 
     return ()
 end
@@ -535,10 +519,10 @@ func test_buyNfts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuilt
     let NFT_1_1 = Uint256(11, 0)
     let NFT_1_2 = Uint256(12, 0)
     const ZERO_FELT = 0
-    const OLD_ETH_BALANCE = 0
-    const NEW_ETH_BALANCE = 21
-    const OLD_PRICE = 10
-    const NEW_PRICE = 12
+    let OLD_ETH_BALANCE = Uint256(0, 0)
+    let NEW_ETH_BALANCE = Uint256(21, 0)
+    let OLD_PRICE = Uint256(10, 0)
+    let NEW_PRICE = Uint256(12, 0)
     
     let (NFT_ARRAY : NFT*) = alloc()
     assert NFT_ARRAY[0] = NFT(address = COLLECTION_1, id = NFT_1_1)
@@ -610,10 +594,10 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
     let NFT_1_1 = Uint256(11, 0)
     let NFT_1_2 = Uint256(12, 0)
     const ZERO_FELT = 0
-    const OLD_ETH_BALANCE = 0
-    const NEW_ETH_BALANCE = 21
-    const OLD_PRICE = 10
-    const NEW_PRICE = 12
+    let OLD_ETH_BALANCE = Uint256(0, 0)
+    let NEW_ETH_BALANCE = Uint256(21, 0)
+    let OLD_PRICE = Uint256(10, 0)
+    let NEW_PRICE = Uint256(12, 0)
     
     let (NFT_ARRAY : NFT*) = alloc()
     assert NFT_ARRAY[0] = NFT(address = COLLECTION_1, id = NFT_1_1)
@@ -683,7 +667,7 @@ func test_getNextPrice_with_expected_output{syscall_ptr : felt*, range_check_ptr
     local sell_pool_contract_address
     %{ ids.sell_pool_contract_address = context.sell_pool_contract_address %}
 
-    const NEXT_PRICE = 11
+    let NEXT_PRICE = Uint256(11, 0)
 
     let (next_price) = ISellPool.getNextPrice(sell_pool_contract_address)
 
