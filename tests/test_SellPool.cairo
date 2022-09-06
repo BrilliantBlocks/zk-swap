@@ -99,6 +99,7 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
     ISellPool.mint(c2_contract_address, ERC721_TOKEN_OWNER, NFT_2_1)
     ISellPool.mint(c2_contract_address, ERC721_TOKEN_OWNER, NFT_2_2)
     ISellPool.mint(c3_contract_address, ERC721_TOKEN_OWNER, NFT_3_1)
+    ISellPool.mint(erc20_contract_address, ERC721_TOKEN_OWNER, Uint256(30, 0))
 
     return ()
 end 
@@ -129,7 +130,8 @@ func test_initialization_ERC_contracts{syscall_ptr : felt*, range_check_ptr, ped
     let (c1_balance) = IERC721.balanceOf(c1_contract_address, ERC721_TOKEN_OWNER)
     let (c2_balance) = IERC721.balanceOf(c2_contract_address, ERC721_TOKEN_OWNER)
     let (c3_balance) = IERC721.balanceOf(c3_contract_address, ERC721_TOKEN_OWNER)
-    let (erc20_owner_balance) = IERC20.balanceOf(erc20_contract_address, ERC721_TOKEN_BUYER)
+    let (erc20_balance_token_buyer) = IERC20.balanceOf(erc20_contract_address, ERC721_TOKEN_BUYER)
+    let (erc20_balance_token_owner) = IERC20.balanceOf(erc20_contract_address, ERC721_TOKEN_OWNER)
     let (c1_token_owner) = IERC721.ownerOf(c1_contract_address, NFT_1_1)
     let (c2_token_owner) = IERC721.ownerOf(c2_contract_address, NFT_2_1)
     let (c3_token_owner) = IERC721.ownerOf(c3_contract_address, NFT_3_1)
@@ -138,8 +140,9 @@ func test_initialization_ERC_contracts{syscall_ptr : felt*, range_check_ptr, ped
     assert c1_balance = Uint256(2, 0)
     assert c2_balance = Uint256(2, 0)
     assert c3_balance = Uint256(1, 0)
-    assert erc20_owner_balance = Uint256(50, 0)
-    assert erc20_total_supply = Uint256(50, 0)
+    assert erc20_balance_token_buyer = Uint256(50, 0)
+    assert erc20_balance_token_owner = Uint256(30, 0)
+    assert erc20_total_supply = Uint256(80, 0)
     assert c1_token_owner = ERC721_TOKEN_OWNER
     assert c2_token_owner = ERC721_TOKEN_OWNER
     assert c3_token_owner = ERC721_TOKEN_OWNER
