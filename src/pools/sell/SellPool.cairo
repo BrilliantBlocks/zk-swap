@@ -5,7 +5,7 @@ from starkware.cairo.common.math import assert_not_zero, assert_not_equal, asser
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.starknet.common.syscalls import library_call, get_caller_address, get_contract_address
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_signed_nn, uint256_add, uint256_signed_nn_le, uint256_neg
+from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_signed_nn, uint256_add, uint256_signed_nn_le, uint256_neg, uint256_le
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
@@ -557,6 +557,13 @@ func buyNfts{
     let (_erc20_address) = erc20_address.read()
     let (_caller_address) = get_caller_address()
     let (_contract_address) = get_contract_address()
+
+    let (_caller_balance) = IERC20.balanceOf(_erc20_address, _caller_address)
+    let (_sufficient_balance) = uint256_le(_total_price, _caller_balance)
+    with_attr error_message("Your ETH balance is unsufficient."):
+        assert _sufficient_balance = TRUE
+    end
+
     IERC20.transferFrom(_erc20_address, _caller_address, _contract_address, _total_price)
 
     let (_old_eth_balance) = eth_balance.read()

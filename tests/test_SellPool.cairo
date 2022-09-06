@@ -600,13 +600,11 @@ func test_buyNfts_from_different_collections{syscall_ptr : felt*, range_check_pt
     local sell_pool_contract_address
     local c1_contract_address
     local c2_contract_address
-    local c3_contract_address
     local erc20_contract_address
     %{ 
         ids.sell_pool_contract_address = context.sell_pool_contract_address
         ids.c1_contract_address = context.c1_contract_address 
         ids.c2_contract_address = context.c2_contract_address
-        ids.c3_contract_address = context.c3_contract_address
         ids.erc20_contract_address = context.erc20_contract_address
     %}
 
@@ -616,9 +614,8 @@ func test_buyNfts_from_different_collections{syscall_ptr : felt*, range_check_pt
     let NFT_2_2 = Uint256(22, 0)
     const ZERO_FELT = 0
     let NEW_PRICE = Uint256(14, 0)
-    let TOTAL_PRICE_SUFFICIENT = Uint256(46, 0)
+    let TOTAL_PRICE = Uint256(46, 0)
     let ERC20_OWNER_BALANCE_AFTER = Uint256(4, 0)
-    let TOTAL_PRICE_UNSUFFICIENT = Uint256(60, 0)
     
     let (NFT_ARRAY : NFT*) = alloc()
     assert NFT_ARRAY[0] = NFT(address = c1_contract_address, id = NFT_1_1)
@@ -650,7 +647,7 @@ func test_buyNfts_from_different_collections{syscall_ptr : felt*, range_check_pt
         stop_prank_callable_1 = start_prank(PRANK_ERC721_TOKEN_BUYER, target_contract_address=ids.erc20_contract_address)
         stop_prank_callable_2 = start_prank(PRANK_ERC721_TOKEN_BUYER, target_contract_address=ids.sell_pool_contract_address)
     %}
-    IERC20.approve(erc20_contract_address, sell_pool_contract_address, TOTAL_PRICE_SUFFICIENT)
+    IERC20.approve(erc20_contract_address, sell_pool_contract_address, TOTAL_PRICE)
     %{ 
         stop_prank_callable_1() 
     %}
@@ -666,12 +663,86 @@ func test_buyNfts_from_different_collections{syscall_ptr : felt*, range_check_pt
     let (owner_after) = IERC721.ownerOf(c1_contract_address, NFT_1_1)
     let (erc20_owner_balance_after) = IERC20.balanceOf(erc20_contract_address, ERC721_TOKEN_BUYER)
     
-    assert new_eth_balance = TOTAL_PRICE_SUFFICIENT
+    assert new_eth_balance = TOTAL_PRICE
     assert new_start_id_collection_1 = ZERO_FELT
     assert new_pool_params.price = NEW_PRICE
     assert pool_balance_after = Uint256(0, 0)
     assert owner_after = ERC721_TOKEN_BUYER
     assert erc20_owner_balance_after = ERC20_OWNER_BALANCE_AFTER
+
+    return ()
+end
+
+
+@external
+func test_buyNfts_with_unsufficient_eth_balance{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals 
+    local sell_pool_contract_address
+    local c1_contract_address
+    local c2_contract_address
+    local c3_contract_address
+    local erc20_contract_address
+    %{ 
+        ids.sell_pool_contract_address = context.sell_pool_contract_address
+        ids.c1_contract_address = context.c1_contract_address 
+        ids.c2_contract_address = context.c2_contract_address
+        ids.c3_contract_address = context.c3_contract_address
+        ids.erc20_contract_address = context.erc20_contract_address
+    %}
+
+    let NFT_1_1 = Uint256(11, 0)
+    let NFT_1_2 = Uint256(12, 0)
+    let NFT_2_1 = Uint256(21, 0)
+    let NFT_2_2 = Uint256(22, 0)
+    let NFT_3_1 = Uint256(31, 0)
+    let TOTAL_PRICE = Uint256(60, 0)
+    
+    let (NFT_ARRAY : NFT*) = alloc()
+    assert NFT_ARRAY[0] = NFT(address = c1_contract_address, id = NFT_1_1)
+    assert NFT_ARRAY[1] = NFT(address = c1_contract_address, id = NFT_1_2)
+    assert NFT_ARRAY[2] = NFT(address = c2_contract_address, id = NFT_2_1)
+    assert NFT_ARRAY[3] = NFT(address = c2_contract_address, id = NFT_2_2)
+    assert NFT_ARRAY[4] = NFT(address = c3_contract_address, id = NFT_3_1)
+
+    %{  
+        PRANK_ERC721_TOKEN_OWNER = 321
+        stop_prank_callable_1 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c1_contract_address)
+        stop_prank_callable_2 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c2_contract_address)
+        stop_prank_callable_3 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c3_contract_address)
+        stop_prank_callable_4 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IERC721.approve(c1_contract_address, sell_pool_contract_address, NFT_1_1)
+    IERC721.approve(c1_contract_address, sell_pool_contract_address, NFT_1_2)
+    IERC721.approve(c2_contract_address, sell_pool_contract_address, NFT_2_1)
+    IERC721.approve(c2_contract_address, sell_pool_contract_address, NFT_2_2)
+    IERC721.approve(c3_contract_address, sell_pool_contract_address, NFT_3_1)
+    %{ 
+        stop_prank_callable_1() 
+        stop_prank_callable_2()
+        stop_prank_callable_3()
+    %}
+    ISellPool.addNftToPool(sell_pool_contract_address, 5, NFT_ARRAY)
+    %{ 
+        stop_prank_callable_4() 
+    %}
+
+    %{  
+        PRANK_ERC721_TOKEN_BUYER = 789
+        stop_prank_callable_1 = start_prank(PRANK_ERC721_TOKEN_BUYER, target_contract_address=ids.erc20_contract_address)
+        stop_prank_callable_2 = start_prank(PRANK_ERC721_TOKEN_BUYER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IERC20.approve(erc20_contract_address, sell_pool_contract_address, TOTAL_PRICE)
+    %{ 
+        stop_prank_callable_1() 
+    %}
+
+    %{ expect_revert(error_message="Your ETH balance is unsufficient.") %}
+    ISellPool.buyNfts(sell_pool_contract_address, 5, NFT_ARRAY)
+
+    %{ 
+        stop_prank_callable_2() 
+    %}
 
     return ()
 end
