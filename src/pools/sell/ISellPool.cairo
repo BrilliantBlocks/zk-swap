@@ -10,55 +10,55 @@ namespace ISellPool:
     func getPoolFactory() -> (res : felt):
     end
 
-    func getPoolConfig() -> (_pool_params: PoolParams):
+    func getPoolConfig() -> (pool_params: PoolParams):
     end
 
-    func getStartIdByCollection(_collection_address: felt) -> (res: felt):
+    func getStartIdByCollection(collection_address: felt) -> (res: felt):
     end
 
-    func getListElementById(_current_id: felt) -> (res: (Uint256, felt)):
+    func getListElementById(current_id: felt) -> (res: (Uint256, felt)):
     end
 
-    func addNftToPool(_nft_array_len: felt,  _nft_array: NFT*) -> ():
+    func addNftToPool(nft_array_len: felt,  nft_array: NFT*) -> ():
     end
 
-    func removeNftFromPool(_nft_array_len: felt,  _nft_array: NFT*) -> ():
+    func removeNftFromPool(nft_array_len: felt,  nft_array: NFT*) -> ():
     end
 
-    func editPool(_new_pool_params: PoolParams) -> ():
+    func editPool(new_pool_params: PoolParams) -> ():
     end
 
-    func getCollectionById(_collection_id: felt) -> (_collection_address: felt):
+    func getCollectionById(collection_id: felt) -> (collection_address: felt):
     end
 
-    func getAllCollections() -> (_collection_array_len: felt, _collection_array: felt*):
+    func getAllCollections() -> (collection_array_len: felt, collection_array: felt*):
     end
 
-    func getAllNftsOfCollection(_collection_address: felt) -> (_nft_id_list_len: felt, _nft_id_list: Uint256*):
+    func getAllNftsOfCollection(collection_address: felt) -> (nft_id_list_len: felt, nft_id_list: Uint256*):
     end
 
-    func buyNfts(_nft_array_len: felt,  _nft_array: NFT*) -> ():
+    func buyNfts(nft_array_len: felt,  nft_array: NFT*) -> ():
     end
 
     func togglePause() -> ():
     end
 
-    func getEthBalance() -> (_eth_balance : Uint256):
+    func getEthBalance() -> (eth_balance : Uint256):
     end
 
-    func getNextPrice() -> (_next_price : Uint256):
+    func getNextPrice() -> (next_price : Uint256):
     end
 
-    func isPaused() -> (_is_paused : felt):
+    func isPaused() -> (is_paused : felt):
     end
 
     func mint(to: felt, token_id: Uint256) -> ():
     end
 
-    func depositEth(_amount: Uint256) -> ():
+    func depositEth(amount: Uint256) -> ():
     end
 
-    func withdrawEth(_amount: Uint256) -> ():
+    func withdrawEth(amount: Uint256) -> ():
     end
 
     func withdrawAllEth() -> ():
