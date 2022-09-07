@@ -24,20 +24,20 @@ func getTotalPrice{
     let (delta_uint) = convertFeltToUint(delta)
 
     let (a, a_overflow) = uint256_mul(number_items_uint, delta_uint)
-    assertNoOverflow(a_overflow)
-
     let (b) = uint256_sub(number_items_uint, Uint256(1,0))
     let (x, x_overflow) = uint256_mul(a, b)
-    assertNoOverflow(x_overflow)
     let (c, c_overflow) = uint256_mul(current_price, number_items_uint)
-    assertNoOverflow(c_overflow)
     let (y, y_overflow) = uint256_mul(c, Uint256(2,0))
-    assertNoOverflow(y_overflow)
     let (counter, counter_overflow) = uint256_add(x, y)
+    let (total_price, total_price_overflow) = uint256_unsigned_div_rem(counter, Uint256(2,0))
+
+    assertNoOverflow(a_overflow)
+    assertNoOverflow(x_overflow)
+    assertNoOverflow(c_overflow)
+    assertNoOverflow(y_overflow)
     with_attr error_message("Overflow in price calculation."):
         assert counter_overflow = FALSE
     end
-    let (total_price, total_price_overflow) = uint256_unsigned_div_rem(counter, Uint256(2,0))
     assertNoOverflow(total_price_overflow)
 
     # local counter = number_items * (number_items - 1) * delta + 2 * current_price.low * number_items
@@ -66,8 +66,8 @@ func getNewPrice{
     let (delta_uint) = convertFeltToUint(delta)
 
     let (x, x_overflow) = uint256_mul(number_items_uint, delta_uint)
-    assertNoOverflow(x_overflow)
     let (new_price, new_price_overflow) = uint256_add(current_price, x)
+    assertNoOverflow(x_overflow)
     with_attr error_message("Overflow in price calculation."):
         assert new_price_overflow = FALSE
     end
