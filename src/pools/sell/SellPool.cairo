@@ -396,7 +396,6 @@ func editPool{
     ) -> ():
     #assert_only_owner()
 
-    # To do: Check if price and delta were actually changed
     _current_price.write(new_pool_params.price)
     _delta.write(new_pool_params.delta)
 
@@ -471,10 +470,6 @@ func getAllNftsOfCollection{
     ):
     alloc_locals
     let (nft_id_list: Uint256*) = alloc()
-
-    # with_attr error_message("Collection address cannot be negative."):
-    #     assert_nn(_collection_address)
-    # end
 
     let (start_id) = _start_id_by_collection.read(collection_address)
 
