@@ -4,3 +4,4 @@
 [submodule "diamond_contracts"]
 	url = https://github.com/BrilliantBlocks/diamond-contracts
 	path = lib/diamond_contracts
+	branch = refs/heads/zk-swap
