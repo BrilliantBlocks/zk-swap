@@ -8,11 +8,13 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.starknet.common.syscalls import get_contract_address
 
 from src.pools.sell.ISellPool import ISellPool
+from src.pools.IMintPool import IMintPool
 from src.pools.sell.SellPool import NFT, PoolParams
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721Metadata import IERC721Metadata
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
+from lib.diamond_contracts.contracts.facets.token.ERC721.MintPool import Collection
 
 
 const POOL_FACTORY = 123456789
@@ -67,6 +69,10 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
             ]
         ).contract_address
 
+        context.pool_factory_contract_address = deploy_contract("./lib/diamond_contracts/contracts/facets/token/ERC721/MintPool.cairo", 
+            []
+        ).contract_address
+
         context.linear_curve_class_hash = declare("./src/bonding-curves/linear/LinearCurve.cairo").class_hash
 
         context.sell_pool_contract_address = deploy_contract("./src/pools/sell/SellPool.cairo", 
@@ -103,6 +109,24 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
 
     return ()
 end 
+
+
+@external
+func test_initialization_pool_factory{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals 
+
+    local pool_factory_contract_address
+    %{ 
+        ids.pool_factory_contract_address = context.pool_factory_contract_address 
+    %}
+
+    let (collection_array_len: felt, collection_array: Collection*) = IMintPool.getAllCollectionsFromAllPools(pool_factory_contract_address)
+    
+    assert collection_array_len = 0
+
+    return ()
+end
 
 
 @external
