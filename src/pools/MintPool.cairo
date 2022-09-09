@@ -9,8 +9,8 @@ from starkware.starknet.common.syscalls import (
     get_caller_address,
     get_contract_address,
 )
-from starkware.cairo.common.math import assert_not_equal, split_felt
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.math import assert_not_equal, split_felt, assert_not_zero
+from starkware.cairo.common.uint256 import Uint256, uint256_check
 
 from src.pools.sell.ISellPool import ISellPool
 from src.pools.IMintPool import Collection
@@ -121,6 +121,21 @@ func populate_struct{
 end
 
 
+@view
+func ownerOf{pedersen_ptr : HashBuiltin*, syscall_ptr : felt*, range_check_ptr
+    }(pool_address: Uint256) -> (owner: felt):
+
+    with_attr error_message("Pool address is not a valid Uint256."):
+        uint256_check(pool_address)
+    end
+    let (owner) = _owners.read(pool_address)
+    with_attr error_message("The pool address is not existent."):
+        assert_not_zero(owner)
+    end
+    return (owner)
+end
+
+
 #
 # Externals
 #
@@ -165,6 +180,7 @@ end
 @external
 func setPoolClassHash{pedersen_ptr : HashBuiltin*, syscall_ptr : felt*, range_check_ptr
     }(pool_type_class_hash: felt) -> ():
+
     assert_only_owner()
     _pool_type_class_hash.write(pool_type_class_hash)
 
@@ -200,7 +216,7 @@ func assert_only_owner{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }() -> ():
-
+    alloc_locals
     let (caller_address) = get_caller_address()
     let (factory_owner) = _factory_owner.read()
 
@@ -209,4 +225,27 @@ func assert_only_owner{
     end
 
     return ()
+end
+
+#
+# Helper functions
+#
+
+@view
+func getFactoryOwner{pedersen_ptr : HashBuiltin*, syscall_ptr : felt*, range_check_ptr
+    }() -> (factory_owner: felt):
+    
+    let (factory_owner) = _factory_owner.read()
+
+    return (factory_owner)
+end
+
+
+@view
+func getPoolTypeClassHash{pedersen_ptr : HashBuiltin*, syscall_ptr : felt*, range_check_ptr
+    }() -> (pool_type_class_hash: felt):
+    
+    let (pool_type_class_hash) = _pool_type_class_hash.read()
+
+    return (pool_type_class_hash)
 end

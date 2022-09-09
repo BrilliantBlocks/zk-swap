@@ -5,7 +5,7 @@ from starkware.cairo.common.math import assert_not_zero, assert_not_equal, asser
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.starknet.common.syscalls import library_call, get_caller_address, get_contract_address
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_add, uint256_le
+from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_add, uint256_le, uint256_sub
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
@@ -728,10 +728,9 @@ func withdrawEth{
 
     let (erc20_address) = _erc20_address.read()
     let (caller_address) = get_caller_address()
-    let (contract_address) = get_contract_address()
-    IERC20.transferFrom(erc20_address, contract_address, caller_address, amount)
+    IERC20.transfer(erc20_address, caller_address, amount)
 
-    let (new_balance, _) = uint256_add(eth_balance, amount)
+    let (new_balance) = uint256_sub(eth_balance, amount)
     _eth_balance.write(new_balance)
 
     return ()
@@ -757,8 +756,7 @@ func withdrawAllEth{
 
     let (erc20_address) = _erc20_address.read()
     let (caller_address) = get_caller_address()
-    let (contract_address) = get_contract_address()
-    IERC20.transferFrom(erc20_address, contract_address, caller_address, eth_balance)
+    IERC20.transfer(erc20_address, caller_address, eth_balance)
 
     _eth_balance.write(Uint256(0, 0))
 
