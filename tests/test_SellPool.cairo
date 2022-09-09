@@ -854,9 +854,7 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
         stop_prank_callable_1() 
     %}
     ISellPool.addNftToPool(sell_pool_contract_address, 2, NFT_ARRAY)
-    %{ 
-        stop_prank_callable_2() 
-    %}
+    ISellPool.togglePause(sell_pool_contract_address)
 
     let (old_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
     let (start_id_collection_1) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_1)
@@ -866,11 +864,14 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
     assert old_eth_balance = OLD_ETH_BALANCE
     assert start_id_collection_1 = 1
     assert old_pool_params.price = OLD_PRICE
-    assert is_paused = FALSE
+    assert is_paused = TRUE
 
     ISellPool.togglePause(sell_pool_contract_address)
     let (is_paused) = ISellPool.isPaused(sell_pool_contract_address)
-    assert is_paused = TRUE
+    assert is_paused = FALSE
+    %{ 
+        stop_prank_callable_2() 
+    %}
 
     %{  
         PRANK_ERC721_TOKEN_BUYER = 789
@@ -878,13 +879,11 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
         stop_prank_callable_2 = start_prank(PRANK_ERC721_TOKEN_BUYER, target_contract_address=ids.sell_pool_contract_address)
     %}
     IERC20.approve(erc20_contract_address, sell_pool_contract_address, TOTAL_PRICE)
-    # %{ expect_revert(error_message="Pool is currently paused.") %}
-    # ISellPool.buyNfts(sell_pool_contract_address, 2, NFT_ARRAY)
 
-    ISellPool.togglePause(sell_pool_contract_address)
     %{ stop_prank_callable_1() %}
 
     ISellPool.buyNfts(sell_pool_contract_address, 2, NFT_ARRAY)
+    
     %{ stop_prank_callable_2() %}
 
     let (new_eth_balance) = ISellPool.getEthBalance(sell_pool_contract_address)
@@ -896,6 +895,66 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr : felt*, range_check_ptr,
     assert new_start_id_collection_1 = ZERO_FELT
     assert new_pool_params.price = NEW_PRICE
     assert is_paused = FALSE
+
+    return ()
+end
+
+
+@external
+func test_cannot_buyNfts_when_pool_paused{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals 
+    local sell_pool_contract_address
+    local c1_contract_address
+    local erc20_contract_address
+    %{ 
+        ids.sell_pool_contract_address = context.sell_pool_contract_address
+        ids.c1_contract_address = context.c1_contract_address 
+        ids.erc20_contract_address = context.erc20_contract_address
+    %}
+
+    let COLLECTION_1 = c1_contract_address
+    let NFT_1_1 = Uint256(11, 0)
+    let NFT_1_2 = Uint256(12, 0)
+    const ZERO_FELT = 0
+    let TOTAL_PRICE = Uint256(21, 0)
+    
+    let (NFT_ARRAY : NFT*) = alloc()
+    assert NFT_ARRAY[0] = NFT(address = COLLECTION_1, id = NFT_1_1)
+    assert NFT_ARRAY[1] = NFT(address = COLLECTION_1, id = NFT_1_2)
+
+    %{  
+        PRANK_ERC721_TOKEN_OWNER = 321
+        stop_prank_callable_1 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.c1_contract_address)
+        stop_prank_callable_2 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IERC721.approve(c1_contract_address, sell_pool_contract_address, NFT_1_1)
+    IERC721.approve(c1_contract_address, sell_pool_contract_address, NFT_1_2)
+    %{ 
+        stop_prank_callable_1() 
+    %}
+    ISellPool.addNftToPool(sell_pool_contract_address, 2, NFT_ARRAY)
+    ISellPool.togglePause(sell_pool_contract_address)
+    %{ 
+        stop_prank_callable_2() 
+    %}
+
+    let (is_paused) = ISellPool.isPaused(sell_pool_contract_address)
+    assert is_paused = TRUE
+
+    %{  
+        PRANK_ERC721_TOKEN_BUYER = 789
+        stop_prank_callable_1 = start_prank(PRANK_ERC721_TOKEN_BUYER, target_contract_address=ids.erc20_contract_address)
+        stop_prank_callable_2 = start_prank(PRANK_ERC721_TOKEN_BUYER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IERC20.approve(erc20_contract_address, sell_pool_contract_address, TOTAL_PRICE)
+
+    %{ stop_prank_callable_1() %}
+
+    %{ expect_revert(error_message="Pool is currently paused.") %}
+    ISellPool.buyNfts(sell_pool_contract_address, 2, NFT_ARRAY)
+
+    %{ stop_prank_callable_2() %}
 
     return ()
 end
