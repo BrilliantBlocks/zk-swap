@@ -722,7 +722,7 @@ func withdrawEth{
 
     let (eth_balance) = _eth_balance.read()
     let (sufficient_balance) = uint256_le(amount, eth_balance)
-    with_attr error_message("Your ETH balance is unsufficient."):
+    with_attr error_message("Pool ETH balance is unsufficient."):
         assert sufficient_balance = TRUE
     end
 
@@ -750,7 +750,7 @@ func withdrawAllEth{
 
     local zero: Uint256 = Uint256(0, 0)
     let (is_zero) = uint256_eq(eth_balance, zero)
-    with_attr error_message("You have no ETH to withdraw."):
+    with_attr error_message("Pool has no ETH to withdraw."):
         assert is_zero = FALSE
     end
 

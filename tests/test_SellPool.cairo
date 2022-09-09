@@ -1074,16 +1074,6 @@ func test_withdrawEth{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashB
     let (pool_balance_before) = ISellPool.getEthBalance(sell_pool_contract_address)
     assert pool_balance_before = POOL_BALANCE_BEFORE
 
-    # %{  
-    #     PRANK_ERC721_TOKEN_OWNER = 321
-    #     stop_prank_callable = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
-    # %}
-    # # %{ expect_revert(error_message="Your ETH balance is unsufficient.") %}
-    # # ISellPool.withdrawEth(sell_pool_contract_address, WITHDRAWAL_BALANCE)
-    # %{ 
-    #     stop_prank_callable()
-    # %}
-
     %{  
         PRANK_ERC721_TOKEN_OWNER = 321
         stop_prank_callable_1 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.erc20_contract_address)
@@ -1111,8 +1101,57 @@ func test_withdrawEth{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashB
     let (pool_balance_after_withdrawal_all) = ISellPool.getEthBalance(sell_pool_contract_address)
     assert pool_balance_after_withdrawal_all = POOL_BALANCE_AFTER_WITHDRAWAL_ALL
 
-    %{ expect_revert(error_message="You have no ETH to withdraw.") %}
+    %{ expect_revert(error_message="Pool has no ETH to withdraw.") %}
     ISellPool.withdrawAllEth(sell_pool_contract_address)
+
+    %{ 
+        stop_prank_callable_2()
+    %}
+
+    return ()
+end
+
+
+@external
+func test_withdrawEth_with_unsufficient_pool_balance{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+
+    alloc_locals 
+    local sell_pool_contract_address
+    local erc20_contract_address
+    %{ 
+        ids.sell_pool_contract_address = context.sell_pool_contract_address
+        ids.erc20_contract_address = context.erc20_contract_address
+    %}
+
+    let ERC721_TOKEN_OWNER_BALANCE = Uint256(30, 0)
+    let POOL_BALANCE_BEFORE = Uint256(0, 0)
+    let EXCEEDING_WITHDRAWAL_BALANCE = Uint256(40, 0)
+    let POOL_BALANCE_AFTER_DEPOSIT = Uint256(30, 0)
+    let POOL_BALANCE_AFTER_WITHDRAWAL = Uint256(15, 0)
+    let POOL_BALANCE_AFTER_WITHDRAWAL_ALL = Uint256(0, 0)
+
+    let (pool_balance_before) = ISellPool.getEthBalance(sell_pool_contract_address)
+    assert pool_balance_before = POOL_BALANCE_BEFORE
+
+    %{  
+        PRANK_ERC721_TOKEN_OWNER = 321
+        stop_prank_callable_1 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.erc20_contract_address)
+        stop_prank_callable_2 = start_prank(PRANK_ERC721_TOKEN_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IERC20.approve(erc20_contract_address, sell_pool_contract_address, ERC721_TOKEN_OWNER_BALANCE)
+    %{ 
+        stop_prank_callable_1() 
+    %}
+    ISellPool.depositEth(sell_pool_contract_address, ERC721_TOKEN_OWNER_BALANCE)
+    
+    let (pool_balance_after_deposit) = ISellPool.getEthBalance(sell_pool_contract_address)
+    assert pool_balance_after_deposit = POOL_BALANCE_AFTER_DEPOSIT
+
+    let (pool_balance_erc20_contract) = IERC20.balanceOf(erc20_contract_address, sell_pool_contract_address)
+    assert pool_balance_erc20_contract = POOL_BALANCE_AFTER_DEPOSIT
+
+    %{ expect_revert(error_message="Pool ETH balance is unsufficient.") %}
+    ISellPool.withdrawEth(sell_pool_contract_address, EXCEEDING_WITHDRAWAL_BALANCE)
 
     %{ 
         stop_prank_callable_2()
