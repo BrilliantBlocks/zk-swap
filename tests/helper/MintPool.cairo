@@ -13,7 +13,7 @@ from starkware.cairo.common.math import assert_not_equal, split_felt, assert_not
 from starkware.cairo.common.uint256 import Uint256, uint256_check
 
 from src.pools.sell.ISellPool import ISellPool
-from src.pools.IMintPool import Collection
+from tests.helper.IMintPool import Collection
 
 
 #

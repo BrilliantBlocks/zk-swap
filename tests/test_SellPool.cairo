@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.starknet.common.syscalls import get_contract_address
 
 from src.pools.sell.ISellPool import ISellPool
-from src.pools.IMintPool import IMintPool, Collection
+from tests.helper.IMintPool import IMintPool, Collection
 from src.pools.sell.SellPool import NFT, PoolParams
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721Metadata import IERC721Metadata
@@ -70,7 +70,7 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
         ).contract_address
 
 
-        context.pool_factory_contract_address = deploy_contract("./src/pools/MintPool.cairo", 
+        context.pool_factory_contract_address = deploy_contract("./tests/helper/MintPool.cairo", 
             [
                 ids.POOL_FACTORY_OWNER
             ]
