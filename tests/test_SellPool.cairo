@@ -8,13 +8,12 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.starknet.common.syscalls import get_contract_address
 
 from src.pools.sell.ISellPool import ISellPool
-from src.pools.IMintPool import IMintPool
+from src.pools.IMintPool import IMintPool, Collection
 from src.pools.sell.SellPool import NFT, PoolParams
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721Metadata import IERC721Metadata
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
-from lib.diamond_contracts.contracts.facets.token.ERC721.MintPool import Collection
 
 
 const POOL_FACTORY = 123456789
@@ -35,16 +34,7 @@ const INITIAL_SUPPLY_LOW = 50
 const INITIAL_SUPPLY_HIGH = 0 
 const ERC721_TOKEN_OWNER = 321
 const ERC721_TOKEN_BUYER = 789
-
-const DIAMOND_OWNER = 123456789
-
-# Function selectors for mint factory diamond deployment 
-const DIAMOND_CUT = 430792745303880346585957116707317276189779144684897836036710359506025130056
-const _MINT = 1796124078321351913202134571936340076537925160160220984147449219923995501488
-const OWNER_OF = 73122117822990066614852869276021392412342625629800410280609241172256672489
-const MINT = 1329909728320632088402217562277154056711815095720684343816173432540100887380
-const GET_ALL_COLLECTIONS_FROM_ALL_POOLS = 130639861715053245680808483352879994517526791526539402165241807675912716582
-const SET_POOL_CLASS_HASH = 802006179654961374282995170229745579973602549196545734379376455902372141836
+const POOL_FACTORY_OWNER = 123456789
 
 
 @view
@@ -80,44 +70,20 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
         ).contract_address
 
 
-
-        context.diamond_class_hash = declare("./lib/diamond_contracts/contracts/Diamond.cairo").class_hash
-
-        context.diamond_cut_class_hash = declare("./lib/diamond_contracts/contracts/facets/diamond/DiamondCut.cairo").class_hash
-
-        context.pool_factory_class_hash = declare("./lib/diamond_contracts/contracts/facets/token/ERC721/MintPool.cairo").class_hash
-
-        context.erc721_class_hash = declare("./lib/diamond_contracts/contracts/facets/token/ERC721/ERC721.cairo").class_hash
-
-        # context.pool_factory_diamond_contract_address = deploy_contract("./lib/diamond_contracts/contracts/Diamond.cairo", 
-        #     [
-        #         context.diamond_class_hash, ids.ERC_CONTRACT_OWNER, 6, ids.DIAMOND_CUT, ids._MINT, ids.OWNER_OF, ids.MINT, ids.GET_ALL_COLLECTIONS_FROM_ALL_POOLS, ids.SET_POOL_CLASS_HASH, 6, context.diamond_cut_class_hash, context.erc721_class_hash, context.erc721_class_hash, context.pool_factory_class_hash, context.pool_factory_class_hash, context.pool_factory_class_hash
-        #     ]
-        # ).contract_address
-
-        context.pool_factory_diamond_contract_address = deploy_contract("./lib/diamond_contracts/contracts/Diamond.cairo", 
+        context.pool_factory_contract_address = deploy_contract("./src/pools/MintPool.cairo", 
             [
-                context.diamond_class_hash, ids.DIAMOND_OWNER, 0, 0
+                ids.POOL_FACTORY_OWNER
             ]
         ).contract_address
 
 
+        context.linear_curve_class_hash = declare("./src/bonding-curves/linear/LinearCurve.cairo").class_hash
 
-        # context.sell_pool_class_hash = declare("./src/pools/sell/SellPool.cairo").class_hash
-
-        # context.pool_factory_contract_address = deploy_contract("./lib/diamond_contracts/contracts/facets/token/ERC721/MintPool.cairo", 
-        #     []
-        # ).contract_address
-
-
-
-        # context.linear_curve_class_hash = declare("./src/bonding-curves/linear/LinearCurve.cairo").class_hash
-
-        # context.sell_pool_contract_address = deploy_contract("./src/pools/sell/SellPool.cairo", 
-        #     [
-        #         ids.POOL_FACTORY, context.linear_curve_class_hash, context.erc20_contract_address, ids.CURRENT_PRICE_LOW, ids.CURRENT_PRICE_HIGH, ids.DELTA
-        #     ]
-        # ).contract_address
+        context.sell_pool_contract_address = deploy_contract("./src/pools/sell/SellPool.cairo", 
+            [
+                ids.POOL_FACTORY, context.linear_curve_class_hash, context.erc20_contract_address, ids.CURRENT_PRICE_LOW, ids.CURRENT_PRICE_HIGH, ids.DELTA
+            ]
+        ).contract_address
 
     %}
 
@@ -149,22 +115,22 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
 end 
 
 
-# @external
-# func test_initialization_pool_factory{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+@external
+func test_initialization_pool_factory{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
-#     alloc_locals 
+    alloc_locals 
 
-#     local pool_factory_contract_address
-#     %{ 
-#         ids.pool_factory_contract_address = context.pool_factory_contract_address 
-#     %}
+    local pool_factory_contract_address
+    %{ 
+        ids.pool_factory_contract_address = context.pool_factory_contract_address 
+    %}
 
-#     let (collection_array_len: felt, collection_array: Collection*) = IMintPool.getAllCollectionsFromAllPools(pool_factory_contract_address)
+    let (collection_array_len: felt, collection_array: Collection*) = IMintPool.getAllCollectionsFromAllPools(pool_factory_contract_address)
     
-#     assert collection_array_len = 0
+    assert collection_array_len = 0
 
-#     return ()
-# end
+    return ()
+end
 
 
 # @external
@@ -188,54 +154,56 @@ end
 
 #     let (pool_address) = IMintPool.mint(pool_factory_contract_address, linear_curve_class_hash)
 
+#     assert pool_address = 123
+
 #     return ()
 # end
 
 
-@external
-func test_initialization_ERC_contracts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
+# @external
+# func test_initialization_ERC_contracts{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
-    alloc_locals 
+#     alloc_locals 
 
-    local c1_contract_address
-    local c2_contract_address
-    local c3_contract_address
-    local erc20_contract_address
-    %{ 
-        ids.c1_contract_address = context.c1_contract_address 
-        ids.c2_contract_address = context.c2_contract_address
-        ids.c3_contract_address = context.c3_contract_address
-        ids.erc20_contract_address = context.erc20_contract_address
-    %}
+#     local c1_contract_address
+#     local c2_contract_address
+#     local c3_contract_address
+#     local erc20_contract_address
+#     %{ 
+#         ids.c1_contract_address = context.c1_contract_address 
+#         ids.c2_contract_address = context.c2_contract_address
+#         ids.c3_contract_address = context.c3_contract_address
+#         ids.erc20_contract_address = context.erc20_contract_address
+#     %}
 
-    let NFT_1_1 = Uint256(11, 0)
-    let NFT_1_2 = Uint256(12, 0)
-    let NFT_2_1 = Uint256(21, 0)
-    let NFT_2_2 = Uint256(22, 0)
-    let NFT_3_1 = Uint256(31, 0)
+#     let NFT_1_1 = Uint256(11, 0)
+#     let NFT_1_2 = Uint256(12, 0)
+#     let NFT_2_1 = Uint256(21, 0)
+#     let NFT_2_2 = Uint256(22, 0)
+#     let NFT_3_1 = Uint256(31, 0)
 
-    let (c1_balance) = IERC721.balanceOf(c1_contract_address, ERC721_TOKEN_OWNER)
-    let (c2_balance) = IERC721.balanceOf(c2_contract_address, ERC721_TOKEN_OWNER)
-    let (c3_balance) = IERC721.balanceOf(c3_contract_address, ERC721_TOKEN_OWNER)
-    let (erc20_balance_token_buyer) = IERC20.balanceOf(erc20_contract_address, ERC721_TOKEN_BUYER)
-    let (erc20_balance_token_owner) = IERC20.balanceOf(erc20_contract_address, ERC721_TOKEN_OWNER)
-    let (c1_token_owner) = IERC721.ownerOf(c1_contract_address, NFT_1_1)
-    let (c2_token_owner) = IERC721.ownerOf(c2_contract_address, NFT_2_1)
-    let (c3_token_owner) = IERC721.ownerOf(c3_contract_address, NFT_3_1)
-    let (erc20_total_supply) = IERC20.totalSupply(erc20_contract_address)
+#     let (c1_balance) = IERC721.balanceOf(c1_contract_address, ERC721_TOKEN_OWNER)
+#     let (c2_balance) = IERC721.balanceOf(c2_contract_address, ERC721_TOKEN_OWNER)
+#     let (c3_balance) = IERC721.balanceOf(c3_contract_address, ERC721_TOKEN_OWNER)
+#     let (erc20_balance_token_buyer) = IERC20.balanceOf(erc20_contract_address, ERC721_TOKEN_BUYER)
+#     let (erc20_balance_token_owner) = IERC20.balanceOf(erc20_contract_address, ERC721_TOKEN_OWNER)
+#     let (c1_token_owner) = IERC721.ownerOf(c1_contract_address, NFT_1_1)
+#     let (c2_token_owner) = IERC721.ownerOf(c2_contract_address, NFT_2_1)
+#     let (c3_token_owner) = IERC721.ownerOf(c3_contract_address, NFT_3_1)
+#     let (erc20_total_supply) = IERC20.totalSupply(erc20_contract_address)
     
-    assert c1_balance = Uint256(2, 0)
-    assert c2_balance = Uint256(2, 0)
-    assert c3_balance = Uint256(1, 0)
-    assert erc20_balance_token_buyer = Uint256(50, 0)
-    assert erc20_balance_token_owner = Uint256(30, 0)
-    assert erc20_total_supply = Uint256(80, 0)
-    assert c1_token_owner = ERC721_TOKEN_OWNER
-    assert c2_token_owner = ERC721_TOKEN_OWNER
-    assert c3_token_owner = ERC721_TOKEN_OWNER
+#     assert c1_balance = Uint256(2, 0)
+#     assert c2_balance = Uint256(2, 0)
+#     assert c3_balance = Uint256(1, 0)
+#     assert erc20_balance_token_buyer = Uint256(50, 0)
+#     assert erc20_balance_token_owner = Uint256(30, 0)
+#     assert erc20_total_supply = Uint256(80, 0)
+#     assert c1_token_owner = ERC721_TOKEN_OWNER
+#     assert c2_token_owner = ERC721_TOKEN_OWNER
+#     assert c3_token_owner = ERC721_TOKEN_OWNER
     
-    return ()
-end
+#     return ()
+# end
 
 
 # @external

@@ -13,31 +13,27 @@ from starkware.cairo.common.math import assert_not_equal, split_felt
 from starkware.cairo.common.uint256 import Uint256
 
 from src.pools.sell.ISellPool import ISellPool
+from src.pools.IMintPool import Collection
 
-
-struct Collection:
-    member collection_address: felt
-    member pool_address: felt
-end
 
 #
 # Storage
 #
 
 @storage_var
-func factory_owner() -> (address: felt):
+func _factory_owner() -> (address: felt):
 end
 
 @storage_var
-func owners(pool_address: Uint256) -> (res: felt):
+func _owners(pool_address: Uint256) -> (res: felt):
 end
 
 @storage_var
-func pool_type_class_hash() -> (res: felt):
+func _pool_type_class_hash() -> (res: felt):
 end
 
 @storage_var
-func pool_by_id(int: felt) -> (address: felt):
+func _pool_by_id(int: felt) -> (address: felt):
 end
 
 
@@ -49,7 +45,7 @@ func constructor{
     }(
         factory_owner: felt
     ):
-        factory_owner.write(factory_owner)
+        _factory_owner.write(factory_owner)
         return ()
 end
 
@@ -80,22 +76,22 @@ func populate_collections{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        _collection_array: Collection*,
-        _array_index: felt,
-        _current_count: felt
+        collection_array: Collection*,
+        array_index: felt,
+        current_count: felt
     ) -> (
-        _collection_count: felt
+        collection_count: felt
     ):
-    let (pool_address) = pool_by_id.read(_array_index)
+    let (pool_address) = _pool_by_id.read(array_index)
     if pool_address == 0:
-        return (_current_count)
+        return (current_count)
     end
 
     let (pool_collection_array_len, pool_collection_array) = ISellPool.getAllCollections(pool_address)
 
-    let (next_count) = populate_struct(_collection_array, pool_collection_array_len, pool_collection_array, pool_address, _current_count)
+    let (next_count) = populate_struct(collection_array, pool_collection_array_len, pool_collection_array, pool_address, current_count)
 
-    return populate_collections(_collection_array, _array_index + 1, next_count)
+    return populate_collections(collection_array, array_index + 1, next_count)
 
 end
 
@@ -105,22 +101,22 @@ func populate_struct{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        _collection_array: Collection*,
-        _pool_collection_array_len: felt,
-        _pool_collection_array: felt*,
-        _pool_address: felt,
-        _current_count: felt
+        collection_array: Collection*,
+        pool_collection_array_len: felt,
+        pool_collection_array: felt*,
+        pool_address: felt,
+        current_count: felt
     ) -> (
-        _next_count: felt
+        next_count: felt
     ):
     
-    if _pool_collection_array_len == 0:
-        return (_current_count)
+    if pool_collection_array_len == 0:
+        return (current_count)
     end
 
-    assert _collection_array[_current_count] = Collection(collection_address = _pool_collection_array[0], pool_address = _pool_address)
+    assert collection_array[current_count] = Collection(collection_address = pool_collection_array[0], pool_address = pool_address)
     
-    return populate_struct(_collection_array, _pool_collection_array_len - 1, _pool_collection_array + 1, _pool_address, _current_count + 1)
+    return populate_struct(collection_array, pool_collection_array_len - 1, pool_collection_array + 1, pool_address, current_count + 1)
 
 end
 
@@ -131,19 +127,19 @@ end
 
 @external
 func mint{pedersen_ptr : HashBuiltin*, syscall_ptr : felt*, range_check_ptr
-    }(_bonding_curve_class_hash : felt) -> (res: felt):
+    }(bonding_curve_class_hash : felt) -> (res: felt):
 
     alloc_locals
     let (local calldata: felt*) = alloc()
 
     let (self) = get_contract_address()
     let (pool_owner) = get_caller_address()
-    let (pool_class_hash) = pool_type_class_hash.read()
+    let (pool_class_hash) = _pool_type_class_hash.read()
     let (salt) = get_block_number()
     let calldata_len = 2
 
     assert calldata[0] = self
-    assert calldata[1] = _bonding_curve_class_hash
+    assert calldata[1] = bonding_curve_class_hash
 
     with_attr error_message("Pool deployment failed"):
         let (pool_address) = deploy(
@@ -156,21 +152,21 @@ func mint{pedersen_ptr : HashBuiltin*, syscall_ptr : felt*, range_check_ptr
     end
 
     let (next_free_id) = get_next_free_id(0)
-    pool_by_id.write(next_free_id, pool_address)
+    _pool_by_id.write(next_free_id, pool_address)
 
     let (high, low) = split_felt(pool_address)
     let token_id = Uint256(low, high)
 
-    owners.write(token_id, pool_owner)
+    _owners.write(token_id, pool_owner)
     return (pool_address)
 end
 
 
 @external
 func setPoolClassHash{pedersen_ptr : HashBuiltin*, syscall_ptr : felt*, range_check_ptr
-    }(_pool_type_class_hash: felt) -> ():
-    assert_only_owner_or_approved()
-    pool_type_class_hash.write(_pool_type_class_hash)
+    }(pool_type_class_hash: felt) -> ():
+    assert_only_owner()
+    _pool_type_class_hash.write(pool_type_class_hash)
 
     return ()
 end
@@ -184,16 +180,33 @@ func get_next_free_id{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        _current_id: felt
+        current_id: felt
     ) -> (
-        _next_free_id: felt
+        next_free_id: felt
     ):
-    let (s) = pool_by_id.read(_current_id)
+    let (s) = _pool_by_id.read(current_id)
 
     if s == 0:
         return (0)
     end 
 
-    let (sum) = get_next_free_id(_current_id + 1)
+    let (sum) = get_next_free_id(current_id + 1)
     return (sum + 1)
+end
+
+
+func assert_only_owner{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }() -> ():
+
+    let (caller_address) = get_caller_address()
+    let (factory_owner) = _factory_owner.read()
+
+    with_attr error_message("You must be the factory owner to call this function."):
+        assert caller_address = factory_owner
+    end
+
+    return ()
 end

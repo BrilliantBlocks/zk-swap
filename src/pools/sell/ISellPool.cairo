@@ -2,7 +2,17 @@
 
 from starkware.cairo.common.uint256 import Uint256
 
-from src.pools.sell.SellPool import NFT, PoolParams
+
+struct NFT:
+    member address: felt
+    member id: Uint256
+end
+
+struct PoolParams:
+    member price: Uint256
+    member delta: felt
+end
+
 
 @contract_interface
 namespace ISellPool:
