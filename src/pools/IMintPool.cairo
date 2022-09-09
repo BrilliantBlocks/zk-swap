@@ -15,7 +15,7 @@ namespace IMintPool:
     func setPoolClassHash(pool_type_class_hash: felt) -> ():
     end
 
-    func mint(bonding_curve_class_hash: felt) -> (res: felt):
+    func mint(bonding_curve_class_hash: felt, erc20_contract_address: felt) -> (res: felt):
     end
 
     func getAllCollectionsFromAllPools() -> (collection_array_len: felt, collection_array: Collection*):

@@ -140,29 +140,34 @@ end
 #     alloc_locals 
 
 #     local pool_factory_contract_address
+#     local erc20_contract_address
 #     local sell_pool_class_hash
 #     local linear_curve_class_hash
 #     %{ 
 #         ids.pool_factory_contract_address = context.pool_factory_contract_address 
+#         ids.erc20_contract_address = context.erc20_contract_address
 #         ids.sell_pool_class_hash = context.sell_pool_class_hash
 #         ids.linear_curve_class_hash = context.linear_curve_class_hash 
 #     %}
-
-#     # %{ expect_revert(error_message="Pool deployment failed") %}
-#     # let (pool_address) = IMintPool.mint(pool_factory_contract_address, linear_curve_class_hash)
-
 
 #     let (pool_type_class_hash_before) = IMintPool.getPoolTypeClassHash(pool_factory_contract_address)
 #     let (factory_owner) = IMintPool.getFactoryOwner(pool_factory_contract_address)
 #     assert pool_type_class_hash_before = 0
 #     assert factory_owner = POOL_FACTORY_OWNER
 
+#     %{  
+#         PRANK_FACTORY_OWNER = 123456789
+#         stop_prank_callable = start_prank(PRANK_FACTORY_OWNER, target_contract_address=ids.pool_factory_contract_address)
+#     %}
 #     IMintPool.setPoolClassHash(pool_factory_contract_address, sell_pool_class_hash)
+#     %{ 
+#         stop_prank_callable()
+#     %}
 
 #     let (pool_type_class_hash_after) = IMintPool.getPoolTypeClassHash(pool_factory_contract_address)
 #     assert pool_type_class_hash_after = sell_pool_class_hash
 
-#     let (pool_address) = IMintPool.mint(pool_factory_contract_address, linear_curve_class_hash)
+#     let (pool_address) = IMintPool.mint(pool_factory_contract_address, linear_curve_class_hash, erc20_contract_address)
 
 #     assert pool_address = 123
 

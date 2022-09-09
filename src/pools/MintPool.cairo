@@ -142,7 +142,7 @@ end
 
 @external
 func mint{pedersen_ptr : HashBuiltin*, syscall_ptr : felt*, range_check_ptr
-    }(bonding_curve_class_hash : felt) -> (res: felt):
+    }(bonding_curve_class_hash : felt, erc20_contract_address: felt) -> (res: felt):
 
     alloc_locals
     let (local calldata: felt*) = alloc()
@@ -151,10 +151,11 @@ func mint{pedersen_ptr : HashBuiltin*, syscall_ptr : felt*, range_check_ptr
     let (pool_owner) = get_caller_address()
     let (pool_class_hash) = _pool_type_class_hash.read()
     let (salt) = get_block_number()
-    let calldata_len = 2
+    let calldata_len = 3
 
     assert calldata[0] = self
     assert calldata[1] = bonding_curve_class_hash
+    assert calldata[2] = erc20_contract_address
 
     with_attr error_message("Pool deployment failed"):
         let (pool_address) = deploy(
