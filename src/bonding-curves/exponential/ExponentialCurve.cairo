@@ -1,0 +1,116 @@
+%lang starknet
+
+from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.math import unsigned_div_rem, split_felt
+from starkware.cairo.common.uint256 import Uint256, uint256_mul, uint256_sub, uint256_add, uint256_unsigned_div_rem, uint256_eq
+from starkware.cairo.common.bool import TRUE, FALSE
+
+
+@view
+func getTotalPrice{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        number_items: felt,
+        current_price: Uint256,
+        delta: felt
+    ) -> (
+        total_price: Uint256
+    ):
+    alloc_locals
+
+    let (delta_power) = power_of_delta(delta, number_items, 1)
+    local counter = delta_power - 1
+    local denominator = delta - 1
+    let (fraction, fraction_overflow) = unsigned_div_rem(counter, denominator)
+    with_attr error_message("Overflow in price calculation."):
+        assert fraction_overflow = FALSE
+    end
+    let (fraction_uint) = convertFeltToUint(fraction)
+
+    let (total_price, total_price_overflow) = uint256_mul(current_price, fraction_uint)
+    assertNoOverflow(total_price_overflow)
+    
+    return (total_price)
+end
+
+
+@view
+func getNewPrice{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        number_items: felt,
+        current_price: Uint256,
+        delta: felt
+    ) -> (
+        new_price: Uint256
+    ):
+    alloc_locals
+
+    let (delta_power) = power_of_delta(delta, number_items, 1)
+    let (delta_power_uint) = convertFeltToUint(delta_power)
+    let (new_price, new_price_overflow) = uint256_mul(current_price, delta_power_uint)
+    assertNoOverflow(new_price_overflow)
+    
+    return (new_price)
+end
+
+
+func power_of_delta{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        delta: felt,
+        number_items: felt,
+        current_count: felt
+    ) -> (
+        power: felt
+    ):
+    alloc_locals
+    if current_count == number_items:
+        return (delta)
+    end
+
+    local new_delta = delta * delta
+    
+    return power_of_delta(new_delta, number_items, current_count + 1)
+end
+
+
+func convertFeltToUint{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        input: felt
+    ) -> (
+        output: Uint256
+    ):
+
+    let (output_high, output_low) = split_felt(input)
+    let output = Uint256(output_low, output_high)
+    
+    return (output)
+end
+
+
+func assertNoOverflow{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        input: Uint256
+    ) -> ():
+    alloc_locals
+    local zero: Uint256 = Uint256(0, 0)
+    let (no_overflow) = uint256_eq(input, zero)
+    with_attr error_message("Overflow in price calculation."):
+        assert no_overflow = TRUE
+    end
+    
+    return ()
+end
