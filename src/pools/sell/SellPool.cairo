@@ -121,7 +121,7 @@ func setPoolParams{
     }(
         pool_params: PoolParams
     ) -> ():
-    #assert_only_owner()
+    assert_only_owner()
 
     _current_price.write(pool_params.price)
     _delta.write(pool_params.delta)
@@ -144,8 +144,8 @@ func addNftToPool{
         nft_array_len : felt,
         nft_array : NFT*
     ) -> ():
+    assert_only_owner()
 
-    #assert_only_owner()
     _add_nft_to_pool(nft_array_len, nft_array)
 
     return ()
@@ -292,8 +292,8 @@ func removeNftFromPool{
         nft_array_len : felt,
         nft_array : NFT*
     ) -> ():
+    assert_only_owner()
 
-    #assert_only_owner()
     _remove_nft_from_pool(nft_array_len, nft_array)
 
     return ()
@@ -508,7 +508,7 @@ func buyNfts{
     ) -> ():
     alloc_locals
 
-    #assert_not_owner()
+    assert_not_owner()
 
     let (is_paused) = _pool_paused.read()
     with_attr error_message("Pool is currently paused."):
@@ -577,7 +577,7 @@ func togglePause{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }() -> ():
-    #assert_only_owner()
+    assert_only_owner()
 
     let (is_paused) = _pool_paused.read()
     
@@ -683,7 +683,7 @@ func depositEth{
         range_check_ptr
     }(amount: Uint256) -> ():
     alloc_locals
-    #assert_only_owner()
+    assert_only_owner()
 
     let (erc20_address) = _erc20_address.read()
     let (caller_address) = get_caller_address()
@@ -711,7 +711,7 @@ func withdrawEth{
         range_check_ptr
     }(amount: Uint256) -> ():
     alloc_locals
-    #assert_only_owner()
+    assert_only_owner()
 
     let (eth_balance) = _eth_balance.read()
     let (sufficient_balance) = uint256_le(amount, eth_balance)
@@ -737,7 +737,7 @@ func withdrawAllEth{
         range_check_ptr
     }() -> ():
     alloc_locals
-    #assert_only_owner()
+    assert_only_owner()
 
     let (eth_balance) = _eth_balance.read()
 

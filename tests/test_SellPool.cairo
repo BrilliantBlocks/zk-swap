@@ -117,15 +117,23 @@ func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*
 
     %{  
         PRANK_POOL_AND_NFT_OWNER = 123456789
-        stop_prank_callable = start_prank(PRANK_POOL_AND_NFT_OWNER, target_contract_address=ids.pool_factory_contract_address)
+        stop_prank_callable_1 = start_prank(PRANK_POOL_AND_NFT_OWNER, target_contract_address=ids.pool_factory_contract_address)
     %}
     let (sell_pool_contract_address) = IMintPool.mint(pool_factory_contract_address, linear_curve_class_hash, erc20_contract_address)
     %{ 
-        stop_prank_callable() 
+        stop_prank_callable_1() 
     %}
 
-    ISellPool.setPoolParams(sell_pool_contract_address, POOL_PARAMS)
     _sell_pool_contract_address.write(sell_pool_contract_address)
+
+    %{  
+        PRANK_POOL_AND_NFT_OWNER = 123456789
+        stop_prank_callable_2 = start_prank(PRANK_POOL_AND_NFT_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    ISellPool.setPoolParams(sell_pool_contract_address, POOL_PARAMS)
+    %{ 
+        stop_prank_callable_2() 
+    %}
 
     return ()
 end 
@@ -221,7 +229,7 @@ func test_getPoolConfig_with_expected_output{syscall_ptr : felt*, range_check_pt
 
     let (high, low) = split_felt(sell_pool_contract_address)
     let sell_pool_contract_address_token = Uint256(low, high)
-    let (pool_owner) = IMintPool.ownerOf(pool_factory_contract_address, sell_pool_contract_address_token)
+    let (pool_owner) = IERC721.ownerOf(pool_factory_contract_address, sell_pool_contract_address_token)
     
     assert pool_factory = pool_factory_contract_address
     assert pool_params.price = POOL_PARAMS.price
@@ -539,7 +547,12 @@ func test_editPoolParams_with_expected_output{syscall_ptr : felt*, range_check_p
     assert old_pool_params.price = POOL_PARAMS.price
     assert old_pool_params.delta = POOL_PARAMS.delta
 
+    %{  
+        PRANK_POOL_AND_NFT_OWNER = 123456789
+        stop_prank_callable = start_prank(PRANK_POOL_AND_NFT_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    %}
     ISellPool.setPoolParams(sell_pool_contract_address, NEW_POOL_PARAMS)
+    %{ stop_prank_callable() %}
 
     let (new_pool_params) = ISellPool.getPoolConfig(sell_pool_contract_address)
 

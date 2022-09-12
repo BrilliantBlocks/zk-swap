@@ -21,9 +21,6 @@ namespace IMintPool:
     func getAllCollectionsFromAllPools() -> (collection_array_len: felt, collection_array: Collection*):
     end
 
-    func ownerOf(pool_address: Uint256) -> (owner: felt):
-    end
-
     func getFactoryOwner() -> (factory_owner: felt):
     end
 
