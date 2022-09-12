@@ -25,7 +25,7 @@ func _factory_owner() -> (address: felt):
 end
 
 @storage_var
-func _owners(pool_address: Uint256) -> (res: felt):
+func _owners(pool_address_token: Uint256) -> (res: felt):
 end
 
 @storage_var
@@ -33,7 +33,7 @@ func _pool_type_class_hash() -> (res: felt):
 end
 
 @storage_var
-func _pool_by_id(int: felt) -> (address: felt):
+func _pool_by_id(int: felt) -> (pool_address: felt):
 end
 
 
@@ -123,12 +123,12 @@ end
 
 @view
 func ownerOf{pedersen_ptr : HashBuiltin*, syscall_ptr : felt*, range_check_ptr
-    }(pool_address: Uint256) -> (owner: felt):
+    }(pool_address_token: Uint256) -> (owner: felt):
 
     with_attr error_message("Pool address is not a valid Uint256."):
-        uint256_check(pool_address)
+        uint256_check(pool_address_token)
     end
-    let (owner) = _owners.read(pool_address)
+    let (owner) = _owners.read(pool_address_token)
     with_attr error_message("The pool address is not existent."):
         assert_not_zero(owner)
     end
@@ -142,7 +142,7 @@ end
 
 @external
 func mint{pedersen_ptr : HashBuiltin*, syscall_ptr : felt*, range_check_ptr
-    }(bonding_curve_class_hash : felt, erc20_contract_address: felt) -> (res: felt):
+    }(bonding_curve_class_hash : felt, erc20_contract_address: felt) -> (pool_address: felt):
 
     alloc_locals
     let (local calldata: felt*) = alloc()
@@ -171,9 +171,8 @@ func mint{pedersen_ptr : HashBuiltin*, syscall_ptr : felt*, range_check_ptr
     _pool_by_id.write(next_free_id, pool_address)
 
     let (high, low) = split_felt(pool_address)
-    let token_id = Uint256(low, high)
-
-    _owners.write(token_id, pool_owner)
+    let pool_address_token = Uint256(low, high)
+    _owners.write(pool_address_token, pool_owner)
     return (pool_address)
 end
 

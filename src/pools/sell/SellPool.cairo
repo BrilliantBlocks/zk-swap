@@ -99,7 +99,7 @@ func constructor{
         factory_address: felt,
         bonding_curve_class_hash: felt,
         erc20_address: felt,
-        pool_params: PoolParams
+        #pool_params: PoolParams
     ):
     alloc_locals
 
@@ -110,8 +110,8 @@ func constructor{
     _bonding_curve_class_hash.write(bonding_curve_class_hash)
     _erc20_address.write(erc20_address)
 
-    _current_price.write(pool_params.price)
-    _delta.write(pool_params.delta)
+    # _current_price.write(pool_params.price)
+    # _delta.write(pool_params.delta)
 
     return ()
 end
