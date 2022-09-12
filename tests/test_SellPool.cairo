@@ -247,11 +247,13 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
     local c1_contract_address
     local c2_contract_address
     local c3_contract_address
+    local pool_factory_contract_address
 
     %{ 
         ids.c1_contract_address = context.c1_contract_address 
         ids.c2_contract_address = context.c2_contract_address
         ids.c3_contract_address = context.c3_contract_address
+        ids.pool_factory_contract_address = context.pool_factory_contract_address
     %}
 
     let (sell_pool_contract_address) = _sell_pool_contract_address.read()
@@ -353,12 +355,18 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
         stop_prank_callable_3() 
     %}
 
+    let (ALL_COLLECTIONS_FROM_ALL_POOLS_ARRAY : Collection*) = alloc()
+    assert ALL_COLLECTIONS_FROM_ALL_POOLS_ARRAY[0] = Collection(collection_address = COLLECTION_1, pool_address = sell_pool_contract_address)
+    assert ALL_COLLECTIONS_FROM_ALL_POOLS_ARRAY[1] = Collection(collection_address = COLLECTION_2, pool_address = sell_pool_contract_address)
+    assert ALL_COLLECTIONS_FROM_ALL_POOLS_ARRAY[2] = Collection(collection_address = COLLECTION_3, pool_address = sell_pool_contract_address)
+
     let (start_id_collection_3) = ISellPool.getStartIdByCollection(sell_pool_contract_address, COLLECTION_3)
     let list_element_2 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 2)
     let list_element_4 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 4)
     let list_element_5 : (Uint256, felt) = ISellPool.getListElementById(sell_pool_contract_address, 5)
     let (pool_balance_c3) = IERC721.balanceOf(c3_contract_address, sell_pool_contract_address)
     let (new_owner_c3) = IERC721.ownerOf(c3_contract_address, NFT_3_1)
+    let (all_collections_from_all_pools_array_len: felt, all_collections_from_all_pools_array: Collection*) = IMintPool.getAllCollectionsFromAllPools(pool_factory_contract_address)
 
     assert start_id_collection_3 = 5
     assert list_element_2[0] = NFT_2_1
@@ -369,7 +377,11 @@ func test_addNftToPool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Hash
     assert list_element_5[1] = ZERO_FELT
     assert pool_balance_c3 = Uint256(1, 0)
     assert new_owner_c3 = sell_pool_contract_address
-    
+    assert all_collections_from_all_pools_array_len = 3
+    assert all_collections_from_all_pools_array[0] = ALL_COLLECTIONS_FROM_ALL_POOLS_ARRAY[0]
+    assert all_collections_from_all_pools_array[1] = ALL_COLLECTIONS_FROM_ALL_POOLS_ARRAY[1]
+    assert all_collections_from_all_pools_array[2] = ALL_COLLECTIONS_FROM_ALL_POOLS_ARRAY[2]
+
     return ()
 end
 
