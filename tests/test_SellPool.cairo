@@ -30,45 +30,44 @@ const INITIAL_SUPPLY_LOW = 50
 const INITIAL_SUPPLY_HIGH = 0 
 const ERC721_TOKEN_OWNER = 321
 const ERC721_TOKEN_BUYER = 789
-const POOL_FACTORY_OWNER = 123456789
 
 
 @view
 func __setup__{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : HashBuiltin*}():
 
     alloc_locals
-    let (ERC_CONTRACT_OWNER) = get_contract_address()
+    let (CONTRACT_OWNER) = get_contract_address()
 
     %{
 
         context.c1_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
             [ 
-                ids.C1_NAME, ids.C1_SYMBOL, ids.ERC_CONTRACT_OWNER
+                ids.C1_NAME, ids.C1_SYMBOL, ids.CONTRACT_OWNER
             ]
         ).contract_address
 
         context.c2_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
             [ 
-                ids.C2_NAME, ids.C2_SYMBOL, ids.ERC_CONTRACT_OWNER
+                ids.C2_NAME, ids.C2_SYMBOL, ids.CONTRACT_OWNER
             ]
         ).contract_address
 
         context.c3_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
             [ 
-                ids.C3_NAME, ids.C3_SYMBOL, ids.ERC_CONTRACT_OWNER
+                ids.C3_NAME, ids.C3_SYMBOL, ids.CONTRACT_OWNER
             ]
         ).contract_address
 
         context.erc20_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc20/presets/ERC20Mintable.cairo", 
             [ 
-                ids.ERC20_NAME, ids.ERC20_SYMBOL, ids.DECIMALS, ids.INITIAL_SUPPLY_LOW, ids.INITIAL_SUPPLY_HIGH, ids.ERC721_TOKEN_BUYER, ids.ERC_CONTRACT_OWNER
+                ids.ERC20_NAME, ids.ERC20_SYMBOL, ids.DECIMALS, ids.INITIAL_SUPPLY_LOW, ids.INITIAL_SUPPLY_HIGH, ids.ERC721_TOKEN_BUYER, ids.CONTRACT_OWNER
             ]
         ).contract_address
 
 
         context.pool_factory_contract_address = deploy_contract("./tests/helper/MintPool.cairo", 
             [
-                ids.POOL_FACTORY_OWNER
+                ids.CONTRACT_OWNER
             ]
         ).contract_address
 
@@ -152,19 +151,13 @@ func test_mint_sell_pool{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Ha
         ids.linear_curve_class_hash = context.linear_curve_class_hash 
     %}
 
+    let (POOL_FACTORY_OWNER) = get_contract_address()
     let (pool_type_class_hash_before) = IMintPool.getPoolTypeClassHash(pool_factory_contract_address)
     let (factory_owner) = IMintPool.getFactoryOwner(pool_factory_contract_address)
     assert pool_type_class_hash_before = 0
     assert factory_owner = POOL_FACTORY_OWNER
 
-    %{  
-        PRANK_FACTORY_OWNER = 123456789
-        stop_prank_callable = start_prank(PRANK_FACTORY_OWNER, target_contract_address=ids.pool_factory_contract_address)
-    %}
     IMintPool.setPoolClassHash(pool_factory_contract_address, sell_pool_class_hash)
-    %{ 
-        stop_prank_callable()
-    %}
 
     let (pool_type_class_hash_after) = IMintPool.getPoolTypeClassHash(pool_factory_contract_address)
     assert pool_type_class_hash_after = sell_pool_class_hash
