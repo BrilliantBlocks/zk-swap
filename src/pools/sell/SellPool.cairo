@@ -98,8 +98,7 @@ func constructor{
     }(
         factory_address: felt,
         bonding_curve_class_hash: felt,
-        erc20_address: felt,
-        #pool_params: PoolParams
+        erc20_address: felt
     ):
     alloc_locals
 
@@ -110,8 +109,25 @@ func constructor{
     _bonding_curve_class_hash.write(bonding_curve_class_hash)
     _erc20_address.write(erc20_address)
 
-    # _current_price.write(pool_params.price)
-    # _delta.write(pool_params.delta)
+    return ()
+end
+
+
+@external
+func setPoolParams{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        pool_params: PoolParams
+    ) -> ():
+    #assert_only_owner()
+
+    _current_price.write(pool_params.price)
+    _delta.write(pool_params.delta)
+
+    PriceUpdate.emit(pool_params.price)
+    DeltaUpdate.emit(pool_params.delta)
 
     return ()
 end
@@ -372,29 +388,6 @@ func find_element_to_be_removed{
 
     return find_element_to_be_removed(last_element[1], token_id)
 
-end
-
-
-# Edit pool 
-
-
-@external
-func editPool{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }(
-        new_pool_params: PoolParams
-    ) -> ():
-    #assert_only_owner()
-
-    _current_price.write(new_pool_params.price)
-    _delta.write(new_pool_params.delta)
-
-    PriceUpdate.emit(new_pool_params.price)
-    DeltaUpdate.emit(new_pool_params.delta)
-
-    return ()
 end
 
 

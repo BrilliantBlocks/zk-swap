@@ -17,6 +17,9 @@ end
 @contract_interface
 namespace ISellPool:
     
+    func setPoolParams(pool_params: PoolParams) -> ():
+    end
+
     func getPoolFactory() -> (res : felt):
     end
 
@@ -33,9 +36,6 @@ namespace ISellPool:
     end
 
     func removeNftFromPool(nft_array_len: felt,  nft_array: NFT*) -> ():
-    end
-
-    func editPool(new_pool_params: PoolParams) -> ():
     end
 
     func getCollectionById(collection_id: felt) -> (collection_address: felt):
