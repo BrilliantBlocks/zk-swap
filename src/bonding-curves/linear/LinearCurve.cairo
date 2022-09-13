@@ -6,13 +6,15 @@ from starkware.cairo.common.uint256 import Uint256, uint256_mul, uint256_sub, ui
 from starkware.cairo.common.bool import TRUE, FALSE
 
 
+# To do: Refactor input parameters as PriceCalculation Struct (with Cairo v0.10.0)
+
 @view
 func getTotalPrice{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        number_items: felt,
+        number_tokens: felt,
         current_price: Uint256,
         delta: felt
     ) -> (
@@ -20,13 +22,13 @@ func getTotalPrice{
     ):
     alloc_locals
 
-    let (number_items_uint) = convertFeltToUint(number_items)
+    let (number_tokens_uint) = convertFeltToUint(number_tokens)
     let (delta_uint) = convertFeltToUint(delta)
 
-    let (a, a_overflow) = uint256_mul(number_items_uint, delta_uint)
-    let (b) = uint256_sub(number_items_uint, Uint256(1,0))
+    let (a, a_overflow) = uint256_mul(number_tokens_uint, delta_uint)
+    let (b) = uint256_sub(number_tokens_uint, Uint256(1,0))
     let (x, x_overflow) = uint256_mul(a, b)
-    let (c, c_overflow) = uint256_mul(current_price, number_items_uint)
+    let (c, c_overflow) = uint256_mul(current_price, number_tokens_uint)
     let (y, y_overflow) = uint256_mul(c, Uint256(2,0))
     let (counter, counter_overflow) = uint256_add(x, y)
     let (total_price, total_price_overflow) = uint256_unsigned_div_rem(counter, Uint256(2,0))
@@ -54,7 +56,7 @@ func getNewPrice{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        number_items: felt,
+        number_tokens: felt,
         current_price: Uint256,
         delta: felt
     ) -> (
@@ -62,10 +64,10 @@ func getNewPrice{
     ):
     alloc_locals
 
-    let (number_items_uint) = convertFeltToUint(number_items)
+    let (number_tokens_uint) = convertFeltToUint(number_tokens)
     let (delta_uint) = convertFeltToUint(delta)
 
-    let (x, x_overflow) = uint256_mul(number_items_uint, delta_uint)
+    let (x, x_overflow) = uint256_mul(number_tokens_uint, delta_uint)
     let (new_price, new_price_overflow) = uint256_add(current_price, x)
     assertNoOverflow(x_overflow)
     with_attr error_message("Overflow in price calculation."):

@@ -13,9 +13,9 @@ from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 from src.pools.sell.ISellPool import NFT, PoolParams
 
 
-struct PriceCalcParams:
-    member tokens: felt
-    member price: Uint256
+struct PriceCalculation:
+    member number_tokens: felt
+    member current_price: Uint256
     member delta: felt
 end
 
@@ -519,8 +519,8 @@ func buyNfts{
     let (delta) = _delta.read()
     let (class_hash) = _bonding_curve_class_hash.read()
 
-    let (calldata: PriceCalcParams*) = alloc()
-    assert calldata[0] = PriceCalcParams(tokens=nft_array_len, price=current_price, delta=delta)
+    let (calldata: PriceCalculation*) = alloc()
+    assert calldata[0] = PriceCalculation(number_tokens=nft_array_len, current_price=current_price, delta=delta)
     
     local function_selector_get_total_price = 162325169460772763346477168287411866553654952715135549492070698764789678722
     
@@ -654,8 +654,8 @@ func getNextPrice{
     let (delta) = _delta.read()
     let (class_hash) = _bonding_curve_class_hash.read()
 
-    let (calldata: PriceCalcParams*) = alloc()
-    assert calldata[0] = PriceCalcParams(tokens=number_items, price=current_price, delta=delta)
+    let (calldata: PriceCalculation*) = alloc()
+    assert calldata[0] = PriceCalculation(number_tokens=number_items, current_price=current_price, delta=delta)
 
     local function_selector_get_new_price = 1427085065996622579194757518833714443103194349812573964832617639352675497406
 
