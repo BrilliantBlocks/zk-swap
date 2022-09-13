@@ -1,9 +1,11 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import unsigned_div_rem, split_felt
+from starkware.cairo.common.math import unsigned_div_rem, split_felt, abs_value
+from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.uint256 import Uint256, uint256_mul, uint256_sub, uint256_add, uint256_unsigned_div_rem, uint256_eq
 from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.pow import pow
 
 
 # To do: Refactor input parameters as PriceCalculation Struct (with Cairo v0.10.0)
@@ -22,7 +24,17 @@ func getTotalPrice{
     ):
     alloc_locals
 
-    let (delta_power) = power_of_delta(delta, delta, number_tokens, 1)
+    # let (DELTA_POSITIVE) = is_nn(delta)
+    # if DELTA_POSITIVE == FALSE:
+
+    #     let (delta_abs) = abs_value(delta)
+    #     let (delta_power) = power_of_delta(delta_abs, delta_abs, number_tokens, 1)
+
+        
+    #     return (total_price)
+    # end
+
+    let (delta_power) = pow(delta, number_tokens)
     local counter = delta_power - 1
     local denominator = delta - 1
     let (fraction, fraction_overflow) = unsigned_div_rem(counter, denominator)
@@ -52,35 +64,12 @@ func getNewPrice{
     ):
     alloc_locals
 
-    let (delta_power) = power_of_delta(delta, delta, number_tokens, 1)
+    let (delta_power) = pow(delta, number_tokens)
     let (delta_power_uint) = convertFeltToUint(delta_power)
     let (new_price, new_price_overflow) = uint256_mul(current_price, delta_power_uint)
     assertNoOverflow(new_price_overflow)
     
     return (new_price)
-end
-
-
-func power_of_delta{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }(
-        initial_delta: felt,
-        power_delta: felt,
-        number_tokens: felt,
-        current_count: felt
-    ) -> (
-        power: felt
-    ):
-    alloc_locals
-    if current_count == number_tokens:
-        return (power_delta)
-    end
-
-    local power_delta = power_delta * initial_delta
-    
-    return power_of_delta(initial_delta, power_delta, number_tokens, current_count + 1)
 end
 
 
