@@ -24,15 +24,29 @@ func getTotalPrice{
     ):
     alloc_locals
 
-    # let (DELTA_POSITIVE) = is_nn(delta)
-    # if DELTA_POSITIVE == FALSE:
+    let (DELTA_POSITIVE) = is_nn(delta)
+    if DELTA_POSITIVE == FALSE:
 
-    #     let (delta_abs) = abs_value(delta)
-    #     let (delta_power) = power_of_delta(delta_abs, delta_abs, number_tokens, 1)
-
+        let (delta_abs) = abs_value(delta)
+        let (delta_inverse, delta_inverse_overflow) = unsigned_div_rem(1, delta_abs)
+        with_attr error_message("Overflow in price calculation."):
+            assert delta_inverse_overflow = FALSE
+        end
+        let (delta_inverse_power) = pow(delta_inverse, number_tokens)
         
-    #     return (total_price)
-    # end
+        local counter = delta_inverse_power - 1
+        local denominator = delta_inverse - 1
+        let (fraction, fraction_overflow) = unsigned_div_rem(counter, denominator)
+        with_attr error_message("Overflow in price calculation."):
+            assert fraction_overflow = FALSE
+        end
+        let (fraction_uint) = convertFeltToUint(fraction)
+
+        let (total_price, total_price_overflow) = uint256_mul(current_price, fraction_uint)
+        assertNoOverflow(total_price_overflow)
+        
+        return (total_price)
+    end
 
     let (delta_power) = pow(delta, number_tokens)
     local counter = delta_power - 1
@@ -63,6 +77,16 @@ func getNewPrice{
         new_price: Uint256
     ):
     alloc_locals
+
+    let (DELTA_POSITIVE) = is_nn(delta)
+    if DELTA_POSITIVE == FALSE:
+        let (delta_abs) = abs_value(delta)
+        let (delta_power) = pow(delta_abs, number_tokens)
+        let (delta_power_uint) = convertFeltToUint(delta_power)
+        let (total_price, total_price_overflow) = uint256_unsigned_div_rem(current_price, delta_power_uint)
+        assertNoOverflow(total_price_overflow)
+        return (total_price)
+    end
 
     let (delta_power) = pow(delta, number_tokens)
     let (delta_power_uint) = convertFeltToUint(delta_power)

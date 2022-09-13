@@ -115,10 +115,10 @@ end
 #     %}
 
 #     const NUMBER_TOKENS = 2
-#     let CURRENT_PRICE = Uint256(10, 0)
+#     let CURRENT_PRICE = Uint256(20, 0)
 #     const DELTA = -2
-#     let TOTAL_PRICE = Uint256(310, 0)
-#     let NEW_PRICE = Uint256(320, 0)
+#     let TOTAL_PRICE = Uint256(30, 0)
+#     let NEW_PRICE = Uint256(5, 0)
 
 #     let (total_price) = IBondingCurve.getTotalPrice(exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA)
 #     let (new_price) = IBondingCurve.getNewPrice(exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA)
