@@ -61,6 +61,13 @@ func getTotalPrice{
     assertNoOverflow(total_price_overflow)
     
     return (total_price)
+
+    # If Delta positive/ increasing price:
+    # total_price = current_price * ((delta^number_tokens - 1)/(delta - 1))
+    
+    # If Delta negative/ decreasing price:
+    # total_price = current_price * (((1/delta)^number_tokens - 1)/((1/delta) - 1))
+
 end
 
 
@@ -94,6 +101,13 @@ func getNewPrice{
     assertNoOverflow(new_price_overflow)
     
     return (new_price)
+
+    # If Delta positive/ increasing price:
+    # new_price = current_price * delta^number_tokens
+    
+    # If Delta negative/ decreasing price:
+    # new_price = current_price/delta^number_tokens
+
 end
 
 
