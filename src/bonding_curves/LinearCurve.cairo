@@ -1,7 +1,8 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import unsigned_div_rem, split_felt
+from starkware.cairo.common.math import unsigned_div_rem, split_felt, abs_value
+from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.uint256 import Uint256, uint256_mul, uint256_sub, uint256_add, uint256_unsigned_div_rem, uint256_eq
 from starkware.cairo.common.bool import TRUE, FALSE
 
@@ -22,31 +23,45 @@ func getTotalPrice{
     ):
     alloc_locals
 
+    let (delta_abs) = abs_value(delta)
     let (number_tokens_uint) = convertFeltToUint(number_tokens)
-    let (delta_uint) = convertFeltToUint(delta)
+    let (delta_uint) = convertFeltToUint(delta_abs)
 
-    let (a, a_overflow) = uint256_mul(number_tokens_uint, delta_uint)
-    let (b) = uint256_sub(number_tokens_uint, Uint256(1,0))
-    let (x, x_overflow) = uint256_mul(a, b)
-    let (c, c_overflow) = uint256_mul(current_price, number_tokens_uint)
-    let (y, y_overflow) = uint256_mul(c, Uint256(2,0))
-    let (counter, counter_overflow) = uint256_add(x, y)
-    let (total_price, total_price_overflow) = uint256_unsigned_div_rem(counter, Uint256(2,0))
-
+    let (a, a_overflow) = uint256_mul(current_price, number_tokens_uint)
     assertNoOverflow(a_overflow)
-    assertNoOverflow(x_overflow)
-    assertNoOverflow(c_overflow)
-    assertNoOverflow(y_overflow)
+    let (part1, part1_overflow) = uint256_mul(a, Uint256(2,0))
+    assertNoOverflow(part1_overflow)
+
+    let (b, b_overflow) = uint256_mul(number_tokens_uint, delta_uint)
+    assertNoOverflow(b_overflow)
+    let (c) = uint256_sub(number_tokens_uint, Uint256(1,0))
+    let (part2, part2_overflow) = uint256_mul(b, c)
+    assertNoOverflow(part2_overflow)
+    
+    
+    let (DELTA_POSITIVE) = is_nn(delta)
+    if DELTA_POSITIVE == FALSE:
+        let (counter) = uint256_sub(part1, part2)
+        let (total_price, total_price_overflow) = uint256_unsigned_div_rem(counter, Uint256(2,0))
+        assertNoOverflow(total_price_overflow)
+        return (total_price)
+    end
+    
+    let (counter, counter_overflow) = uint256_add(part1, part2)
     with_attr error_message("Overflow in price calculation."):
         assert counter_overflow = FALSE
     end
+    let (total_price, total_price_overflow) = uint256_unsigned_div_rem(counter, Uint256(2,0))
     assertNoOverflow(total_price_overflow)
 
-    # local counter = number_items * (number_items - 1) * delta + 2 * current_price.low * number_items
-    # let (total_price_low, _) = unsigned_div_rem(counter, 2)
-    # let total_price = Uint256(total_price_low, 0)
-    
     return (total_price)
+
+    # If Delta positive/ increasing price:
+    # total_price = (2 * current_price * number_tokens + number_tokens * (number_tokens - 1) * delta)/2
+    
+    # If Delta negative/ decreasing price:
+    # total_price = (2 * current_price * number_tokens - number_tokens * (number_tokens - 1) * delta)/2
+    
 end
 
 
@@ -64,20 +79,32 @@ func getNewPrice{
     ):
     alloc_locals
 
+    let (delta_abs) = abs_value(delta)
     let (number_tokens_uint) = convertFeltToUint(number_tokens)
-    let (delta_uint) = convertFeltToUint(delta)
+    let (delta_uint) = convertFeltToUint(delta_abs)
 
-    let (x, x_overflow) = uint256_mul(number_tokens_uint, delta_uint)
-    let (new_price, new_price_overflow) = uint256_add(current_price, x)
-    assertNoOverflow(x_overflow)
+    let (multiplier, multiplier_overflow) = uint256_mul(number_tokens_uint, delta_uint)
+    assertNoOverflow(multiplier_overflow)
+
+    let (DELTA_POSITIVE) = is_nn(delta)
+    if DELTA_POSITIVE == FALSE:
+        let (new_price) = uint256_sub(current_price, multiplier)
+        return (new_price)
+    end
+
+    let (new_price, new_price_overflow) = uint256_add(current_price, multiplier)
     with_attr error_message("Overflow in price calculation."):
         assert new_price_overflow = FALSE
     end
 
-    # local new_price_low = current_price.low + delta * number_items
-    # let new_price = Uint256(new_price_low, 0)
-    
     return (new_price)
+
+    # If Delta positive/ increasing price:
+    # new_price = current_price + delta * number_tokens
+    
+    # If Delta negative/ decreasing price:
+    # new_price = current_price - delta * number_tokens
+
 end
 
 
