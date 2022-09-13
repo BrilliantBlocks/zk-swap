@@ -22,7 +22,7 @@ func getTotalPrice{
     ):
     alloc_locals
 
-    let (delta_power) = power_of_delta(delta, number_tokens, 1)
+    let (delta_power) = power_of_delta(delta, delta, number_tokens, 1)
     local counter = delta_power - 1
     local denominator = delta - 1
     let (fraction, fraction_overflow) = unsigned_div_rem(counter, denominator)
@@ -52,7 +52,7 @@ func getNewPrice{
     ):
     alloc_locals
 
-    let (delta_power) = power_of_delta(delta, number_tokens, 1)
+    let (delta_power) = power_of_delta(delta, delta, number_tokens, 1)
     let (delta_power_uint) = convertFeltToUint(delta_power)
     let (new_price, new_price_overflow) = uint256_mul(current_price, delta_power_uint)
     assertNoOverflow(new_price_overflow)
@@ -66,7 +66,8 @@ func power_of_delta{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(
-        delta: felt,
+        initial_delta: felt,
+        power_delta: felt,
         number_tokens: felt,
         current_count: felt
     ) -> (
@@ -74,12 +75,12 @@ func power_of_delta{
     ):
     alloc_locals
     if current_count == number_tokens:
-        return (delta)
+        return (power_delta)
     end
 
-    local new_delta = delta * delta
+    local power_delta = power_delta * initial_delta
     
-    return power_of_delta(new_delta, number_tokens, current_count + 1)
+    return power_of_delta(initial_delta, power_delta, number_tokens, current_count + 1)
 end
 
 
