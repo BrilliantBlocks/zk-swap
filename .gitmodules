@@ -1,7 +1,7 @@
-[submodule "cairo_contracts"]
-	url = https://github.com/OpenZeppelin/cairo-contracts
-	path = lib/cairo_contracts
 [submodule "diamond_contracts"]
 	url = https://github.com/BrilliantBlocks/diamond-contracts
 	path = lib/diamond_contracts
 	branch = refs/heads/zk-swap
+[submodule "cairo_contracts"]
+	url = https://github.com/OpenZeppelin/cairo-contracts
+	path = lib/cairo_contracts
