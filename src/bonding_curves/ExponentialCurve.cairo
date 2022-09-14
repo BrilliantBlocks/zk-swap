@@ -111,6 +111,70 @@ func getNewPrice{
 end
 
 
+# New version of price calculation with Delta as percentage number
+
+
+@view
+func getTotalPriceV2{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        number_tokens: felt,
+        current_price: Uint256,
+        delta: felt
+    ) -> (
+        total_price: Uint256
+    ):
+    alloc_locals
+
+    local delta_sum = 1 + delta
+    let (delta_sum_power) = pow(delta_sum, number_tokens)
+    local counter = delta_sum_power - 1
+    local denominator = delta_sum - 1
+    let (fraction, fraction_overflow) = unsigned_div_rem(counter, denominator)
+    with_attr error_message("Overflow in price calculation."):
+        assert fraction_overflow = FALSE
+    end
+    let (fraction_uint) = convertFeltToUint(fraction)
+
+    let (total_price, total_price_overflow) = uint256_mul(current_price, fraction_uint)
+    assertNoOverflow(total_price_overflow)
+    
+    return (total_price)
+
+    # total_price = current_price * (((1 +- delta)^number_tokens - 1)/((1 +- delta) - 1))
+
+end
+
+
+@view
+func getNewPriceV2{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(
+        number_tokens: felt,
+        current_price: Uint256,
+        delta: felt
+    ) -> (
+        new_price: Uint256
+    ):
+    alloc_locals
+
+    local delta_sum = 1 + delta
+    let (delta_sum_power) = pow(delta_sum, number_tokens)
+    let (delta_sum_power_uint) = convertFeltToUint(delta_sum_power)
+    let (new_price, new_price_overflow) = uint256_mul(current_price, delta_sum_power_uint)
+    assertNoOverflow(new_price_overflow)
+    
+    return (new_price)
+
+    # new_price = current_price * (1 +- delta)^number_tokens
+
+end
+
+
 func convertFeltToUint{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
