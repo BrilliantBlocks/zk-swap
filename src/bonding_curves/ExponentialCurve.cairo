@@ -52,9 +52,7 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     let fpm_total_price = Math64x61.mul(fpm_current_price, fpm_fraction);
     let fpm_total_price_dec = fpm_total_price * 10000; // 4 decimal places
     let total_price_felt = Math64x61.toFelt(fpm_total_price_dec);
-
-    let (high, low) = split_felt(total_price_felt);
-    let total_price = Uint256(low, high);
+    let (total_price) = convertFeltToUint(total_price_felt);
 
     return (total_price,);
 
@@ -91,8 +89,7 @@ func getNewPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     let fpm_new_price = Math64x61.mul(fpm_current_price, fpm_delta_sum_pow);
     let fpm_new_price_dec = fpm_new_price * 10000; // 4 decimal places
     let new_price_felt = Math64x61.toFelt(fpm_new_price_dec);
-    let (high, low) = split_felt(new_price_felt);
-    let new_price = Uint256(low, high);
+    let (new_price) = convertFeltToUint(new_price_felt);
 
     return (new_price,);
 
