@@ -88,19 +88,19 @@ func test_exponential_curve_with_expected_output{syscall_ptr: felt*, range_check
 
     const NUMBER_TOKENS = 5;
     let CURRENT_PRICE = Uint256(10, 0);
-    const DELTA = 1;
-    let TOTAL_PRICE = Uint256(310, 0);
-    let NEW_PRICE = Uint256(320, 0);
+    const DELTA = 100; // 100%
+    let TOTAL_PRICE = Uint256(3100000, 0); // 310
+    // let NEW_PRICE = Uint256(320, 0);
 
     let (total_price) = IBondingCurve.getTotalPriceV2(
         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
     );
-    let (new_price) = IBondingCurve.getNewPriceV2(
-        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
-    );
+    // let (new_price) = IBondingCurve.getNewPriceV2(
+    //     exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    // );
 
     assert total_price = TOTAL_PRICE;
-    assert new_price = NEW_PRICE;
+    // assert new_price = NEW_PRICE;
 
     return ();
 }
@@ -115,27 +115,15 @@ func test_exponential_curve_with_negative_delta{syscall_ptr: felt*, range_check_
 
     const NUMBER_TOKENS = 3;
     let CURRENT_PRICE = Uint256(10, 0);
-    let DELTA = 10; // [-99%; X]
-    let PERCENT = 100;
+    let DELTA = 10; // 10%
+    let TOTAL_PRICE = Uint256(330999, 0); // 33.1
+    let NEW_PRICE = Uint256(320, 0);
 
-    let base = Math64x61.fromFelt(1);
-    let delta_fraction = Math64x61.fromFelt(DELTA);
-    let percent = Math64x61.fromFelt(PERCENT);
-    let inter_step = Math64x61.mul(base, delta_fraction);
-    let delta = Math64x61.div(inter_step, percent);
+    let (total_price) = IBondingCurve.getTotalPriceV2(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+
+    assert total_price = TOTAL_PRICE;
     
-    let delta_sum = Math64x61.add(base, delta);
-    let number_tokens = Math64x61.fromFelt(NUMBER_TOKENS);
-    let delta_sum_pow = Math64x61.pow(delta_sum, number_tokens);
-    let counter = Math64x61.sub(delta_sum_pow, base);
-    let denominator = delta;
-    let fraction = Math64x61.div(counter, denominator);
-    let current_price = Math64x61.fromUint256(CURRENT_PRICE);
-    let total_price = Math64x61.mul(current_price, fraction);
-    let total_price_ = total_price * 10000; // 4 Nachkommastellen 
-    let TOTAL_PRICE = Math64x61.toFelt(total_price_);
-
-    // assert TOTAL_PRICE = 331;
-
     return ();
 }

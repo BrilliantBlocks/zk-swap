@@ -1,7 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import unsigned_div_rem, split_felt, abs_value, assert_not_zero
+from starkware.cairo.common.math import unsigned_div_rem, split_felt, abs_value, assert_not_zero, assert_le
 from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.uint256 import (
     Uint256,
@@ -13,6 +13,8 @@ from starkware.cairo.common.uint256 import (
 )
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.pow import pow
+
+from src.utils.math64x61 import Math64x61
 
 
 // To do: Refactor input parameters as PriceCalculation Struct (with Cairo v0.10.0)
@@ -115,18 +117,31 @@ func getTotalPriceV2{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
         assert_not_zero(delta);
     }
 
-    local delta_sum = 1 + delta;
-    let (delta_sum_power) = pow(delta_sum, number_tokens);
-    local counter = delta_sum_power - 1;
-    local denominator = delta;
-    let (fraction, fraction_overflow) = unsigned_div_rem(counter, denominator);
-    with_attr error_message("Overflow in price calculation.") {
-        assert fraction_overflow = FALSE;
+    let lower_bound = -99;
+    with_attr error_message("Delta must be higher than -99%") {
+        assert_le(lower_bound, delta);
     }
-    let (fraction_uint) = convertFeltToUint(fraction);
 
-    let (total_price, total_price_overflow) = uint256_mul(current_price, fraction_uint);
-    assertNoOverflow(total_price_overflow);
+    // Fix point math operations
+
+    let fpm_unit = Math64x61.fromFelt(1);
+    let fpm_base = Math64x61.fromFelt(100);
+    let fpm_delta_fraction = Math64x61.fromFelt(delta);
+    let fpm_percent = Math64x61.mul(fpm_unit, fpm_delta_fraction);
+    let fpm_delta = Math64x61.div(fpm_percent, fpm_base);
+    
+    let fpm_delta_sum = Math64x61.add(fpm_unit, fpm_delta);
+    let fpm_delta_sum_pow = Math64x61._pow_int(fpm_delta_sum, number_tokens);
+    let fpm_counter = Math64x61.sub(fpm_delta_sum_pow, fpm_unit);
+    let fpm_fraction = Math64x61.div(fpm_counter, fpm_delta);
+
+    let fpm_current_price = Math64x61.fromUint256(current_price);
+    let fpm_total_price = Math64x61.mul(fpm_current_price, fpm_fraction);
+    let fpm_total_price_dec = fpm_total_price * 10000; // 4 decimal places
+    let total_price_felt = Math64x61.toFelt(fpm_total_price_dec);
+
+    let (high, low) = split_felt(total_price_felt);
+    let total_price = Uint256(low, high);
 
     return (total_price,);
 
