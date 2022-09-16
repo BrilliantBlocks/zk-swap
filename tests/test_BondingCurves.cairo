@@ -131,3 +131,83 @@ func test_exponential_curve_with_negative_delta{syscall_ptr: felt*, range_check_
     
     return ();
 }
+
+
+@external
+func test_exponential_curve_getTotalPrice_error_for_zero_delta{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local exponential_curve_contract_address;
+    %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
+
+    const NUMBER_TOKENS = 3;
+    let CURRENT_PRICE = Uint256(10, 0);
+    let DELTA = 0; 
+
+    %{ expect_revert(error_message="Delta cannot be zero in exponential curve.") %}
+    let (total_price) = IBondingCurve.getTotalPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+    
+    return ();
+}
+
+
+@external
+func test_exponential_curve_getNewPrice_error_for_zero_delta{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local exponential_curve_contract_address;
+    %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
+
+    const NUMBER_TOKENS = 3;
+    let CURRENT_PRICE = Uint256(10, 0);
+    let DELTA = 0; 
+
+    %{ expect_revert(error_message="Delta cannot be zero in exponential curve.") %}
+    let (total_price) = IBondingCurve.getNewPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+    
+    return ();
+}
+
+
+@external
+func test_exponential_curve_getTotalPrice_error_for_delta_exceeding_lower_bound{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local exponential_curve_contract_address;
+    %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
+
+    const NUMBER_TOKENS = 3;
+    let CURRENT_PRICE = Uint256(10, 0);
+    let DELTA = -100; 
+
+    %{ expect_revert(error_message="Delta must be higher than -99%") %}
+    let (total_price) = IBondingCurve.getTotalPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+    
+    return ();
+}
+
+
+@external
+func test_exponential_curve_getNewPrice_error_for_delta_exceeding_lower_bound{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local exponential_curve_contract_address;
+    %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
+
+    const NUMBER_TOKENS = 3;
+    let CURRENT_PRICE = Uint256(10, 0);
+    let DELTA = -100; 
+
+    %{ expect_revert(error_message="Delta must be higher than -99%") %}
+    let (total_price) = IBondingCurve.getNewPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+    
+    return ();
+}
