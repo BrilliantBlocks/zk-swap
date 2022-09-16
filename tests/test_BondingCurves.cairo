@@ -115,9 +115,9 @@ func test_exponential_curve_with_negative_delta{syscall_ptr: felt*, range_check_
 
     const NUMBER_TOKENS = 3;
     let CURRENT_PRICE = Uint256(10, 0);
-    let DELTA = 10; // 10%
-    let TOTAL_PRICE = Uint256(330999, 0); // 33.1
-    let NEW_PRICE = Uint256(133099, 0); // 13.31
+    let DELTA = -50; // -50%
+    let TOTAL_PRICE = Uint256(175000, 0); // 17.5
+    let NEW_PRICE = Uint256(12500, 0); // 1.25
 
     let (total_price) = IBondingCurve.getTotalPrice(
         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
