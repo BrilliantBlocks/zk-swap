@@ -113,26 +113,29 @@ func test_exponential_curve_with_negative_delta{syscall_ptr: felt*, range_check_
     local exponential_curve_contract_address;
     %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
 
-    const NUMBER_TOKENS = 10;
-    let CURRENT_PRICE = Uint256(7, 0);
-    let DELTA = 20; // +10%
+    const NUMBER_TOKENS = 3;
+    let CURRENT_PRICE = Uint256(10, 0);
+    let DELTA = 10; // [-99%; X]
+    let PERCENT = 100;
 
-    const base = 100;
-    let delta_sum = base + DELTA;
-    let (delta_sum_power) = pow(delta_sum, NUMBER_TOKENS);
-    let (base_f) = pow(base, NUMBER_TOKENS);
-
-    // Error in subtraction (?)
-    let counter = delta_sum_power - base_f;
-    let denominator = base_f * DELTA / base;
-
-    // let counter_f = Math64x61.fromFelt(counter);
-    // let denominator_f = Math64x61.fromFelt(denominator);
-    // let fraction_f = Math64x61.div(counter_f, denominator_f);
-    // let fraction_f_ = fraction_f * 10000; // 4 Nachkommastellen 
-    // let fraction = Math64x61.toFelt(fraction_f_);
+    let base = Math64x61.fromFelt(1);
+    let delta_fraction = Math64x61.fromFelt(DELTA);
+    let percent = Math64x61.fromFelt(PERCENT);
+    let inter_step = Math64x61.mul(base, delta_fraction);
+    let delta = Math64x61.div(inter_step, percent);
     
-    // assert counter = 5;
+    let delta_sum = Math64x61.add(base, delta);
+    let number_tokens = Math64x61.fromFelt(NUMBER_TOKENS);
+    let delta_sum_pow = Math64x61.pow(delta_sum, number_tokens);
+    let counter = Math64x61.sub(delta_sum_pow, base);
+    let denominator = delta;
+    let fraction = Math64x61.div(counter, denominator);
+    let current_price = Math64x61.fromUint256(CURRENT_PRICE);
+    let total_price = Math64x61.mul(current_price, fraction);
+    let total_price_ = total_price * 10000; // 4 Nachkommastellen 
+    let TOTAL_PRICE = Math64x61.toFelt(total_price_);
+
+    // assert TOTAL_PRICE = 331;
 
     return ();
 }
