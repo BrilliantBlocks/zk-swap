@@ -162,7 +162,7 @@ func test_exponential_curve_getNewPrice_error_for_zero_delta{syscall_ptr: felt*,
 
     const NUMBER_TOKENS = 3;
     let CURRENT_PRICE = Uint256(10, 0);
-    let DELTA = 0; 
+    let DELTA = 0; // 0%
 
     %{ expect_revert(error_message="Delta cannot be zero in exponential curve.") %}
     let (total_price) = IBondingCurve.getNewPrice(
@@ -182,7 +182,7 @@ func test_exponential_curve_getTotalPrice_error_for_delta_exceeding_lower_bound{
 
     const NUMBER_TOKENS = 3;
     let CURRENT_PRICE = Uint256(10, 0);
-    let DELTA = -100; 
+    let DELTA = -100; // -100%
 
     %{ expect_revert(error_message="Delta must be higher than -99%") %}
     let (total_price) = IBondingCurve.getTotalPrice(
@@ -202,12 +202,39 @@ func test_exponential_curve_getNewPrice_error_for_delta_exceeding_lower_bound{sy
 
     const NUMBER_TOKENS = 3;
     let CURRENT_PRICE = Uint256(10, 0);
-    let DELTA = -100; 
+    let DELTA = -100; // -100%
 
     %{ expect_revert(error_message="Delta must be higher than -99%") %}
     let (total_price) = IBondingCurve.getNewPrice(
         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
     );
+    
+    return ();
+}
+
+
+@external
+func test_exponential_curve_with_lower_bound_delta{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local exponential_curve_contract_address;
+    %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
+
+    const NUMBER_TOKENS = 3;
+    let CURRENT_PRICE = Uint256(23000, 0);
+    let DELTA = -99; // -50%
+    let TOTAL_PRICE = Uint256(232323000, 0); // 23232.3
+    let NEW_PRICE = Uint256(229, 0); // 0.023
+
+    let (total_price) = IBondingCurve.getTotalPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+    let (new_price) = IBondingCurve.getNewPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+
+    assert total_price = TOTAL_PRICE;
+    assert new_price = NEW_PRICE;
     
     return ();
 }
