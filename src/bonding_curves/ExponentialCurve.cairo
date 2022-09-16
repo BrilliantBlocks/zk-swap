@@ -1,7 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import unsigned_div_rem, split_felt, abs_value
+from starkware.cairo.common.math import unsigned_div_rem, split_felt, abs_value, assert_not_zero
 from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.uint256 import (
     Uint256,
@@ -111,10 +111,14 @@ func getTotalPriceV2{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 ) -> (total_price: Uint256) {
     alloc_locals;
 
+    with_attr error_message("Delta cannot be zero in exponential curve.") {
+        assert_not_zero(delta);
+    }
+
     local delta_sum = 1 + delta;
     let (delta_sum_power) = pow(delta_sum, number_tokens);
     local counter = delta_sum_power - 1;
-    local denominator = delta_sum - 1;
+    local denominator = delta;
     let (fraction, fraction_overflow) = unsigned_div_rem(counter, denominator);
     with_attr error_message("Overflow in price calculation.") {
         assert fraction_overflow = FALSE;
@@ -126,7 +130,7 @@ func getTotalPriceV2{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 
     return (total_price,);
 
-    // total_price = current_price * (((1 +- delta)^number_tokens - 1)/((1 +- delta) - 1))
+    // total_price = current_price * (((1 +- delta)^number_tokens - 1)/(+- delta))
 }
 
 

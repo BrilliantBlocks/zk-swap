@@ -6,6 +6,7 @@ from starkware.cairo.common.math import split_felt, abs_value, unsigned_div_rem
 from starkware.cairo.common.pow import pow
 
 from src.bonding_curves.IBondingCurve import IBondingCurve
+from src.utils.math64x61 import Math64x61
 
 
 @view
@@ -105,28 +106,33 @@ func test_exponential_curve_with_expected_output{syscall_ptr: felt*, range_check
 }
 
 
-// @external
-// func test_exponential_curve_with_negative_delta{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
-//     alloc_locals;
+@external
+func test_exponential_curve_with_negative_delta{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
 
-//     local exponential_curve_contract_address;
-//     %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
+    local exponential_curve_contract_address;
+    %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
 
-//     const NUMBER_TOKENS = 2;
-//     let CURRENT_PRICE = Uint256(20, 0);
-//     let DELTA = -20;
-//     let TOTAL_PRICE = Uint256(30, 0);
-//     let NEW_PRICE = Uint256(5, 0);
+    const NUMBER_TOKENS = 10;
+    let CURRENT_PRICE = Uint256(7, 0);
+    let DELTA = 20; // +10%
 
-//     let (total_price) = IBondingCurve.getTotalPrice(
-//         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
-//     );
-//     let (new_price) = IBondingCurve.getNewPrice(
-//         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
-//     );
+    const base = 100;
+    let delta_sum = base + DELTA;
+    let (delta_sum_power) = pow(delta_sum, NUMBER_TOKENS);
+    let (base_f) = pow(base, NUMBER_TOKENS);
 
-//     assert total_price = TOTAL_PRICE;
-//     assert new_price = NEW_PRICE;
+    // Error in subtraction (?)
+    let counter = delta_sum_power - base_f;
+    let denominator = base_f * DELTA / base;
 
-//     return ();
-// }
+    // let counter_f = Math64x61.fromFelt(counter);
+    // let denominator_f = Math64x61.fromFelt(denominator);
+    // let fraction_f = Math64x61.div(counter_f, denominator_f);
+    // let fraction_f_ = fraction_f * 10000; // 4 Nachkommastellen 
+    // let fraction = Math64x61.toFelt(fraction_f_);
+    
+    // assert counter = 5;
+
+    return ();
+}
