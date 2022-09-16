@@ -90,17 +90,17 @@ func test_exponential_curve_with_expected_output{syscall_ptr: felt*, range_check
     let CURRENT_PRICE = Uint256(10, 0);
     const DELTA = 100; // 100%
     let TOTAL_PRICE = Uint256(3100000, 0); // 310
-    // let NEW_PRICE = Uint256(320, 0);
+    let NEW_PRICE = Uint256(3200000, 0); // 320
 
-    let (total_price) = IBondingCurve.getTotalPriceV2(
+    let (total_price) = IBondingCurve.getTotalPrice(
         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
     );
-    // let (new_price) = IBondingCurve.getNewPriceV2(
-    //     exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
-    // );
+    let (new_price) = IBondingCurve.getNewPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
 
     assert total_price = TOTAL_PRICE;
-    // assert new_price = NEW_PRICE;
+    assert new_price = NEW_PRICE;
 
     return ();
 }
@@ -117,13 +117,17 @@ func test_exponential_curve_with_negative_delta{syscall_ptr: felt*, range_check_
     let CURRENT_PRICE = Uint256(10, 0);
     let DELTA = 10; // 10%
     let TOTAL_PRICE = Uint256(330999, 0); // 33.1
-    let NEW_PRICE = Uint256(320, 0);
+    let NEW_PRICE = Uint256(133099, 0); // 13.31
 
-    let (total_price) = IBondingCurve.getTotalPriceV2(
+    let (total_price) = IBondingCurve.getTotalPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+    let (new_price) = IBondingCurve.getNewPrice(
         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
     );
 
     assert total_price = TOTAL_PRICE;
+    assert new_price = NEW_PRICE;
     
     return ();
 }
