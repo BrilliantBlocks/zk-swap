@@ -11,7 +11,7 @@ from starkware.starknet.common.syscalls import (
 )
 from starkware.cairo.common.math import assert_not_equal, split_felt, assert_not_zero
 from starkware.cairo.common.uint256 import Uint256, uint256_check
-from src.pools.sell.ISellPool import ISellPool
+from src.pools.IPool import IPool
 from tests.helper.IMintPool import Collection
 
 
@@ -71,7 +71,7 @@ func populate_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
         return (current_count,);
     }
 
-    let (pool_collection_array_len, pool_collection_array) = ISellPool.getAllCollections(
+    let (pool_collection_array_len, pool_collection_array) = IPool.getAllCollections(
         pool_address
     );
 

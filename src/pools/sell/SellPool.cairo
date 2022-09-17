@@ -18,7 +18,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_add, uint256_le, uint256_sub
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
-from src.pools.sell.ISellPool import NFT, PoolParams
+from src.pools.IPool import NFT, PoolParams
 
 
 struct PriceCalculation {

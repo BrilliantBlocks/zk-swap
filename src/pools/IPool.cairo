@@ -15,7 +15,7 @@ struct PoolParams {
 
 
 @contract_interface
-namespace ISellPool {
+namespace IPool {
     func setPoolParams(pool_params: PoolParams) -> () {
     }
 
