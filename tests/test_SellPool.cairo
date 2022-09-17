@@ -7,9 +7,8 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.starknet.common.syscalls import get_contract_address
 
-from src.pools.sell.ISellPool import ISellPool
+from src.pools.sell.ISellPool import ISellPool, NFT, PoolParams
 from tests.helper.IMintPool import IMintPool, Collection
-from src.pools.sell.SellPool import NFT, PoolParams
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721Metadata import IERC721Metadata
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
