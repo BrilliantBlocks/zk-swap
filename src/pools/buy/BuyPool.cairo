@@ -164,7 +164,7 @@ func insert_supported_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
 
     _supported_collections.write(collection_array[0], TRUE);
 
-    return insert_supported_collections(collection_array_len - 1, collection_array - 1);
+    return insert_supported_collections(collection_array_len - 1, collection_array + 1);
 }
 
 
@@ -785,4 +785,14 @@ func getEthBalance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 ) {
     let (eth_balance) = _eth_balance.read();
     return (eth_balance,);
+}
+
+
+@view
+func checkIfCollectionSupported{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    collection_address: felt
+) -> (bool: felt) {
+
+    let (is_supported) = _supported_collections.read(collection_address);
+    return (is_supported,);
 }

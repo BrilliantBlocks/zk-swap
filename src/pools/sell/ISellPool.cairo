@@ -72,4 +72,10 @@ namespace ISellPool {
 
     func withdrawAllEth() -> () {
     }
+
+    func checkIfCollectionSupported(collection_address: felt) -> (bool: felt) {
+    }
+
+    func setSupportedCollections(collection_array_len: felt, collection_array: felt*) -> () {
+    }
 }
