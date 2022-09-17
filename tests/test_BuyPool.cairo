@@ -19,8 +19,10 @@ func _buy_pool_contract_address() -> (res: felt) {
 
 
 const C1_NAME = 'COLLECTION 1';
-const ERC20_NAME = 'ERC20 Test Contract';
+const C2_NAME = 'COLLECTION 2';
 const C1_SYMBOL = 'C1';
+const C2_SYMBOL = 'C2';
+const ERC20_NAME = 'ERC20 Test Contract';
 const ERC20_SYMBOL = 'ERC20';
 const DECIMALS = 18;
 const INITIAL_SUPPLY_LOW = 50;
@@ -43,7 +45,7 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
 
     context.c2_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
             [ 
-                ids.C1_NAME, ids.C1_SYMBOL, ids.POOL_FACTORY_AND_ERC_CONTRACT_OWNER
+                ids.C2_NAME, ids.C2_SYMBOL, ids.POOL_FACTORY_AND_ERC_CONTRACT_OWNER
             ]
             ).contract_address
 
