@@ -82,6 +82,7 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     let NFT_1_1 = Uint256(11, 0);
     let NFT_1_2 = Uint256(12, 0);
     let NFT_2_1 = Uint256(21, 0);
+    let DEPOSIT_BALANCE = Uint256(40, 0);
     tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(10, 0), delta=1);
 
     ISellPool.mint(c1_contract_address, NFT_OWNER_AND_SELLER, NFT_1_1);
@@ -103,10 +104,15 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
 
     %{
         POOL_AND_ERC20_OWNER = 123456789
-        stop_prank_callable_2 = start_prank(POOL_AND_ERC20_OWNER, target_contract_address=ids.buy_pool_contract_address)
+        stop_prank_callable_2 = start_prank(POOL_AND_ERC20_OWNER, target_contract_address=ids.erc20_contract_address)
+        stop_prank_callable_3 = start_prank(POOL_AND_ERC20_OWNER, target_contract_address=ids.buy_pool_contract_address)
     %}
-    ISellPool.setPoolParams(buy_pool_contract_address, POOL_PARAMS);
+    IERC20.approve(erc20_contract_address, buy_pool_contract_address, DEPOSIT_BALANCE);
     %{ stop_prank_callable_2() %}
+
+    ISellPool.setPoolParams(buy_pool_contract_address, POOL_PARAMS);
+    ISellPool.depositEth(buy_pool_contract_address, DEPOSIT_BALANCE);
+    %{ stop_prank_callable_3() %}
 
     return ();
 }
@@ -156,16 +162,19 @@ func test_initialization_ERC_contracts{syscall_ptr: felt*, range_check_ptr, pede
     let NFT_1_2 = Uint256(12, 0);
     let NFT_2_1 = Uint256(21, 0);
 
+    let (buy_pool_contract_address) = _buy_pool_contract_address.read();
     let (c1_balance) = IERC721.balanceOf(c1_contract_address, NFT_OWNER_AND_SELLER);
     let (c2_balance) = IERC721.balanceOf(c2_contract_address, NFT_OWNER_AND_SELLER);
     let (erc20_balance_pool_owner) = IERC20.balanceOf(erc20_contract_address, POOL_AND_ERC20_OWNER);
+    let (erc20_balance_pool) = IERC20.balanceOf(erc20_contract_address, buy_pool_contract_address);
     let (c1_token_owner) = IERC721.ownerOf(c1_contract_address, NFT_1_1);
     let (c2_token_owner) = IERC721.ownerOf(c2_contract_address, NFT_2_1);
     let (erc20_total_supply) = IERC20.totalSupply(erc20_contract_address);
 
     assert c1_balance = Uint256(2, 0);
     assert c2_balance = Uint256(1, 0);
-    assert erc20_balance_pool_owner = Uint256(50, 0);
+    assert erc20_balance_pool_owner = Uint256(10, 0);
+    assert erc20_balance_pool = Uint256(40, 0);
     assert erc20_total_supply = Uint256(50, 0);
     assert c1_token_owner = NFT_OWNER_AND_SELLER;
     assert c2_token_owner = NFT_OWNER_AND_SELLER;
@@ -186,6 +195,7 @@ func test_getPoolConfig_with_expected_output{syscall_ptr: felt*, range_check_ptr
     let (buy_pool_contract_address) = _buy_pool_contract_address.read();
     let (pool_factory) = ISellPool.getPoolFactory(buy_pool_contract_address);
     let (pool_params: PoolParams) = ISellPool.getPoolConfig(buy_pool_contract_address);
+    let (pool_eth_balance) = ISellPool.getEthBalance(buy_pool_contract_address);
 
     let (high, low) = split_felt(buy_pool_contract_address);
     let buy_pool_contract_address_token = Uint256(low, high);
@@ -197,6 +207,7 @@ func test_getPoolConfig_with_expected_output{syscall_ptr: felt*, range_check_ptr
     assert pool_params.price = POOL_PARAMS.price;
     assert pool_params.delta = POOL_PARAMS.delta;
     assert pool_owner = POOL_AND_ERC20_OWNER;
+    assert pool_eth_balance = Uint256(40, 0);
 
     return ();
 }
