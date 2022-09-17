@@ -78,4 +78,7 @@ namespace ISellPool {
 
     func setSupportedCollections(collection_array_len: felt, collection_array: felt*) -> () {
     }
+
+    func sellNfts(nft_array_len: felt, nft_array: NFT*) -> () {
+    }
 }

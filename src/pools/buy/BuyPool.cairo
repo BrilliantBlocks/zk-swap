@@ -532,7 +532,7 @@ func assert_collections_supported{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
     with_attr error_message("Your collection is not supported by the pool.") {
         assert is_supported = TRUE;
     }
-    return assert_collections_supported(nft_array_len - 1, nft_array - NFT.SIZE);
+    return assert_collections_supported(nft_array_len - 1, nft_array + NFT.SIZE);
 }
 
 
