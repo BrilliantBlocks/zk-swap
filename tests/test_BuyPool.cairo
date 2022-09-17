@@ -1,11 +1,15 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import get_contract_address
 
 from src.pools.sell.ISellPool import ISellPool, NFT, PoolParams
 from tests.helper.IMintPool import IMintPool, Collection
+
+from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
+from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 
 @storage_var
 func _buy_pool_contract_address() -> (res: felt) {
@@ -118,6 +122,62 @@ func test_initialization_pool_factory{syscall_ptr: felt*, range_check_ptr, peder
     assert factory_owner = POOL_FACTORY_OWNER;
     assert pool_type_class_hash = buy_pool_class_hash;
     assert collection_array_len = 0;
+
+    return ();
+}
+
+
+@external
+func test_initialization_ERC_contracts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local c1_contract_address;
+    local erc20_contract_address;
+    %{
+        ids.c1_contract_address = context.c1_contract_address 
+        ids.erc20_contract_address = context.erc20_contract_address
+    %}
+
+    let NFT_1_1 = Uint256(11, 0);
+    let NFT_1_2 = Uint256(12, 0);
+
+    let (c1_balance) = IERC721.balanceOf(c1_contract_address, NFT_OWNER_AND_SELLER);
+    let (erc20_balance_pool_owner) = IERC20.balanceOf(erc20_contract_address, POOL_AND_ERC20_OWNER);
+    let (c1_token_owner) = IERC721.ownerOf(c1_contract_address, NFT_1_1);
+    let (erc20_total_supply) = IERC20.totalSupply(erc20_contract_address);
+
+    assert c1_balance = Uint256(2, 0);
+    assert erc20_balance_pool_owner = Uint256(50, 0);
+    assert erc20_total_supply = Uint256(50, 0);
+    assert c1_token_owner = NFT_OWNER_AND_SELLER;
+
+    return ();
+}
+
+
+@external
+func test_getPoolConfig_with_expected_output{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local pool_factory_contract_address;
+    %{ ids.pool_factory_contract_address = context.pool_factory_contract_address %}
+
+    tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(10, 0), delta=1);
+
+    let (buy_pool_contract_address) = _buy_pool_contract_address.read();
+    let (pool_factory) = ISellPool.getPoolFactory(buy_pool_contract_address);
+    let (pool_params: PoolParams) = ISellPool.getPoolConfig(buy_pool_contract_address);
+
+    let (high, low) = split_felt(buy_pool_contract_address);
+    let buy_pool_contract_address_token = Uint256(low, high);
+    let (pool_owner) = IERC721.ownerOf(
+        pool_factory_contract_address, buy_pool_contract_address_token
+    );
+
+    assert pool_factory = pool_factory_contract_address;
+    assert pool_params.price = POOL_PARAMS.price;
+    assert pool_params.delta = POOL_PARAMS.delta;
+    assert pool_owner = POOL_AND_ERC20_OWNER;
 
     return ();
 }
