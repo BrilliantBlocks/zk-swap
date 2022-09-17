@@ -61,7 +61,7 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
             ]
         ).contract_address
 
-    context.buy_pool_class_hash = declare("./src/pools/buy/BuyPool.cairo").class_hash
+    context.buy_pool_class_hash = declare("./src/pools/BuyPool.cairo").class_hash
 
     context.linear_curve_class_hash = declare("./src/bonding_curves/LinearCurve.cairo").class_hash
     %}
