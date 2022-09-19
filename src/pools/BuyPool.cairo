@@ -138,18 +138,18 @@ func setPoolParams{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 
 
 @external
-func setSupportedCollections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func addSupportedCollections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     collection_array_len: felt, collection_array: felt*
 ) -> () {
     assert_only_owner();
 
-    insert_supported_collections(collection_array_len, collection_array);
+    add_supported_collections(collection_array_len, collection_array);
 
     return ();
 }
 
 
-func insert_supported_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func add_supported_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     collection_array_len: felt, collection_array: felt*,
 ) -> () {
     
@@ -157,14 +157,45 @@ func insert_supported_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
         return ();
     }
 
-    let (already_supported) = _supported_collections.read(collection_array[0]);
-    if (already_supported == TRUE) {
-        return insert_supported_collections(collection_array_len - 1, collection_array + 1);
+    let (is_supported) = _supported_collections.read(collection_array[0]);
+    if (is_supported == TRUE) {
+        return add_supported_collections(collection_array_len - 1, collection_array + 1);
     }
 
     _supported_collections.write(collection_array[0], TRUE);
 
-    return insert_supported_collections(collection_array_len - 1, collection_array + 1);
+    return add_supported_collections(collection_array_len - 1, collection_array + 1);
+}
+
+
+@external
+func removeSupportedCollections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    collection_array_len: felt, collection_array: felt*
+) -> () {
+    assert_only_owner();
+
+    remove_supported_collections(collection_array_len, collection_array);
+
+    return ();
+}
+
+
+func remove_supported_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    collection_array_len: felt, collection_array: felt*,
+) -> () {
+    
+    if (collection_array_len == 0) {
+        return ();
+    }
+
+    let (is_supported) = _supported_collections.read(collection_array[0]);
+    if (is_supported == FALSE) {
+        return remove_supported_collections(collection_array_len - 1, collection_array + 1);
+    }
+
+    _supported_collections.write(collection_array[0], FALSE);
+
+    return remove_supported_collections(collection_array_len - 1, collection_array + 1);
 }
 
 

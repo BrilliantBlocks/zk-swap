@@ -216,7 +216,7 @@ func test_getPoolConfig_with_expected_output{syscall_ptr: felt*, range_check_ptr
 
 
 @external
-func test_setSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_addSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
 
     local c1_contract_address;
@@ -241,7 +241,7 @@ func test_setSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_
         POOL_AND_ERC20_OWNER = 123456789
         stop_prank_callable = start_prank(POOL_AND_ERC20_OWNER, target_contract_address=ids.buy_pool_contract_address)
     %}
-    IPool.setSupportedCollections(buy_pool_contract_address, 2, COLLECTION_ARRAY);
+    IPool.addSupportedCollections(buy_pool_contract_address, 2, COLLECTION_ARRAY);
     %{ stop_prank_callable() %}
 
     let (c1_is_supported) = IPool.checkIfCollectionSupported(buy_pool_contract_address, c1_contract_address);
@@ -249,6 +249,19 @@ func test_setSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_
 
     assert c1_is_supported = TRUE;
     assert c2_is_supported = TRUE;
+
+    %{
+        POOL_AND_ERC20_OWNER = 123456789
+        stop_prank_callable = start_prank(POOL_AND_ERC20_OWNER, target_contract_address=ids.buy_pool_contract_address)
+    %}
+    IPool.removeSupportedCollections(buy_pool_contract_address, 2, COLLECTION_ARRAY);
+    %{ stop_prank_callable() %}
+
+    let (c1_is_supported) = IPool.checkIfCollectionSupported(buy_pool_contract_address, c1_contract_address);
+    let (c2_is_supported) = IPool.checkIfCollectionSupported(buy_pool_contract_address, c2_contract_address);
+
+    assert c1_is_supported = FALSE;
+    assert c2_is_supported = FALSE;
 
     return ();
 }
@@ -303,7 +316,7 @@ func test_sellNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilti
         POOL_AND_ERC20_OWNER = 123456789
         stop_prank_callable = start_prank(POOL_AND_ERC20_OWNER, target_contract_address=ids.buy_pool_contract_address)
     %}
-    IPool.setSupportedCollections(buy_pool_contract_address, 2, COLLECTION_ARRAY);
+    IPool.addSupportedCollections(buy_pool_contract_address, 2, COLLECTION_ARRAY);
     %{ stop_prank_callable() %}
 
     %{

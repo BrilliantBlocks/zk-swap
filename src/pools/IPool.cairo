@@ -76,7 +76,10 @@ namespace IPool {
     func checkIfCollectionSupported(collection_address: felt) -> (bool: felt) {
     }
 
-    func setSupportedCollections(collection_array_len: felt, collection_array: felt*) -> () {
+    func addSupportedCollections(collection_array_len: felt, collection_array: felt*) -> () {
+    }
+
+    func removeSupportedCollections(collection_array_len: felt, collection_array: felt*) -> () {
     }
 
     func sellNfts(nft_array_len: felt, nft_array: NFT*) -> () {
