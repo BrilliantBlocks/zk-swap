@@ -16,7 +16,6 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from src.utils.math64x61 import Math64x61
 
 
-// To do: Refactor linear bonding curve with fixed point math calculation and adjust SellPool tests
 // To do: Refactor input parameters as PriceCalculation Struct (with Cairo v0.10.0)
 
 

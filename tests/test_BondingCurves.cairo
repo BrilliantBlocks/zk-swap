@@ -53,6 +53,33 @@ func test_linear_curve_with_expected_output{syscall_ptr: felt*, range_check_ptr,
 
 
 @external
+func test_linear_curve_with_decimal_numbers{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local linear_curve_contract_address;
+    %{ ids.linear_curve_contract_address = context.linear_curve_contract_address %}
+
+    const NUMBER_TOKENS = 10;
+    let CURRENT_PRICE = Uint256(137500, 0); // 13.75 
+    const DELTA = 1250; // 0.125 
+    let TOTAL_PRICE = Uint256(1431250, 0); // 143.125
+    let NEW_PRICE = Uint256(150000, 0); // 15 
+
+    let (total_price) = IBondingCurve.getTotalPrice(
+        linear_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+    let (new_price) = IBondingCurve.getNewPrice(
+        linear_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+
+    assert total_price = TOTAL_PRICE;
+    assert new_price = NEW_PRICE;
+
+    return ();
+}
+
+
+@external
 func test_linear_curve_with_negative_delta{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
 
