@@ -134,6 +134,33 @@ func test_exponential_curve_with_expected_output{syscall_ptr: felt*, range_check
 
 
 @external
+func test_exponential_curve_with_decimal_numbers{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local exponential_curve_contract_address;
+    %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
+
+    const NUMBER_TOKENS = 5;
+    let CURRENT_PRICE = Uint256(224330, 0); // 22.433
+    const DELTA = 17; // 17%
+    let TOTAL_PRICE = Uint256(1573540, 0); // 157.354 
+    let NEW_PRICE = Uint256(491831, 0); // 49.1831
+
+    let (total_price) = IBondingCurve.getTotalPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+    let (new_price) = IBondingCurve.getNewPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+
+    assert total_price = TOTAL_PRICE;
+    assert new_price = NEW_PRICE;
+
+    return ();
+}
+
+
+@external
 func test_exponential_curve_with_negative_delta{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
 
@@ -145,6 +172,33 @@ func test_exponential_curve_with_negative_delta{syscall_ptr: felt*, range_check_
     let DELTA = -50; // -50%
     let TOTAL_PRICE = Uint256(175000, 0); // 17.5 
     let NEW_PRICE = Uint256(12500, 0); // 1.25 
+
+    let (total_price) = IBondingCurve.getTotalPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+    let (new_price) = IBondingCurve.getNewPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+
+    assert total_price = TOTAL_PRICE;
+    assert new_price = NEW_PRICE;
+    
+    return ();
+}
+
+
+@external
+func test_exponential_curve_with_negative_delta_and_decimal_numbers{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local exponential_curve_contract_address;
+    %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
+
+    const NUMBER_TOKENS = 8;
+    let CURRENT_PRICE = Uint256(12345, 0); // 1.2345
+    let DELTA = -13; // -13%
+    let TOTAL_PRICE = Uint256(63794, 0); // 6.3794
+    let NEW_PRICE = Uint256(4051, 0); // 0.4051
 
     let (total_price) = IBondingCurve.getTotalPrice(
         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
