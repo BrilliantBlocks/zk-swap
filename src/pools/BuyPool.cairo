@@ -19,13 +19,7 @@ from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_add, uin
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 from src.pools.IPool import NFT, PoolParams
-
-
-struct PriceCalculation {
-    number_tokens: felt,
-    current_price: Uint256,
-    delta: felt,
-}
+from src.bonding_curves.IBondingCurve import PriceCalculation
 
 
 // Events
