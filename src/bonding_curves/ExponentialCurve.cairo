@@ -103,17 +103,3 @@ func convertFeltToUint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
 
     return (output,);
 }
-
-
-func assertNoOverflow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    input: Uint256
-) -> () {
-    alloc_locals;
-    local zero: Uint256 = Uint256(0, 0);
-    let (no_overflow) = uint256_eq(input, zero);
-    with_attr error_message("Overflow in price calculation.") {
-        assert no_overflow = TRUE;
-    }
-
-    return ();
-}
