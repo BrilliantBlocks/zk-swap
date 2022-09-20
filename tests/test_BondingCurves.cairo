@@ -33,10 +33,10 @@ func test_linear_curve_with_expected_output{syscall_ptr: felt*, range_check_ptr,
     %{ ids.linear_curve_contract_address = context.linear_curve_contract_address %}
 
     const NUMBER_TOKENS = 5;
-    let CURRENT_PRICE = Uint256(10, 0);
-    const DELTA = 3;
-    let TOTAL_PRICE = Uint256(80, 0);
-    let NEW_PRICE = Uint256(25, 0);
+    let CURRENT_PRICE = Uint256(100000, 0);
+    const DELTA = 30000;
+    let TOTAL_PRICE = Uint256(800000, 0);
+    let NEW_PRICE = Uint256(250000, 0);
 
     let (total_price) = IBondingCurve.getTotalPrice(
         linear_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
@@ -60,10 +60,10 @@ func test_linear_curve_with_negative_delta{syscall_ptr: felt*, range_check_ptr, 
     %{ ids.linear_curve_contract_address = context.linear_curve_contract_address %}
 
     const NUMBER_TOKENS = 2;
-    let CURRENT_PRICE = Uint256(10, 0);
-    const DELTA = -2;
-    let TOTAL_PRICE = Uint256(18, 0);
-    let NEW_PRICE = Uint256(6, 0);
+    let CURRENT_PRICE = Uint256(100000, 0);
+    const DELTA = -20000;
+    let TOTAL_PRICE = Uint256(180000, 0);
+    let NEW_PRICE = Uint256(60000, 0);
 
     let (total_price) = IBondingCurve.getTotalPrice(
         linear_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA

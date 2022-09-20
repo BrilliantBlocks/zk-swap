@@ -13,6 +13,8 @@ from starkware.cairo.common.uint256 import (
 )
 from starkware.cairo.common.bool import TRUE, FALSE
 
+from src.utils.math64x61 import Math64x61
+
 
 // To do: Refactor linear bonding curve with fixed point math calculation and adjust SellPool tests
 // To do: Refactor input parameters as PriceCalculation Struct (with Cairo v0.10.0)
@@ -24,43 +26,26 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 ) -> (total_price: Uint256) {
     alloc_locals;
 
-    let delta_abs = abs_value(delta);
-    let (number_tokens_uint) = convertFeltToUint(number_tokens);
-    let (delta_uint) = convertFeltToUint(delta_abs);
+    let fpm_unit = Math64x61.fromFelt(1);
+    let fpm_two = Math64x61.fromFelt(2);
+    let fpm_number_tokens = Math64x61.fromFelt(number_tokens);
+    let fpm_current_price = Math64x61.fromUint256(current_price);
+    let fpm_delta = Math64x61.fromFelt(delta);
 
-    let (a, a_overflow) = uint256_mul(current_price, number_tokens_uint);
-    assertNoOverflow(a_overflow);
-    let (part1, part1_overflow) = uint256_mul(a, Uint256(2, 0));
-    assertNoOverflow(part1_overflow);
+    let fpm_summand1 = Math64x61.mul(fpm_current_price, fpm_number_tokens);
+    let fpm_number_tokens_red = Math64x61.sub(fpm_number_tokens, fpm_unit);
+    let fpm_multiplier = Math64x61.mul(fpm_number_tokens, fpm_number_tokens_red);
+    let fpm_counter = Math64x61.mul(fpm_multiplier, fpm_delta);
+    let fpm_summand2 = Math64x61.div(fpm_counter, fpm_two);
 
-    let (b, b_overflow) = uint256_mul(number_tokens_uint, delta_uint);
-    assertNoOverflow(b_overflow);
-    let (c) = uint256_sub(number_tokens_uint, Uint256(1, 0));
-    let (part2, part2_overflow) = uint256_mul(b, c);
-    assertNoOverflow(part2_overflow);
-
-    let DELTA_POSITIVE = is_nn(delta);
-    if (DELTA_POSITIVE == FALSE) {
-        let (counter) = uint256_sub(part1, part2);
-        let (total_price, total_price_overflow) = uint256_unsigned_div_rem(counter, Uint256(2, 0));
-        assertNoOverflow(total_price_overflow);
-        return (total_price,);
-    }
-
-    let (counter, counter_overflow) = uint256_add(part1, part2);
-    with_attr error_message("Overflow in price calculation.") {
-        assert counter_overflow = FALSE;
-    }
-    let (total_price, total_price_overflow) = uint256_unsigned_div_rem(counter, Uint256(2, 0));
-    assertNoOverflow(total_price_overflow);
+    let fpm_total_price = Math64x61.add(fpm_summand1, fpm_summand2);
+    //let fpm_total_price_dec = fpm_total_price * 10000; // 4 decimal places
+    let total_price_felt = Math64x61.toFelt(fpm_total_price);
+    let (total_price) = convertFeltToUint(total_price_felt);
 
     return (total_price,);
 
-    // If Delta positive/ increasing price:
-    // total_price = (2 * current_price * number_tokens + number_tokens * (number_tokens - 1) * delta)/2
-
-    // If Delta negative/ decreasing price:
-    // total_price = (2 * current_price * number_tokens - number_tokens * (number_tokens - 1) * delta)/2
+    // total_price = current_price * number_tokens +- delta * (number_tokens - 1) * number_tokens / 2
 }
 
 
@@ -70,31 +55,19 @@ func getNewPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 ) -> (new_price: Uint256) {
     alloc_locals;
 
-    let delta_abs = abs_value(delta);
-    let (number_tokens_uint) = convertFeltToUint(number_tokens);
-    let (delta_uint) = convertFeltToUint(delta_abs);
+    let fpm_number_tokens = Math64x61.fromFelt(number_tokens);
+    let fpm_current_price = Math64x61.fromUint256(current_price);
+    let fpm_delta = Math64x61.fromFelt(delta);
 
-    let (multiplier, multiplier_overflow) = uint256_mul(number_tokens_uint, delta_uint);
-    assertNoOverflow(multiplier_overflow);
-
-    let DELTA_POSITIVE = is_nn(delta);
-    if (DELTA_POSITIVE == FALSE) {
-        let (new_price) = uint256_sub(current_price, multiplier);
-        return (new_price,);
-    }
-
-    let (new_price, new_price_overflow) = uint256_add(current_price, multiplier);
-    with_attr error_message("Overflow in price calculation.") {
-        assert new_price_overflow = FALSE;
-    }
+    let fpm_summand = Math64x61.mul(fpm_delta, fpm_number_tokens);
+    let fpm_new_price = Math64x61.add(fpm_current_price, fpm_summand);
+    //let fpm_new_price_dec = fpm_new_price * 10000; // 4 decimal places
+    let new_price_felt = Math64x61.toFelt(fpm_new_price);
+    let (new_price) = convertFeltToUint(new_price_felt);
 
     return (new_price,);
 
-    // If Delta positive/ increasing price:
-    // new_price = current_price + delta * number_tokens
-
-    // If Delta negative/ decreasing price:
-    // new_price = current_price - delta * number_tokens
+    // new_price = current_price +- delta * number_tokens
 }
 
 
