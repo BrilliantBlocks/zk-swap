@@ -24,8 +24,8 @@ const C1_SYMBOL = 'C1';
 const C2_SYMBOL = 'C2';
 const ERC20_NAME = 'ERC20 Test Contract';
 const ERC20_SYMBOL = 'ERC20';
-const DECIMALS = 18;
-const INITIAL_SUPPLY_LOW = 50;
+const DECIMALS = 4;
+const INITIAL_SUPPLY_LOW = 500000;
 const INITIAL_SUPPLY_HIGH = 0;
 const POOL_AND_ERC20_OWNER = 123456789;
 const NFT_OWNER_AND_SELLER = 987654321;
@@ -84,8 +84,8 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     let NFT_1_1 = Uint256(11, 0);
     let NFT_1_2 = Uint256(12, 0);
     let NFT_2_1 = Uint256(21, 0);
-    let DEPOSIT_BALANCE = Uint256(40, 0);
-    tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(10, 0), delta=1);
+    let DEPOSIT_BALANCE = Uint256(400000, 0);
+    tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=10000);
 
     IPool.mint(c1_contract_address, NFT_OWNER_AND_SELLER, NFT_1_1);
     IPool.mint(c1_contract_address, NFT_OWNER_AND_SELLER, NFT_1_2);
@@ -175,9 +175,9 @@ func test_initialization_ERC_contracts{syscall_ptr: felt*, range_check_ptr, pede
 
     assert c1_balance = Uint256(2, 0);
     assert c2_balance = Uint256(1, 0);
-    assert erc20_balance_pool_owner = Uint256(10, 0);
-    assert erc20_balance_pool = Uint256(40, 0);
-    assert erc20_total_supply = Uint256(50, 0);
+    assert erc20_balance_pool_owner = Uint256(100000, 0);
+    assert erc20_balance_pool = Uint256(400000, 0);
+    assert erc20_total_supply = Uint256(500000, 0);
     assert c1_token_owner = NFT_OWNER_AND_SELLER;
     assert c2_token_owner = NFT_OWNER_AND_SELLER;
 
@@ -192,7 +192,7 @@ func test_getPoolConfig_with_expected_output{syscall_ptr: felt*, range_check_ptr
     local pool_factory_contract_address;
     %{ ids.pool_factory_contract_address = context.pool_factory_contract_address %}
 
-    tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(10, 0), delta=1);
+    tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=10000);
 
     let (buy_pool_contract_address) = _buy_pool_contract_address.read();
     let (pool_factory) = IPool.getPoolFactory(buy_pool_contract_address);
@@ -209,7 +209,7 @@ func test_getPoolConfig_with_expected_output{syscall_ptr: felt*, range_check_ptr
     assert pool_params.price = POOL_PARAMS.price;
     assert pool_params.delta = POOL_PARAMS.delta;
     assert pool_owner = POOL_AND_ERC20_OWNER;
-    assert pool_eth_balance = Uint256(40, 0);
+    assert pool_eth_balance = Uint256(400000, 0);
 
     return ();
 }
@@ -304,8 +304,8 @@ func test_sellNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilti
     let (all_nfts_of_c1_before_len, all_nfts_of_c1_before) = IPool.getAllNftsOfCollection(buy_pool_contract_address, c1_contract_address);
     let (all_nfts_of_c2_before_len, all_nfts_of_c2_before) = IPool.getAllNftsOfCollection(buy_pool_contract_address, c2_contract_address);
     assert erc20_balance_nft_seller_before = Uint256(0, 0);
-    assert erc20_balance_pool_before = Uint256(40, 0);
-    assert pool_eth_balance_before = Uint256(40, 0);
+    assert erc20_balance_pool_before = Uint256(400000, 0);
+    assert pool_eth_balance_before = Uint256(400000, 0);
     assert c1_token_owner_before = NFT_OWNER_AND_SELLER;
     assert c2_token_owner_before = NFT_OWNER_AND_SELLER;
     assert all_collections_before_len = 0;
@@ -343,9 +343,9 @@ func test_sellNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilti
     let (all_collections_after_len, all_collections_after) = IPool.getAllCollections(buy_pool_contract_address);
     let (all_nfts_of_c1_after_len, all_nfts_of_c1_after) = IPool.getAllNftsOfCollection(buy_pool_contract_address, c1_contract_address);
     let (all_nfts_of_c2_after_len, all_nfts_of_c2_after) = IPool.getAllNftsOfCollection(buy_pool_contract_address, c2_contract_address);
-    assert erc20_balance_nft_seller_after = Uint256(33, 0);
-    assert pool_eth_balance_after = Uint256(7, 0);
-    assert erc20_balance_pool_after = Uint256(7, 0);
+    assert erc20_balance_nft_seller_after = Uint256(330000, 0);
+    assert pool_eth_balance_after = Uint256(70000, 0);
+    assert erc20_balance_pool_after = Uint256(70000, 0);
     assert c1_token_owner_after = buy_pool_contract_address;
     assert c2_token_owner_after = buy_pool_contract_address;
     assert all_collections_after_len = 2;
