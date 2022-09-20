@@ -248,7 +248,7 @@ func test_exponential_curve_getTotalPrice_error_for_zero_delta{syscall_ptr: felt
         delta=0 // 0%
     );
 
-    %{ expect_revert(error_message="Delta cannot be zero in exponential curve.") %}
+    %{ expect_revert(error_message="Delta cannot be zero in exponential curve (use linear curve for constant price).") %}
     let (total_price) = IBondingCurve.getTotalPrice(
         exponential_curve_contract_address, PRICE_CALCULATION
     );
@@ -270,7 +270,7 @@ func test_exponential_curve_getNewPrice_error_for_zero_delta{syscall_ptr: felt*,
         delta=0 // 0%
     );
 
-    %{ expect_revert(error_message="Delta cannot be zero in exponential curve.") %}
+    %{ expect_revert(error_message="Delta cannot be zero in exponential curve (use linear curve for constant price).") %}
     let (total_price) = IBondingCurve.getNewPrice(
         exponential_curve_contract_address, PRICE_CALCULATION
     );

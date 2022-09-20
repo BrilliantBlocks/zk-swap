@@ -17,9 +17,6 @@ from src.utils.math64x61 import Math64x61
 from src.bonding_curves.IBondingCurve import PriceCalculation
 
 
-// To do: Refactor input parameters as PriceCalculation Struct (with Cairo v0.10.0)
-
-
 @view
 func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     price_calculation: PriceCalculation

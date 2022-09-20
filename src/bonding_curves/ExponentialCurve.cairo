@@ -18,16 +18,13 @@ from src.utils.math64x61 import Math64x61
 from src.bonding_curves.IBondingCurve import PriceCalculation
 
 
-// To do: Refactor input parameters as PriceCalculation Struct (with Cairo v0.10.0)
-
-
 @view
 func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     price_calculation: PriceCalculation
 ) -> (total_price: Uint256) {
     alloc_locals;
 
-    with_attr error_message("Delta cannot be zero in exponential curve.") {
+    with_attr error_message("Delta cannot be zero in exponential curve (use linear curve for constant price).") {
         assert_not_zero(price_calculation.delta);
     }
 
@@ -35,8 +32,6 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     with_attr error_message("Delta must be higher than -99%") {
         assert_le(lower_bound, price_calculation.delta);
     }
-
-    // Fix point math operations
 
     let fpm_unit = Math64x61.fromFelt(1);
     let fpm_base = Math64x61.fromFelt(100);
@@ -66,7 +61,7 @@ func getNewPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 ) -> (new_price: Uint256) {
     alloc_locals;
 
-    with_attr error_message("Delta cannot be zero in exponential curve.") {
+    with_attr error_message("Delta cannot be zero in exponential curve (use linear curve for constant price).") {
         assert_not_zero(price_calculation.delta);
     }
 
@@ -74,8 +69,6 @@ func getNewPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     with_attr error_message("Delta must be higher than -99%") {
         assert_le(lower_bound, price_calculation.delta);
     }
-
-    // Fix point math operations
 
     let fpm_unit = Math64x61.fromFelt(1);
     let fpm_base = Math64x61.fromFelt(100);
