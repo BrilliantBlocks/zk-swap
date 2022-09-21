@@ -204,11 +204,31 @@ func getFactoryOwner{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check
 }
 
 
-// @view
-// func getPoolTypeClassHash{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}() -> (
-//     pool_type_class_hash: felt
-// ) {
-//     let (pool_type_class_hash) = _pool_type_class_hash.read();
+@view
+func getPoolTypeClassHash{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
+    pool_address: felt
+) -> (pool_type_class_hash: felt) {
+    
+    let (pool_type_class_hash) = iterate_pool_list(0, pool_address);
 
-//     return (pool_type_class_hash,);
-// }
+    return (pool_type_class_hash,);
+}
+
+
+func iterate_pool_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    current_id: felt, pool_address: felt
+) -> (pool_type_class_hash: felt) {
+    
+    let (pool) = _pool_by_id.read(current_id);
+
+    if (pool.address == 0) {
+        return (0,);
+    }
+
+    if (pool.address == pool_address) {
+        return (pool.type_class_hash,);
+    }
+
+    return iterate_pool_list(current_id + 1, pool_address);
+
+}

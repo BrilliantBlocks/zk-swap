@@ -26,6 +26,6 @@ namespace IMintPool {
     func getFactoryOwner() -> (factory_owner: felt) {
     }
 
-    // func getPoolTypeClassHash() -> (pool_type_class_hash: felt) {
-    // }
+    func getPoolTypeClassHash(pool_address: felt) -> (pool_type_class_hash: felt) {
+    }
 }
