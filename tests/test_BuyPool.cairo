@@ -91,14 +91,12 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     IPool.mint(c1_contract_address, NFT_OWNER_AND_SELLER, NFT_1_2);
     IPool.mint(c2_contract_address, NFT_OWNER_AND_SELLER, NFT_2_1);
 
-    IMintPool.setPoolClassHash(pool_factory_contract_address, buy_pool_class_hash);
-
     %{
         POOL_AND_ERC20_OWNER = 123456789
         stop_prank_callable_1 = start_prank(POOL_AND_ERC20_OWNER, target_contract_address=ids.pool_factory_contract_address)
     %}
     let (buy_pool_contract_address) = IMintPool.mint(
-        pool_factory_contract_address, linear_curve_class_hash, erc20_contract_address
+        pool_factory_contract_address, buy_pool_class_hash, linear_curve_class_hash, erc20_contract_address
     );
     %{ stop_prank_callable_1() %}
 
@@ -134,13 +132,13 @@ func test_initialization_pool_factory{syscall_ptr: felt*, range_check_ptr, peder
     let (POOL_FACTORY_OWNER) = get_contract_address();
 
     let (factory_owner) = IMintPool.getFactoryOwner(pool_factory_contract_address);
-    let (pool_type_class_hash) = IMintPool.getPoolTypeClassHash(pool_factory_contract_address);
+    //let (pool_type_class_hash) = IMintPool.getPoolTypeClassHash(pool_factory_contract_address);
     let (
         collection_array_len: felt, collection_array: Collection*
     ) = IMintPool.getAllCollectionsFromAllPools(pool_factory_contract_address);
 
     assert factory_owner = POOL_FACTORY_OWNER;
-    assert pool_type_class_hash = buy_pool_class_hash;
+    //assert pool_type_class_hash = buy_pool_class_hash;
     assert collection_array_len = 0;
 
     return ();

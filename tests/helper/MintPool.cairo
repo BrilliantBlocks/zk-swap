@@ -12,7 +12,7 @@ from starkware.starknet.common.syscalls import (
 from starkware.cairo.common.math import assert_not_equal, split_felt, assert_not_zero
 from starkware.cairo.common.uint256 import Uint256, uint256_check
 from src.pools.IPool import IPool
-from tests.helper.IMintPool import Collection
+from tests.helper.IMintPool import Pool, Collection
 
 
 // Storage
@@ -27,11 +27,7 @@ func _owners(pool_address_token: Uint256) -> (res: felt) {
 }
 
 @storage_var
-func _pool_type_class_hash() -> (res: felt) {
-}
-
-@storage_var
-func _pool_by_id(int: felt) -> (pool_address: felt) {
+func _pool_by_id(int: felt) -> (res: Pool) {
 }
 
 
@@ -66,20 +62,20 @@ func getAllCollectionsFromAllPools{pedersen_ptr: HashBuiltin*, syscall_ptr: felt
 func populate_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     collection_array: Collection*, array_index: felt, current_count: felt
 ) -> (collection_count: felt) {
-    let (pool_address) = _pool_by_id.read(array_index);
-    if (pool_address == 0) {
+    let (pool) = _pool_by_id.read(array_index);
+    if (pool.address == 0) {
         return (current_count,);
     }
 
     let (pool_collection_array_len, pool_collection_array) = IPool.getAllCollections(
-        pool_address
+        pool.address
     );
 
     let (next_count) = populate_struct(
         collection_array,
         pool_collection_array_len,
         pool_collection_array,
-        pool_address,
+        pool.address,
         current_count,
     );
 
@@ -130,14 +126,13 @@ func ownerOf{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
 
 @external
 func mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
-    bonding_curve_class_hash: felt, erc20_contract_address: felt
+    pool_type_class_hash: felt, bonding_curve_class_hash: felt, erc20_contract_address: felt
 ) -> (pool_address: felt) {
     alloc_locals;
     let (local calldata: felt*) = alloc();
 
     let (self) = get_contract_address();
     let (pool_owner) = get_caller_address();
-    let (pool_class_hash) = _pool_type_class_hash.read();
     let (salt) = get_block_number();
     let calldata_len = 3;
 
@@ -147,7 +142,7 @@ func mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
 
     with_attr error_message("Pool deployment failed") {
         let (pool_address) = deploy(
-            class_hash=pool_class_hash,
+            class_hash=pool_type_class_hash,
             contract_address_salt=salt,
             constructor_calldata_size=calldata_len,
             constructor_calldata=calldata,
@@ -156,23 +151,13 @@ func mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
     }
 
     let (next_free_id) = get_next_free_id(0);
-    _pool_by_id.write(next_free_id, pool_address);
+    tempvar POOL: Pool = Pool(type_class_hash=pool_type_class_hash, address=pool_address);
+    _pool_by_id.write(next_free_id, POOL);
 
     let (high, low) = split_felt(pool_address);
     let pool_address_token = Uint256(low, high);
     _owners.write(pool_address_token, pool_owner);
     return (pool_address,);
-}
-
-
-@external
-func setPoolClassHash{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
-    pool_type_class_hash: felt
-) -> () {
-    assert_only_owner();
-    _pool_type_class_hash.write(pool_type_class_hash);
-
-    return ();
 }
 
 
@@ -182,9 +167,9 @@ func setPoolClassHash{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_chec
 func get_next_free_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     current_id: felt
 ) -> (next_free_id: felt) {
-    let (s) = _pool_by_id.read(current_id);
+    let (pool) = _pool_by_id.read(current_id);
 
-    if (s == 0) {
+    if (pool.address == 0) {
         return (0,);
     }
 
@@ -219,11 +204,11 @@ func getFactoryOwner{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check
 }
 
 
-@view
-func getPoolTypeClassHash{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}() -> (
-    pool_type_class_hash: felt
-) {
-    let (pool_type_class_hash) = _pool_type_class_hash.read();
+// @view
+// func getPoolTypeClassHash{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}() -> (
+//     pool_type_class_hash: felt
+// ) {
+//     let (pool_type_class_hash) = _pool_type_class_hash.read();
 
-    return (pool_type_class_hash,);
-}
+//     return (pool_type_class_hash,);
+// }
