@@ -35,9 +35,8 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 
     let fpm_unit = Math64x61.fromFelt(1);
     let fpm_base = Math64x61.fromFelt(100);
-    let fpm_delta_fraction = Math64x61.fromFelt(price_calculation.delta);
-    let fpm_percent = Math64x61.mul(fpm_unit, fpm_delta_fraction);
-    let fpm_delta = Math64x61.div(fpm_percent, fpm_base);
+    let fpm_delta_percent = Math64x61.fromFelt(price_calculation.delta);
+    let fpm_delta = Math64x61.div(fpm_delta_percent, fpm_base);
     
     let fpm_delta_sum = Math64x61.add(fpm_unit, fpm_delta);
     let fpm_delta_sum_pow = Math64x61._pow_int(fpm_delta_sum, price_calculation.number_tokens);
@@ -72,9 +71,8 @@ func getNewPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 
     let fpm_unit = Math64x61.fromFelt(1);
     let fpm_base = Math64x61.fromFelt(100);
-    let fpm_delta_fraction = Math64x61.fromFelt(price_calculation.delta);
-    let fpm_percent = Math64x61.mul(fpm_unit, fpm_delta_fraction);
-    let fpm_delta = Math64x61.div(fpm_percent, fpm_base);
+    let fpm_delta_percent = Math64x61.fromFelt(price_calculation.delta);
+    let fpm_delta = Math64x61.div(fpm_delta_percent, fpm_base);
     
     let fpm_delta_sum = Math64x61.add(fpm_unit, fpm_delta);
     let fpm_delta_sum_pow = Math64x61._pow_int(fpm_delta_sum, price_calculation.number_tokens);
