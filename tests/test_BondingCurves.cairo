@@ -146,6 +146,36 @@ func test_exponential_curve_with_expected_output{syscall_ptr: felt*, range_check
 
 
 @external
+func test_exponential_curve_with_high_delta{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local exponential_curve_contract_address;
+    %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
+
+    tempvar PRICE_CALCULATION: PriceCalculation = PriceCalculation(
+        number_tokens=3, 
+        current_price=Uint256(100000, 0), // 10
+        delta=10000 // 10000%
+    );
+
+    let TOTAL_PRICE = Uint256(1030300000, 0); // 103030
+    let NEW_PRICE = Uint256(103030100000, 0); // 10303010
+
+    let (total_price) = IBondingCurve.getTotalPrice(
+        exponential_curve_contract_address, PRICE_CALCULATION
+    );
+    let (new_price) = IBondingCurve.getNewPrice(
+        exponential_curve_contract_address, PRICE_CALCULATION
+    );
+
+    assert total_price = TOTAL_PRICE;
+    assert new_price = NEW_PRICE;
+
+    return ();
+}
+
+
+@external
 func test_exponential_curve_with_decimal_numbers{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
 
