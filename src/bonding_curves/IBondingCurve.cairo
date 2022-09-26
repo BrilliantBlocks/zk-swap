@@ -8,6 +8,6 @@ namespace IBondingCurve {
     func getTotalPrice(number_tokens: felt, current_price: Uint256, delta: felt) -> (total_price: Uint256) {
     }
 
-    func getNewPrice(number_tokens: felt, current_price: Uint256, delta: felt) -> (new_price: Uint256) {
+    func getNextPrice(number_tokens: felt, current_price: Uint256, delta: felt) -> (new_price: Uint256) {
     }
 }

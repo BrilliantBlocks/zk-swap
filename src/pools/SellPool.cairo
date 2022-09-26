@@ -438,7 +438,7 @@ func buyNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     let (new_eth_balance, _) = uint256_add(old_eth_balance, total_price);
     _eth_balance.write(new_eth_balance);
 
-    let (new_price) = get_new_price(nft_array_len);
+    let (new_price) = get_next_price(nft_array_len);
 
     _current_price.write(new_price);
     PriceUpdate.emit(new_price);
@@ -478,9 +478,9 @@ func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 }
 
 
-func get_new_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func get_next_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     nft_array_len
-) -> (new_price: Uint256) {
+) -> (next_price: Uint256) {
     alloc_locals;
     let (current_price) = _current_price.read();
     let (delta) = _delta.read();
@@ -492,18 +492,18 @@ func get_new_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     assert calldata[2] = current_price.high;
     assert calldata[3] = delta;
 
-    local function_selector_get_new_price = 1427085065996622579194757518833714443103194349812573964832617639352675497406;
+    local function_selector_get_next_price = 1264847828455946785227536115322282734231840299345716002372248194024334047338;
 
     let (retdata_size: felt, retdata: felt*) = library_call(
         class_hash=class_hash,
-        function_selector=function_selector_get_new_price,
+        function_selector=function_selector_get_next_price,
         calldata_size=4,
         calldata=calldata,
     );
-    local new_price_low = retdata[0];
-    local new_price_high = retdata[1];
-    let new_price = Uint256(new_price_low, new_price_high);
-    return (new_price,);
+    local next_price_low = retdata[0];
+    local next_price_high = retdata[1];
+    let next_price = Uint256(next_price_low, next_price_high);
+    return (next_price,);
 }
 
 
@@ -566,7 +566,7 @@ func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 ) {
     const number_items = 1;
 
-    let (next_price) = get_new_price(number_items);
+    let (next_price) = get_next_price(number_items);
 
     return (next_price,);
 }

@@ -54,9 +54,9 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 
 
 @view
-func getNewPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     number_tokens: felt, current_price: Uint256, delta: felt
-) -> (new_price: Uint256) {
+) -> (next_price: Uint256) {
     alloc_locals;
 
     with_attr error_message("Delta cannot be zero in exponential curve (use linear curve for constant price).") {
@@ -76,13 +76,13 @@ func getNewPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     let fpm_delta_sum = Math64x61.add(fpm_unit, fpm_delta);
     let fpm_delta_sum_pow = Math64x61._pow_int(fpm_delta_sum, number_tokens);
     let fpm_current_price = Math64x61.fromUint256(current_price);
-    let fpm_new_price = Math64x61.mul(fpm_current_price, fpm_delta_sum_pow);
-    let new_price_felt = Math64x61.toFelt(fpm_new_price);
-    let (new_price) = convertFeltToUint(new_price_felt);
+    let fpm_next_price = Math64x61.mul(fpm_current_price, fpm_delta_sum_pow);
+    let next_price_felt = Math64x61.toFelt(fpm_next_price);
+    let (next_price) = convertFeltToUint(next_price_felt);
 
-    return (new_price,);
+    return (next_price,);
 
-    // new_price = current_price * (1 +- delta)^number_tokens
+    // next_price = current_price * (1 +- delta)^number_tokens
 }
 
 

@@ -45,9 +45,9 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 
 
 @view
-func getNewPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     number_tokens: felt, current_price: Uint256, delta: felt
-) -> (new_price: Uint256) {
+) -> (next_price: Uint256) {
     alloc_locals;
 
     let fpm_number_tokens = Math64x61.fromFelt(number_tokens);
@@ -55,13 +55,13 @@ func getNewPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     let fpm_delta = Math64x61.fromFelt(delta);
 
     let fpm_summand = Math64x61.mul(fpm_delta, fpm_number_tokens);
-    let fpm_new_price = Math64x61.add(fpm_current_price, fpm_summand);
-    let new_price_felt = Math64x61.toFelt(fpm_new_price);
-    let (new_price) = convertFeltToUint(new_price_felt);
+    let fpm_next_price = Math64x61.add(fpm_current_price, fpm_summand);
+    let next_price_felt = Math64x61.toFelt(fpm_next_price);
+    let (next_price) = convertFeltToUint(next_price_felt);
 
-    return (new_price,);
+    return (next_price,);
 
-    // new_price = current_price +- delta * number_tokens
+    // next_price = current_price +- delta * number_tokens
 }
 
 
