@@ -219,15 +219,13 @@ func _add_nft_to_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
         return ();
     }
 
-    const start_slot_collection_array = 0;
-    const start_slot_element_list = 1;
     let (start_id) = _start_id_by_collection.read(nft_array[0].address);
 
     if (start_id == 0) {
-        let (next_collection_id) = get_collection_count(start_slot_collection_array);
+        let (next_collection_id) = get_collection_count();
         _collection_by_id.write(next_collection_id, nft_array[0].address);
 
-        let (next_free_slot) = find_next_free_slot(start_slot_element_list);
+        let (next_free_slot) = find_next_free_slot();
         _start_id_by_collection.write(nft_array[0].address, next_free_slot);
         _list_element_by_id.write(next_free_slot, (nft_array[0].id, 0));
 
@@ -245,7 +243,7 @@ func _add_nft_to_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     }
 
     let (last_collection_element) = find_last_collection_element(start_id);
-    let (next_free_slot) = find_next_free_slot(start_slot_element_list);
+    let (next_free_slot) = find_next_free_slot();
     let (last_token_id) = get_token_id(last_collection_element);
 
     _list_element_by_id.write(last_collection_element, (last_token_id, next_free_slot));
@@ -263,7 +261,18 @@ func _add_nft_to_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 }
 
 
-func find_next_free_slot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func find_next_free_slot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    next_free_slot: felt
+) {
+    const start_slot_element_list = 1;
+
+    let (next_free_slot) = _find_next_free_slot(start_slot_element_list);
+
+    return (next_free_slot,);
+}
+
+
+func _find_next_free_slot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     current_id: felt
 ) -> (next_free_slot: felt) {
     alloc_locals;
@@ -276,7 +285,7 @@ func find_next_free_slot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
         return (1,);
     }
 
-    let (sum) = find_next_free_slot(current_id + 1);
+    let (sum) = _find_next_free_slot(current_id + 1);
     return (sum + 1,);
 }
 
@@ -294,7 +303,18 @@ func find_last_collection_element{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
 }
 
 
-func get_collection_count{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func get_collection_count{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    collection_count: felt
+) {
+    const start_slot_collection_array = 0;
+    let (collection_count) = _get_collection_count(start_slot_collection_array);
+
+    return (collection_count,);
+
+}
+
+
+func _get_collection_count{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     current_id: felt
 ) -> (collection_count: felt) {
     let (s) = _collection_by_id.read(current_id);
@@ -303,7 +323,7 @@ func get_collection_count{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
         return (0,);
     }
 
-    let (sum) = get_collection_count(current_id + 1);
+    let (sum) = _get_collection_count(current_id + 1);
     return (sum + 1,);
 }
 
