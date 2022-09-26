@@ -13,7 +13,7 @@ from starkware.cairo.common.uint256 import (
 )
 from starkware.cairo.common.bool import TRUE, FALSE
 
-from src.utils.math64x61 import Math64x61
+from lib.cairo_math_64x61.contracts.cairo_math_64x61.math64x61 import Math64x61
 from src.bonding_curves.IBondingCurve import PriceCalculation
 
 

@@ -6,7 +6,7 @@ from starkware.cairo.common.math import split_felt, abs_value, unsigned_div_rem
 from starkware.cairo.common.pow import pow
 
 from src.bonding_curves.IBondingCurve import IBondingCurve, PriceCalculation
-from src.utils.math64x61 import Math64x61
+from lib.cairo_math_64x61.contracts.cairo_math_64x61.math64x61 import Math64x61
 
 
 @view
