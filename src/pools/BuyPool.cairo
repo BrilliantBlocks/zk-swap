@@ -478,7 +478,6 @@ func populate_nfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     nft_array_len: felt, nft_array: NFT*
 ) -> () {
-    alloc_locals;
 
     assert_not_owner();
 
@@ -489,6 +488,38 @@ func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     assert_collections_supported(nft_array_len, nft_array);
 
+    let (total_price) = get_total_price(nft_array_len);
+
+    let (erc20_address) = _erc20_address.read();
+    let (caller_address) = get_caller_address();
+    let (contract_address) = get_contract_address();
+
+    let (eth_balance) = _eth_balance.read();
+    let (sufficient_balance) = uint256_le(total_price, eth_balance);
+    with_attr error_message("Pool's ETH balance is unsuffcient.") {
+        assert sufficient_balance = TRUE;
+    }
+
+    IERC20.transfer(erc20_address, caller_address, total_price);
+
+    let (new_eth_balance) = uint256_sub(eth_balance, total_price);
+    _eth_balance.write(new_eth_balance);
+
+    let (new_price) = get_new_price(nft_array_len);
+
+    _current_price.write(new_price);
+    PriceUpdate.emit(new_price);
+
+    _add_nft_to_pool(nft_array_len, nft_array);
+
+    return ();
+}
+
+
+func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    nft_array_len
+) -> (total_price: Uint256) {
+    alloc_locals;
     let (current_price) = _current_price.read();
     let (delta) = _delta.read();
     let (class_hash) = _bonding_curve_class_hash.read();
@@ -510,21 +541,23 @@ func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     local total_price_low = retdata[0];
     local total_price_high = retdata[1];
     let total_price = Uint256(total_price_low, total_price_high);
+    return (total_price,);
+}
 
-    let (erc20_address) = _erc20_address.read();
-    let (caller_address) = get_caller_address();
-    let (contract_address) = get_contract_address();
 
-    let (eth_balance) = _eth_balance.read();
-    let (sufficient_balance) = uint256_le(total_price, eth_balance);
-    with_attr error_message("Pool's ETH balance is unsuffcient.") {
-        assert sufficient_balance = TRUE;
-    }
+func get_new_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    nft_array_len
+) -> (new_price: Uint256) {
+    alloc_locals;
+    let (current_price) = _current_price.read();
+    let (delta) = _delta.read();
+    let (class_hash) = _bonding_curve_class_hash.read();
 
-    IERC20.transfer(erc20_address, caller_address, total_price);
-
-    let (new_eth_balance) = uint256_sub(eth_balance, total_price);
-    _eth_balance.write(new_eth_balance);
+    let (calldata: felt*) = alloc();
+    assert calldata[0] = nft_array_len;
+    assert calldata[1] = current_price.low;
+    assert calldata[2] = current_price.high;
+    assert calldata[3] = delta;
 
     local function_selector_get_new_price = 1427085065996622579194757518833714443103194349812573964832617639352675497406;
 
@@ -537,13 +570,7 @@ func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     local new_price_low = retdata[0];
     local new_price_high = retdata[1];
     let new_price = Uint256(new_price_low, new_price_high);
-
-    _current_price.write(new_price);
-    PriceUpdate.emit(new_price);
-
-    _add_nft_to_pool(nft_array_len, nft_array);
-
-    return ();
+    return (new_price,);
 }
 
 
@@ -620,29 +647,9 @@ func getPoolConfig{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     next_price: Uint256
 ) {
-    alloc_locals;
     const number_items = 1;
-    let (current_price) = _current_price.read();
-    let (delta) = _delta.read();
-    let (class_hash) = _bonding_curve_class_hash.read();
 
-    let (calldata: felt*) = alloc();
-    assert calldata[0] = number_items;
-    assert calldata[1] = current_price.low;
-    assert calldata[2] = current_price.high;
-    assert calldata[3] = delta;
-
-    local function_selector_get_new_price = 1427085065996622579194757518833714443103194349812573964832617639352675497406;
-
-    let (retdata_size: felt, retdata: felt*) = library_call(
-        class_hash=class_hash,
-        function_selector=function_selector_get_new_price,
-        calldata_size=4,
-        calldata=calldata,
-    );
-    local next_price_low = retdata[0];
-    local next_price_high = retdata[1];
-    let next_price = Uint256(next_price_low, next_price_high);
+    let (next_price) = get_new_price(number_items);
 
     return (next_price,);
 }
