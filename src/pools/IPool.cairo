@@ -73,7 +73,7 @@ namespace IPool {
     func withdrawAllEth() -> () {
     }
 
-    func checkIfCollectionSupported(collection_address: felt) -> (bool: felt) {
+    func checkCollectionSupport(collection_address: felt) -> (bool: felt) {
     }
 
     func addSupportedCollections(collection_array_len: felt, collection_array: felt*) -> () {

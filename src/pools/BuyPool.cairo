@@ -846,7 +846,7 @@ func getEthBalance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 
 
 @view
-func checkIfCollectionSupported{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func checkCollectionSupport{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     collection_address: felt
 ) -> (bool: felt) {
 

@@ -226,8 +226,8 @@ func test_addSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_
     %}
 
     let (buy_pool_contract_address) = _buy_pool_contract_address.read();
-    let (c1_is_supported) = IPool.checkIfCollectionSupported(buy_pool_contract_address, c1_contract_address);
-    let (c2_is_supported) = IPool.checkIfCollectionSupported(buy_pool_contract_address, c2_contract_address);
+    let (c1_is_supported) = IPool.checkCollectionSupport(buy_pool_contract_address, c1_contract_address);
+    let (c2_is_supported) = IPool.checkCollectionSupport(buy_pool_contract_address, c2_contract_address);
 
     assert c1_is_supported = FALSE;
     assert c2_is_supported = FALSE;
@@ -243,8 +243,8 @@ func test_addSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_
     IPool.addSupportedCollections(buy_pool_contract_address, 2, COLLECTION_ARRAY);
     %{ stop_prank_callable() %}
 
-    let (c1_is_supported) = IPool.checkIfCollectionSupported(buy_pool_contract_address, c1_contract_address);
-    let (c2_is_supported) = IPool.checkIfCollectionSupported(buy_pool_contract_address, c2_contract_address);
+    let (c1_is_supported) = IPool.checkCollectionSupport(buy_pool_contract_address, c1_contract_address);
+    let (c2_is_supported) = IPool.checkCollectionSupport(buy_pool_contract_address, c2_contract_address);
 
     assert c1_is_supported = TRUE;
     assert c2_is_supported = TRUE;
@@ -256,8 +256,8 @@ func test_addSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_
     IPool.removeSupportedCollections(buy_pool_contract_address, 2, COLLECTION_ARRAY);
     %{ stop_prank_callable() %}
 
-    let (c1_is_supported) = IPool.checkIfCollectionSupported(buy_pool_contract_address, c1_contract_address);
-    let (c2_is_supported) = IPool.checkIfCollectionSupported(buy_pool_contract_address, c2_contract_address);
+    let (c1_is_supported) = IPool.checkCollectionSupport(buy_pool_contract_address, c1_contract_address);
+    let (c2_is_supported) = IPool.checkCollectionSupport(buy_pool_contract_address, c2_contract_address);
 
     assert c1_is_supported = FALSE;
     assert c2_is_supported = FALSE;
