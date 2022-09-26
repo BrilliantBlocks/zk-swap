@@ -117,7 +117,7 @@ func test_exponential_curve_with_expected_output{syscall_ptr: felt*, range_check
 
     const NUMBER_TOKENS = 5; 
     let CURRENT_PRICE = Uint256(100000, 0); // 10
-    const DELTA = 100; // 100%
+    const DELTA = 10000; // 100,00%
 
     let TOTAL_PRICE = Uint256(3100000, 0); // 310 
     let NEXT_PRICE = Uint256(3200000, 0); // 320 
@@ -145,7 +145,7 @@ func test_exponential_curve_with_high_delta{syscall_ptr: felt*, range_check_ptr,
 
     const NUMBER_TOKENS = 3; 
     let CURRENT_PRICE = Uint256(100000, 0); // 10
-    const DELTA = 10000; // 10000%
+    const DELTA = 1000000; // 10000,00%
 
     let TOTAL_PRICE = Uint256(1030300000, 0); // 103030
     let NEXT_PRICE = Uint256(103030100000, 0); // 10303010
@@ -173,7 +173,7 @@ func test_exponential_curve_with_decimal_numbers{syscall_ptr: felt*, range_check
 
     const NUMBER_TOKENS = 5; 
     let CURRENT_PRICE = Uint256(224330, 0); // 22.433
-    const DELTA = 17; // 17%
+    const DELTA = 1700; // 17,00%
 
     let TOTAL_PRICE = Uint256(1573540, 0); // 157.354 
     let NEXT_PRICE = Uint256(491831, 0); // 49.1831
@@ -201,7 +201,7 @@ func test_exponential_curve_with_negative_delta{syscall_ptr: felt*, range_check_
 
     const NUMBER_TOKENS = 3; 
     let CURRENT_PRICE = Uint256(100000, 0); // 10
-    const DELTA = -50; // -50%
+    const DELTA = -5000; // -50,00%
 
     let TOTAL_PRICE = Uint256(175000, 0); // 17.5 
     let NEXT_PRICE = Uint256(12500, 0); // 1.25 
@@ -229,10 +229,10 @@ func test_exponential_curve_with_negative_delta_and_decimal_numbers{syscall_ptr:
 
     const NUMBER_TOKENS = 8; 
     let CURRENT_PRICE = Uint256(12345, 0); // 1.2345
-    const DELTA = -13; // -13%
+    const DELTA = -1357; // -13,57%
 
-    let TOTAL_PRICE = Uint256(63794, 0); // 6.3794
-    let NEXT_PRICE = Uint256(4051, 0); // 0.4051
+    let TOTAL_PRICE = Uint256(62643, 0); // 6.2643
+    let NEXT_PRICE = Uint256(3844, 0); // 0.3844
 
     let (total_price) = IBondingCurve.getTotalPrice(
         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
@@ -259,7 +259,7 @@ func test_exponential_curve_getTotalPrice_error_for_zero_delta{syscall_ptr: felt
     let CURRENT_PRICE = Uint256(100000, 0); // 10
     const DELTA = 0; // 0%
 
-    %{ expect_revert(error_message="Delta cannot be zero in exponential curve (use linear curve for constant price).") %}
+    %{ expect_revert(error_message="Exponential curve does not support delta = 0") %}
     let (total_price) = IBondingCurve.getTotalPrice(
         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
     );
@@ -279,7 +279,7 @@ func test_exponential_curve_getNextPrice_error_for_zero_delta{syscall_ptr: felt*
     let CURRENT_PRICE = Uint256(100000, 0); // 10
     const DELTA = 0; // 0%
 
-    %{ expect_revert(error_message="Delta cannot be zero in exponential curve (use linear curve for constant price).") %}
+    %{ expect_revert(error_message="Exponential curve does not support delta = 0") %}
     let (next_price) = IBondingCurve.getNextPrice(
         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
     );
@@ -297,9 +297,9 @@ func test_exponential_curve_getTotalPrice_error_for_delta_exceeding_lower_bound{
 
     const NUMBER_TOKENS = 3; 
     let CURRENT_PRICE = Uint256(100000, 0); // 10
-    const DELTA = -100; // -100%
+    const DELTA = -10000; // -100,00%
 
-    %{ expect_revert(error_message="Delta must be higher than -99%") %}
+    %{ expect_revert(error_message="Delta must be higher than -99,99%") %}
     let (total_price) = IBondingCurve.getTotalPrice(
         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
     );
@@ -317,9 +317,9 @@ func test_exponential_curve_getNextPrice_error_for_delta_exceeding_lower_bound{s
 
     const NUMBER_TOKENS = 3; 
     let CURRENT_PRICE = Uint256(100000, 0); // 10
-    const DELTA = -100; // -100%
+    const DELTA = -10000; // -100,00%
 
-    %{ expect_revert(error_message="Delta must be higher than -99%") %}
+    %{ expect_revert(error_message="Delta must be higher than -99,99%") %}
     let (next_price) = IBondingCurve.getNextPrice(
         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
     );
@@ -335,11 +335,11 @@ func test_exponential_curve_with_lower_bound_delta{syscall_ptr: felt*, range_che
     local exponential_curve_contract_address;
     %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
 
-    const NUMBER_TOKENS = 3; 
-    let CURRENT_PRICE = Uint256(230000000, 0); // 23000
-    const DELTA = -99; // -99%
+    const NUMBER_TOKENS = 2; 
+    let CURRENT_PRICE = Uint256(23000000000, 0); // 2300000
+    const DELTA = -9999; // -99,99%
 
-    let TOTAL_PRICE = Uint256(232323000, 0); // 23232.3
+    let TOTAL_PRICE = Uint256(23002300000, 0); // 2300230
     let NEXT_PRICE = Uint256(229, 0); // 0.023
 
     let (total_price) = IBondingCurve.getTotalPrice(

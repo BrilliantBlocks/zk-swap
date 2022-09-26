@@ -23,17 +23,17 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 ) -> (total_price: Uint256) {
     alloc_locals;
 
-    with_attr error_message("Delta cannot be zero in exponential curve (use linear curve for constant price).") {
+    with_attr error_message("Exponential curve does not support delta = 0") {
         assert_not_zero(delta);
     }
 
-    let lower_bound = -99;
-    with_attr error_message("Delta must be higher than -99%") {
+    let lower_bound = -9999;
+    with_attr error_message("Delta must be higher than -99,99%") {
         assert_le(lower_bound, delta);
     }
 
     let fpm_unit = Math64x61.fromFelt(1);
-    let fpm_base = Math64x61.fromFelt(100);
+    let fpm_base = Math64x61.fromFelt(10000);
     let fpm_delta_percent = Math64x61.fromFelt(delta);
     let fpm_delta = Math64x61.div(fpm_delta_percent, fpm_base);
     
@@ -59,17 +59,17 @@ func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 ) -> (next_price: Uint256) {
     alloc_locals;
 
-    with_attr error_message("Delta cannot be zero in exponential curve (use linear curve for constant price).") {
+    with_attr error_message("Exponential curve does not support delta = 0") {
         assert_not_zero(delta);
     }
 
-    let lower_bound = -99;
-    with_attr error_message("Delta must be higher than -99%") {
+    let lower_bound = -9999;
+    with_attr error_message("Delta must be higher than -99,99%") {
         assert_le(lower_bound, delta);
     }
 
     let fpm_unit = Math64x61.fromFelt(1);
-    let fpm_base = Math64x61.fromFelt(100);
+    let fpm_base = Math64x61.fromFelt(10000);
     let fpm_delta_percent = Math64x61.fromFelt(delta);
     let fpm_delta = Math64x61.div(fpm_delta_percent, fpm_base);
     
