@@ -19,7 +19,6 @@ from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_add, uin
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 from src.pools.IPool import NFT, PoolParams
-from src.bonding_curves.IBondingCurve import PriceCalculation
 
 
 // Events
@@ -426,8 +425,11 @@ func buyNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     let (delta) = _delta.read();
     let (class_hash) = _bonding_curve_class_hash.read();
 
-    let (calldata: PriceCalculation*) = alloc();
-    assert calldata[0] = PriceCalculation(number_tokens=nft_array_len, current_price=current_price, delta=delta);
+    let (calldata: felt*) = alloc();
+    assert calldata[0] = nft_array_len;
+    assert calldata[1] = current_price.low;
+    assert calldata[2] = current_price.high;
+    assert calldata[3] = delta;
 
     local function_selector_get_total_price = 162325169460772763346477168287411866553654952715135549492070698764789678722;
 
@@ -541,8 +543,11 @@ func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     let (delta) = _delta.read();
     let (class_hash) = _bonding_curve_class_hash.read();
 
-    let (calldata: PriceCalculation*) = alloc();
-    assert calldata[0] = PriceCalculation(number_tokens=number_items, current_price=current_price, delta=delta);
+    let (calldata: felt*) = alloc();
+    assert calldata[0] = number_items;
+    assert calldata[1] = current_price.low;
+    assert calldata[2] = current_price.high;
+    assert calldata[3] = delta;
 
     local function_selector_get_new_price = 1427085065996622579194757518833714443103194349812573964832617639352675497406;
 

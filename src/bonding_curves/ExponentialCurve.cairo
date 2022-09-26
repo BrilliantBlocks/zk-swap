@@ -15,35 +15,34 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.pow import pow
 
 from lib.cairo_math_64x61.contracts.cairo_math_64x61.math64x61 import Math64x61
-from src.bonding_curves.IBondingCurve import PriceCalculation
 
 
 @view
 func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    price_calculation: PriceCalculation
+    number_tokens: felt, current_price: Uint256, delta: felt
 ) -> (total_price: Uint256) {
     alloc_locals;
 
     with_attr error_message("Delta cannot be zero in exponential curve (use linear curve for constant price).") {
-        assert_not_zero(price_calculation.delta);
+        assert_not_zero(delta);
     }
 
     let lower_bound = -99;
     with_attr error_message("Delta must be higher than -99%") {
-        assert_le(lower_bound, price_calculation.delta);
+        assert_le(lower_bound, delta);
     }
 
     let fpm_unit = Math64x61.fromFelt(1);
     let fpm_base = Math64x61.fromFelt(100);
-    let fpm_delta_percent = Math64x61.fromFelt(price_calculation.delta);
+    let fpm_delta_percent = Math64x61.fromFelt(delta);
     let fpm_delta = Math64x61.div(fpm_delta_percent, fpm_base);
     
     let fpm_delta_sum = Math64x61.add(fpm_unit, fpm_delta);
-    let fpm_delta_sum_pow = Math64x61._pow_int(fpm_delta_sum, price_calculation.number_tokens);
+    let fpm_delta_sum_pow = Math64x61._pow_int(fpm_delta_sum, number_tokens);
     let fpm_counter = Math64x61.sub(fpm_delta_sum_pow, fpm_unit);
     let fpm_fraction = Math64x61.div(fpm_counter, fpm_delta);
 
-    let fpm_current_price = Math64x61.fromUint256(price_calculation.current_price);
+    let fpm_current_price = Math64x61.fromUint256(current_price);
     let fpm_total_price = Math64x61.mul(fpm_current_price, fpm_fraction);
     let total_price_felt = Math64x61.toFelt(fpm_total_price);
     let (total_price) = convertFeltToUint(total_price_felt);
@@ -56,27 +55,27 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 
 @view
 func getNewPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    price_calculation: PriceCalculation
+    number_tokens: felt, current_price: Uint256, delta: felt
 ) -> (new_price: Uint256) {
     alloc_locals;
 
     with_attr error_message("Delta cannot be zero in exponential curve (use linear curve for constant price).") {
-        assert_not_zero(price_calculation.delta);
+        assert_not_zero(delta);
     }
 
     let lower_bound = -99;
     with_attr error_message("Delta must be higher than -99%") {
-        assert_le(lower_bound, price_calculation.delta);
+        assert_le(lower_bound, delta);
     }
 
     let fpm_unit = Math64x61.fromFelt(1);
     let fpm_base = Math64x61.fromFelt(100);
-    let fpm_delta_percent = Math64x61.fromFelt(price_calculation.delta);
+    let fpm_delta_percent = Math64x61.fromFelt(delta);
     let fpm_delta = Math64x61.div(fpm_delta_percent, fpm_base);
     
     let fpm_delta_sum = Math64x61.add(fpm_unit, fpm_delta);
-    let fpm_delta_sum_pow = Math64x61._pow_int(fpm_delta_sum, price_calculation.number_tokens);
-    let fpm_current_price = Math64x61.fromUint256(price_calculation.current_price);
+    let fpm_delta_sum_pow = Math64x61._pow_int(fpm_delta_sum, number_tokens);
+    let fpm_current_price = Math64x61.fromUint256(current_price);
     let fpm_new_price = Math64x61.mul(fpm_current_price, fpm_delta_sum_pow);
     let new_price_felt = Math64x61.toFelt(fpm_new_price);
     let (new_price) = convertFeltToUint(new_price_felt);
