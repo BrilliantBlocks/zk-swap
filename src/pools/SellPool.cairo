@@ -268,6 +268,14 @@ func _get_collection_count{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
 }
 
 
+func get_token_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    current_id: felt
+) -> (res: Uint256) {
+    let (x) = _list_element_by_id.read(current_id);
+    return (x[0],);
+}
+
+
 // Remove NFTs from pool
 
 
@@ -357,6 +365,14 @@ func find_element_to_be_removed{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     }
 
     return find_element_to_be_removed(last_element[1], token_id);
+}
+
+
+func get_next_collection_slot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    current_id: felt
+) -> (res: felt) {
+    let (x) = _list_element_by_id.read(current_id);
+    return (x[1],);
 }
 
 
@@ -674,23 +690,7 @@ func withdrawAllEth{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 }
 
 
-// Internal functions
-
-
-func get_token_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    current_id: felt
-) -> (res: Uint256) {
-    let (x) = _list_element_by_id.read(current_id);
-    return (x[0],);
-}
-
-
-func get_next_collection_slot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    current_id: felt
-) -> (res: felt) {
-    let (x) = _list_element_by_id.read(current_id);
-    return (x[1],);
-}
+// Assertions
 
 
 func assert_only_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> () {
@@ -729,7 +729,7 @@ func assert_not_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 }
 
 
-// Helper functions for test purposes
+// Further view functions
 
 
 @view
