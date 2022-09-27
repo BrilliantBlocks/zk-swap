@@ -408,7 +408,7 @@ func test_sellNfts_with_not_supported_collection{syscall_ptr: felt*, range_check
         stop_prank_callable_2()
     %}
     
-    %{ expect_revert(error_message="Your collection is not supported by the pool.") %}
+    %{ expect_revert(error_message="Your collection is not supported by the pool") %}
     IPool.sellNfts(buy_pool_contract_address, 3, NFT_ARRAY);
 
     %{ stop_prank_callable_3() %}

@@ -110,11 +110,11 @@ func populate_struct{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 func ownerOf{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
     pool_address_token: Uint256
 ) -> (owner: felt) {
-    with_attr error_message("Pool address is not a valid Uint256.") {
+    with_attr error_message("Pool address is not a valid Uint256") {
         uint256_check(pool_address_token);
     }
     let (owner) = _owners.read(pool_address_token);
-    with_attr error_message("The pool address is not existent.") {
+    with_attr error_message("The pool address is not existent") {
         assert_not_zero(owner);
     }
     return (owner,);
@@ -183,7 +183,7 @@ func assert_only_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     let (caller_address) = get_caller_address();
     let (factory_owner) = _factory_owner.read();
 
-    with_attr error_message("You must be the factory owner to call this function.") {
+    with_attr error_message("You must be the factory owner to call this function") {
         assert caller_address = factory_owner;
     }
 

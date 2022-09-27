@@ -99,7 +99,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 ) {
     alloc_locals;
 
-    with_attr error_message("Address and class hash cannot be zero.") {
+    with_attr error_message("Address and class hash must not be zero") {
         assert_not_zero(factory_address * bonding_curve_class_hash * erc20_address);
     }
     _pool_factory.write(factory_address);
@@ -164,7 +164,7 @@ func _add_nft_to_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
         _list_element_by_id.write(next_free_slot, (nft_array[0].id, 0));
 
         let (approved_address) = IERC721.getApproved(nft_array[0].address, nft_array[0].id);
-        with_attr error_message("You have to sign approval transaction in your wallet.") {
+        with_attr error_message("Pool must be approved for token") {
             assert approved_address = contract_address;
         }
         IERC721.transferFrom(
@@ -184,7 +184,7 @@ func _add_nft_to_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     _list_element_by_id.write(next_free_slot, (nft_array[0].id, 0));
 
     let (approved_address) = IERC721.getApproved(nft_array[0].address, nft_array[0].id);
-    with_attr error_message("You have to sign approval transaction in your wallet.") {
+    with_attr error_message("Pool must be approved for token") {
         assert approved_address = contract_address;
     }
     IERC721.transferFrom(nft_array[0].address, caller_address, contract_address, nft_array[0].id);
@@ -302,7 +302,7 @@ func _remove_nft_from_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
         _list_element_by_id.write(start_id, (Uint256(0, 0), 0));
 
         let (token_owner) = IERC721.ownerOf(nft_array[0].address, nft_array[0].id);
-        with_attr error_message("Pool is not the token owner") {
+        with_attr error_message("Pool must be token owner") {
             assert token_owner = contract_address;
         }
         IERC721.transferFrom(
@@ -322,7 +322,7 @@ func _remove_nft_from_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     _list_element_by_id.write(this_element, (Uint256(0, 0), 0));
 
     let (token_owner) = IERC721.ownerOf(nft_array[0].address, nft_array[0].id);
-    with_attr error_message("Pool is not the token owner") {
+    with_attr error_message("Pool must be token owner") {
         assert token_owner = contract_address;
     }
     IERC721.transferFrom(nft_array[0].address, contract_address, caller_address, nft_array[0].id);
@@ -436,7 +436,7 @@ func buyNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     assert_not_owner();
 
     let (is_paused) = _pool_paused.read();
-    with_attr error_message("Pool is currently paused.") {
+    with_attr error_message("Pool must not be paused") {
         assert is_paused = FALSE;
     }
 
@@ -448,7 +448,7 @@ func buyNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     let (caller_balance) = IERC20.balanceOf(erc20_address, caller_address);
     let (sufficient_balance) = uint256_le(total_price, caller_balance);
-    with_attr error_message("Your ETH balance is unsufficient.") {
+    with_attr error_message("Your ETH balance is not sufficient") {
         assert sufficient_balance = TRUE;
     }
 
@@ -607,7 +607,7 @@ func depositEth{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
     let (contract_address) = get_contract_address();
     let (caller_balance) = IERC20.balanceOf(erc20_address, caller_address);
     let (sufficient_balance) = uint256_le(amount, caller_balance);
-    with_attr error_message("Your ETH balance is unsufficient.") {
+    with_attr error_message("Your ETH balance is not sufficient") {
         assert sufficient_balance = TRUE;
     }
 
@@ -630,7 +630,7 @@ func withdrawEth{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 
     let (eth_balance) = _eth_balance.read();
     let (sufficient_balance) = uint256_le(amount, eth_balance);
-    with_attr error_message("Pool ETH balance is unsufficient.") {
+    with_attr error_message("Pool ETH balance is not sufficient") {
         assert sufficient_balance = TRUE;
     }
 
@@ -654,7 +654,7 @@ func withdrawAllEth{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 
     local zero: Uint256 = Uint256(0, 0);
     let (is_zero) = uint256_eq(eth_balance, zero);
-    with_attr error_message("Pool has no ETH to withdraw.") {
+    with_attr error_message("Pool has no ETH to withdraw") {
         assert is_zero = FALSE;
     }
 
@@ -697,7 +697,7 @@ func assert_only_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
         pool_factory_address, Uint256(contract_address_low, contract_address_high)
     );
 
-    with_attr error_message("You must be the pool owner to call this function.") {
+    with_attr error_message("You must be the pool owner to call this function") {
         assert caller_address = pool_owner;
     }
 
@@ -715,7 +715,7 @@ func assert_not_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
         pool_factory_address, Uint256(contract_address_low, contract_address_high)
     );
 
-    with_attr error_message("You cannot be the pool owner to call this function.") {
+    with_attr error_message("You must not be the pool owner to call this function") {
         assert_not_equal(caller_address, pool_owner);
     }
 

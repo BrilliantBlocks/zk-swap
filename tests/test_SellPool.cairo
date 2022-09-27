@@ -842,7 +842,7 @@ func test_buyNfts_with_unsufficient_eth_balance{syscall_ptr: felt*, range_check_
     IERC20.approve(erc20_contract_address, sell_pool_contract_address, TOTAL_PRICE);
     %{ stop_prank_callable_1() %}
 
-    %{ expect_revert(error_message="Your ETH balance is unsufficient.") %}
+    %{ expect_revert(error_message="Your ETH balance is not sufficient") %}
     IPool.buyNfts(sell_pool_contract_address, 5, NFT_ARRAY);
 
     %{ stop_prank_callable_2() %}
@@ -976,7 +976,7 @@ func test_cannot_buyNfts_when_pool_paused{syscall_ptr: felt*, range_check_ptr, p
 
     %{ stop_prank_callable_1() %}
 
-    %{ expect_revert(error_message="Pool is currently paused.") %}
+    %{ expect_revert(error_message="Pool must not be paused") %}
     IPool.buyNfts(sell_pool_contract_address, 2, NFT_ARRAY);
 
     %{ stop_prank_callable_2() %}
@@ -1050,7 +1050,7 @@ func test_depositEth_with_unsufficient_balance{syscall_ptr: felt*, range_check_p
     IERC20.approve(erc20_contract_address, sell_pool_contract_address, EXCEEDING_AMOUNT);
     %{ stop_prank_callable_1() %}
 
-    %{ expect_revert(error_message="Your ETH balance is unsufficient.") %}
+    %{ expect_revert(error_message="Your ETH balance is not sufficient") %}
     IPool.depositEth(sell_pool_contract_address, EXCEEDING_AMOUNT);
     %{ stop_prank_callable_2() %}
 
@@ -1102,7 +1102,7 @@ func test_withdrawEth{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBui
     let (pool_balance_after_withdrawal_all) = IPool.getEthBalance(sell_pool_contract_address);
     assert pool_balance_after_withdrawal_all = POOL_BALANCE_AFTER_WITHDRAWAL_ALL;
 
-    %{ expect_revert(error_message="Pool has no ETH to withdraw.") %}
+    %{ expect_revert(error_message="Pool has no ETH to withdraw") %}
     IPool.withdrawAllEth(sell_pool_contract_address);
 
     %{ stop_prank_callable_2() %}
@@ -1143,7 +1143,7 @@ func test_withdrawEth_with_unsufficient_pool_balance{syscall_ptr: felt*, range_c
     );
     assert pool_balance_erc20_contract = POOL_BALANCE_AFTER_DEPOSIT;
 
-    %{ expect_revert(error_message="Pool ETH balance is unsufficient.") %}
+    %{ expect_revert(error_message="Pool ETH balance is not sufficient") %}
     IPool.withdrawEth(sell_pool_contract_address, EXCEEDING_WITHDRAWAL_BALANCE);
 
     %{ stop_prank_callable_2() %}
