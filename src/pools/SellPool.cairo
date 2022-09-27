@@ -159,25 +159,27 @@ func _add_nft_to_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
         return ();
     }
 
-    let (start_id) = _start_id_by_collection.read(nft_array[0].address);
+    tempvar nft = nft_array[0];
+
+    let (start_id) = _start_id_by_collection.read(nft.address);
 
     if (start_id == 0) {
         let (next_collection_id) = get_collection_count();
-        _collection_by_id.write(next_collection_id, nft_array[0].address);
+        _collection_by_id.write(next_collection_id, nft.address);
 
         let (next_free_slot) = find_next_free_slot();
-        _start_id_by_collection.write(nft_array[0].address, next_free_slot);
-        _list_element_by_id.write(next_free_slot, (nft_array[0].id, 0));
+        _start_id_by_collection.write(nft.address, next_free_slot);
+        _list_element_by_id.write(next_free_slot, (nft.id, 0));
 
-        let (approved_address) = IERC721.getApproved(nft_array[0].address, nft_array[0].id);
+        let (approved_address) = IERC721.getApproved(nft.address, nft.id);
         with_attr error_message("Pool must be approved for token") {
             assert approved_address = contract_address;
         }
         IERC721.transferFrom(
-            nft_array[0].address, caller_address, contract_address, nft_array[0].id
+            nft.address, caller_address, contract_address, nft.id
         );
 
-        TokenDeposit.emit(nft_array[0]);
+        TokenDeposit.emit(nft);
 
         return _add_nft_to_pool(nft_array_len - 1, nft_array + NFT.SIZE);
     }
@@ -187,15 +189,15 @@ func _add_nft_to_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     let (last_token_id) = get_token_id(last_collection_element);
 
     _list_element_by_id.write(last_collection_element, (last_token_id, next_free_slot));
-    _list_element_by_id.write(next_free_slot, (nft_array[0].id, 0));
+    _list_element_by_id.write(next_free_slot, (nft.id, 0));
 
-    let (approved_address) = IERC721.getApproved(nft_array[0].address, nft_array[0].id);
+    let (approved_address) = IERC721.getApproved(nft.address, nft.id);
     with_attr error_message("Pool must be approved for token") {
         assert approved_address = contract_address;
     }
-    IERC721.transferFrom(nft_array[0].address, caller_address, contract_address, nft_array[0].id);
+    IERC721.transferFrom(nft.address, caller_address, contract_address, nft.id);
 
-    TokenDeposit.emit(nft_array[0]);
+    TokenDeposit.emit(nft);
 
     return _add_nft_to_pool(nft_array_len - 1, nft_array + NFT.SIZE);
 }
@@ -303,27 +305,29 @@ func _remove_nft_from_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
         return ();
     }
 
-    let (start_id) = _start_id_by_collection.read(nft_array[0].address);
+    tempvar nft = nft_array[0];
+
+    let (start_id) = _start_id_by_collection.read(nft.address);
 
     if (start_id == 0) {
         return ();
     }
 
-    let (last_element, this_element) = find_element_to_be_removed(start_id, nft_array[0].id);
+    let (last_element, this_element) = find_element_to_be_removed(start_id, nft.id);
 
     if (last_element == 0) {
-        _start_id_by_collection.write(nft_array[0].address, this_element);
+        _start_id_by_collection.write(nft.address, this_element);
         _list_element_by_id.write(start_id, (Uint256(0, 0), 0));
 
-        let (token_owner) = IERC721.ownerOf(nft_array[0].address, nft_array[0].id);
+        let (token_owner) = IERC721.ownerOf(nft.address, nft.id);
         with_attr error_message("Pool must be token owner") {
             assert token_owner = contract_address;
         }
         IERC721.transferFrom(
-            nft_array[0].address, contract_address, caller_address, nft_array[0].id
+            nft.address, contract_address, caller_address, nft.id
         );
 
-        TokenWithdrawal.emit(nft_array[0]);
+        TokenWithdrawal.emit(nft);
 
         return _remove_nft_from_pool(nft_array_len - 1, nft_array + NFT.SIZE);
     }
@@ -335,13 +339,13 @@ func _remove_nft_from_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     _list_element_by_id.write(last_element, (last_token_id, next_collection_slot));
     _list_element_by_id.write(this_element, (Uint256(0, 0), 0));
 
-    let (token_owner) = IERC721.ownerOf(nft_array[0].address, nft_array[0].id);
+    let (token_owner) = IERC721.ownerOf(nft.address, nft.id);
     with_attr error_message("Pool must be token owner") {
         assert token_owner = contract_address;
     }
-    IERC721.transferFrom(nft_array[0].address, contract_address, caller_address, nft_array[0].id);
+    IERC721.transferFrom(nft.address, contract_address, caller_address, nft.id);
 
-    TokenWithdrawal.emit(nft_array[0]);
+    TokenWithdrawal.emit(nft);
 
     return _remove_nft_from_pool(nft_array_len - 1, nft_array + NFT.SIZE);
 }
