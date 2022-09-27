@@ -18,7 +18,6 @@ from lib.cairo_math_64x61.contracts.cairo_math_64x61.math64x61 import Math64x61
 func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     number_tokens: felt, current_price: Uint256, delta: felt
 ) -> (total_price: Uint256) {
-    alloc_locals;
 
     with_attr error_message("Exponential curve does not support delta = 0") {
         assert_not_zero(delta);
@@ -28,6 +27,17 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     with_attr error_message("Delta must be higher than -99,99%") {
         assert_le(lower_bound, delta);
     }
+
+    let (total_price) = get_total_price(number_tokens, current_price, delta);
+
+    return (total_price,);
+}
+
+
+func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    number_tokens: felt, current_price: Uint256, delta: felt
+) -> (total_price: Uint256) {
+    alloc_locals;
 
     let fpm_unit = Math64x61.fromFelt(1);
     let fpm_base = Math64x61.fromFelt(10000);
@@ -54,7 +64,6 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     number_tokens: felt, current_price: Uint256, delta: felt
 ) -> (next_price: Uint256) {
-    alloc_locals;
 
     with_attr error_message("Exponential curve does not support delta = 0") {
         assert_not_zero(delta);
@@ -64,6 +73,17 @@ func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     with_attr error_message("Delta must be higher than -99,99%") {
         assert_le(lower_bound, delta);
     }
+
+    let (next_price) = get_next_price(number_tokens, current_price, delta);
+
+    return (next_price,);
+}
+
+
+func get_next_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    number_tokens: felt, current_price: Uint256, delta: felt
+) -> (next_price: Uint256) {
+    alloc_locals;
 
     let fpm_unit = Math64x61.fromFelt(1);
     let fpm_base = Math64x61.fromFelt(10000);
