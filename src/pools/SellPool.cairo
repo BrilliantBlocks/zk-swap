@@ -25,7 +25,7 @@ from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.pools.IPool import NFT, PoolParams
-from src.utils.constants import (
+from src.utils.Constants import (
     LinkedList,
     FunctionSelector
 )
