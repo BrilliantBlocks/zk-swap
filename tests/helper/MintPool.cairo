@@ -1,7 +1,5 @@
 %lang starknet
 
-from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import (
     deploy,
@@ -9,10 +7,13 @@ from starkware.starknet.common.syscalls import (
     get_caller_address,
     get_contract_address,
 )
-from starkware.cairo.common.math import assert_not_equal, split_felt, assert_not_zero
+from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.math import assert_not_zero, split_felt
 from starkware.cairo.common.uint256 import Uint256, uint256_check
+
 from src.pools.IPool import IPool
-from tests.helper.IMintPool import Pool, Collection
+from tests.helper.IMintPool import Collection, Pool
 
 
 // Storage

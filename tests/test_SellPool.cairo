@@ -1,18 +1,18 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.starknet.common.syscalls import get_contract_address
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.starknet.common.syscalls import get_contract_address
-
-from src.pools.IPool import IPool, NFT, PoolParams
-from tests.helper.IMintPool import IMintPool, Collection
+from starkware.cairo.common.bool import FALSE, TRUE
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721Metadata import IERC721Metadata
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
+
+from src.pools.IPool import IPool, NFT, PoolParams
+from tests.helper.IMintPool import Collection, IMintPool
 
 
 @storage_var

@@ -1,23 +1,29 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import (
-    assert_not_zero,
-    assert_not_equal,
-    assert_nn,
-    assert_nn_le,
-    split_felt,
-)
-from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.starknet.common.syscalls import (
-    library_call,
     get_caller_address,
     get_contract_address,
+    library_call
 )
+from starkware.cairo.common.math import (
+    assert_not_equal,
+    assert_not_zero,
+    split_felt
+)
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_add, uint256_le, uint256_sub
+from starkware.cairo.common.uint256 import (
+    Uint256, 
+    uint256_add,
+    uint256_eq, 
+    uint256_le, 
+    uint256_sub
+)
+
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
+
 from src.pools.IPool import NFT, PoolParams
 
 
