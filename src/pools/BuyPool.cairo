@@ -25,6 +25,10 @@ from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.pools.IPool import NFT, PoolParams
+from src.utils.constants import (
+    LinkedList,
+    FunctionSelector
+)
 
 
 // Events
@@ -272,9 +276,7 @@ func _add_nft_to_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 func find_next_free_slot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     next_free_slot: felt
 ) {
-    const start_slot_element_list = 1;
-
-    let (next_free_slot) = _find_next_free_slot(start_slot_element_list);
+    let (next_free_slot) = _find_next_free_slot(LinkedList.start_slot_element_list);
 
     return (next_free_slot,);
 }
@@ -314,8 +316,7 @@ func find_last_collection_element{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
 func get_collection_count{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     collection_count: felt
 ) {
-    const start_slot_collection_array = 0;
-    let (collection_count) = _get_collection_count(start_slot_collection_array);
+    let (collection_count) = _get_collection_count(LinkedList.start_slot_collection_array);
 
     return (collection_count,);
 
@@ -576,11 +577,9 @@ func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     assert calldata[2] = current_price.high;
     assert calldata[3] = delta;
 
-    local function_selector_get_total_price = 162325169460772763346477168287411866553654952715135549492070698764789678722;
-
     let (retdata_size: felt, retdata: felt*) = library_call(
         class_hash=class_hash,
-        function_selector=function_selector_get_total_price,
+        function_selector=FunctionSelector.get_total_price,
         calldata_size=4,
         calldata=calldata,
     );
@@ -605,11 +604,9 @@ func get_next_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     assert calldata[2] = current_price.high;
     assert calldata[3] = delta;
 
-    local function_selector_get_next_price = 1264847828455946785227536115322282734231840299345716002372248194024334047338;
-
     let (retdata_size: felt, retdata: felt*) = library_call(
         class_hash=class_hash,
-        function_selector=function_selector_get_next_price,
+        function_selector=FunctionSelector.get_next_price,
         calldata_size=4,
         calldata=calldata,
     );
@@ -693,9 +690,7 @@ func getPoolConfig{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     next_price: Uint256
 ) {
-    const number_items = 1;
-
-    let (next_price) = get_next_price(number_items);
+    let (next_price) = get_next_price(1);
 
     return (next_price,);
 }

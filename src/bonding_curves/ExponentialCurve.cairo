@@ -13,7 +13,7 @@ from starkware.cairo.common.pow import pow
 
 from lib.cairo_math_64x61.contracts.cairo_math_64x61.math64x61 import Math64x61
 
-from src.utils.convert import convertFeltToUint
+from src.utils.converts import convertFeltToUint
 
 
 @view
