@@ -7,6 +7,8 @@ from starkware.cairo.common.bool import FALSE, TRUE
 
 from lib.cairo_math_64x61.contracts.cairo_math_64x61.math64x61 import Math64x61
 
+from src.utils.convert import convertFeltToUint
+
 
 @view
 func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -56,12 +58,3 @@ func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     // next_price = current_price +- delta * number_tokens
 }
 
-
-func convertFeltToUint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    input: felt
-) -> (output: Uint256) {
-    let (output_high, output_low) = split_felt(input);
-    let output = Uint256(output_low, output_high);
-
-    return (output,);
-}
