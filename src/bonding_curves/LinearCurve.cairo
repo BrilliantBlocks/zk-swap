@@ -7,7 +7,7 @@ from starkware.cairo.common.bool import FALSE, TRUE
 
 from lib.cairo_math_64x61.contracts.cairo_math_64x61.math64x61 import Math64x61
 
-from src.utils.Converts import convertFeltToUint
+from src.utils.Converts import convertFeltToUint256
 
 
 @view
@@ -30,7 +30,7 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 
     let fpm_total_price = Math64x61.add(fpm_summand1, fpm_summand2);
     let total_price_felt = Math64x61.toFelt(fpm_total_price);
-    let (total_price) = convertFeltToUint(total_price_felt);
+    let (total_price) = convertFeltToUint256(total_price_felt);
 
     return (total_price,);
 
@@ -51,7 +51,7 @@ func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     let fpm_summand = Math64x61.mul(fpm_delta, fpm_number_tokens);
     let fpm_next_price = Math64x61.add(fpm_current_price, fpm_summand);
     let next_price_felt = Math64x61.toFelt(fpm_next_price);
-    let (next_price) = convertFeltToUint(next_price_felt);
+    let (next_price) = convertFeltToUint256(next_price_felt);
 
     return (next_price,);
 
