@@ -102,11 +102,6 @@ func _supported_collections(address: felt) -> (bool: felt) {
 }
 
 
-// To do:
-// Separate linked list functions and import as tested library in pool contract
-// Refactor internal functions in SellPool with more purity for better testing after importing them
-
-
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     factory_address: felt, bonding_curve_class_hash: felt, erc20_address: felt
