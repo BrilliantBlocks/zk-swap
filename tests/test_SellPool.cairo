@@ -101,6 +101,11 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     let NFT_3_1 = Uint256(31, 0);
     tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=10000);
 
+    let (SUPPORTED_COLLECTIONS: felt*) = alloc();
+    assert SUPPORTED_COLLECTIONS[0] = c1_contract_address;
+    assert SUPPORTED_COLLECTIONS[1] = c2_contract_address;
+    assert SUPPORTED_COLLECTIONS[2] = c3_contract_address;
+
     IPool.mint(c1_contract_address, POOL_AND_NFT_OWNER, NFT_1_1);
     IPool.mint(c1_contract_address, POOL_AND_NFT_OWNER, NFT_1_2);
     IPool.mint(c2_contract_address, POOL_AND_NFT_OWNER, NFT_2_1);
@@ -125,6 +130,7 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
         stop_prank_callable_2 = start_prank(PRANK_POOL_AND_NFT_OWNER, target_contract_address=ids.sell_pool_contract_address)
     %}
     IPool.setPoolParams(sell_pool_contract_address, POOL_PARAMS);
+    IPool.addSupportedCollections(sell_pool_contract_address, 3, SUPPORTED_COLLECTIONS);
     %{ stop_prank_callable_2() %}
 
     return ();

@@ -206,6 +206,8 @@ func addNftToPool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 ) -> () {
     assert_only_owner();
 
+    assert_collections_supported(nft_array_len, nft_array);
+
     _add_nft_to_pool(nft_array_len, nft_array);
 
     return ();
