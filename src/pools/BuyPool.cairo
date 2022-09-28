@@ -527,15 +527,14 @@ func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     let (total_price) = get_total_price(nft_array_len);
 
-    let (erc20_address) = _erc20_address.read();
-    let (caller_address) = get_caller_address();
-    let (contract_address) = get_contract_address();
-
     let (eth_balance) = _eth_balance.read();
     let (sufficient_balance) = uint256_le(total_price, eth_balance);
     with_attr error_message("Pool ETH balance is not sufficient") {
         assert sufficient_balance = TRUE;
     }
+
+    let (erc20_address) = _erc20_address.read();
+    let (caller_address) = get_caller_address();
 
     IERC20.transfer(erc20_address, caller_address, total_price);
 
