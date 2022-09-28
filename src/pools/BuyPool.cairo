@@ -222,14 +222,19 @@ func _add_nft_to_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 ) -> () {
     alloc_locals;
 
-    let (caller_address) = get_caller_address();
-    let (contract_address) = get_contract_address();
-
     if (nft_array_len == 0) {
         return ();
     }
 
     tempvar nft = nft_array[0];
+
+    let (caller_address) = get_caller_address();
+    let (contract_address) = get_contract_address();
+
+    let (approved_address) = IERC721.getApproved(nft.address, nft.id);
+    with_attr error_message("Pool must be approved for token") {
+        assert approved_address = contract_address;
+    }
 
     let (start_id) = _start_id_by_collection.read(nft.address);
 
@@ -241,13 +246,7 @@ func _add_nft_to_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
         _start_id_by_collection.write(nft.address, next_free_slot);
         _list_element_by_id.write(next_free_slot, (nft.id, 0));
 
-        let (approved_address) = IERC721.getApproved(nft.address, nft.id);
-        with_attr error_message("Pool must be approved for token") {
-            assert approved_address = contract_address;
-        }
-        IERC721.transferFrom(
-            nft.address, caller_address, contract_address, nft.id
-        );
+        IERC721.transferFrom(nft.address, caller_address, contract_address, nft.id);
 
         TokenDeposit.emit(nft);
 
@@ -261,10 +260,6 @@ func _add_nft_to_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     _list_element_by_id.write(last_collection_element, (last_token_id, next_free_slot));
     _list_element_by_id.write(next_free_slot, (nft.id, 0));
 
-    let (approved_address) = IERC721.getApproved(nft.address, nft.id);
-    with_attr error_message("Pool must be approved for token") {
-        assert approved_address = contract_address;
-    }
     IERC721.transferFrom(nft.address, caller_address, contract_address, nft.id);
 
     TokenDeposit.emit(nft);
@@ -365,14 +360,19 @@ func _remove_nft_from_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
 ) -> () {
     alloc_locals;
 
-    let (caller_address) = get_caller_address();
-    let (contract_address) = get_contract_address();
-
     if (nft_array_len == 0) {
         return ();
     }
 
     tempvar nft = nft_array[0];
+
+    let (caller_address) = get_caller_address();
+    let (contract_address) = get_contract_address();
+
+    let (token_owner) = IERC721.ownerOf(nft.address, nft.id);
+    with_attr error_message("Pool must be token owner") {
+        assert token_owner = contract_address;
+    }
 
     let (start_id) = _start_id_by_collection.read(nft.address);
 
@@ -386,13 +386,7 @@ func _remove_nft_from_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
         _start_id_by_collection.write(nft.address, this_element);
         _list_element_by_id.write(start_id, (Uint256(0, 0), 0));
 
-        let (token_owner) = IERC721.ownerOf(nft.address, nft.id);
-        with_attr error_message("Pool must be token owner") {
-            assert token_owner = contract_address;
-        }
-        IERC721.transferFrom(
-            nft.address, contract_address, caller_address, nft.id
-        );
+        IERC721.transferFrom(nft.address, contract_address, caller_address, nft.id);
 
         TokenWithdrawal.emit(nft);
 
@@ -406,10 +400,6 @@ func _remove_nft_from_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     _list_element_by_id.write(last_element, (last_token_id, next_collection_slot));
     _list_element_by_id.write(this_element, (Uint256(0, 0), 0));
 
-    let (token_owner) = IERC721.ownerOf(nft.address, nft.id);
-    with_attr error_message("Pool must be token owner") {
-        assert token_owner = contract_address;
-    }
     IERC721.transferFrom(nft.address, contract_address, caller_address, nft.id);
 
     TokenWithdrawal.emit(nft);
