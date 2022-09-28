@@ -641,6 +641,40 @@ func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 }
 
 
+@view
+func getTokenPrices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    number_tokens: felt
+) -> (price_array_len: felt, price_array: felt*) {
+    alloc_locals;
+
+    with_attr error_message("Number of tokens must not be zero") {
+        assert_not_zero(number_tokens);
+    }
+    
+    let (price_array: Uint256*) = alloc();
+
+    populate_prices(price_array, number_tokens, 1);
+
+    return (number_tokens, price_array);
+}
+
+
+func populate_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    price_array: Uint256*, number_tokens: felt, current_count: felt
+) -> () {
+
+    if (current_count == number_tokens + 1) {
+        return ();
+    }
+    
+    let (next_price) = get_next_price(current_count);
+
+    assert price_array[0] = next_price;
+
+    return populate_prices(price_array + Uint256.SIZE, current_count + 1, number_tokens);
+}
+
+
 // Deposit and withdraw ETH
 
 

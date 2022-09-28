@@ -505,3 +505,30 @@ func test_sellNfts_and_withdraw_them_as_pool_owner{syscall_ptr: felt*, range_che
 
     return ();
 }
+
+
+@external
+func test_getTokenPrices{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    let (buy_pool_contract_address) = _buy_pool_contract_address.read();
+
+    const NUMBER_TOKENS = 5;
+
+    let FIRST_PRICE = Uint256(110000, 0);
+    let SECOND_PRICE = Uint256(120000, 0);
+    let THIRD_PRICE = Uint256(130000, 0);
+    let FOURTH_PRICE = Uint256(140000, 0);
+    let FIFTH_PRICE = Uint256(150000, 0);
+
+    let (price_array_len, price_array) = IPool.getTokenPrices(buy_pool_contract_address, NUMBER_TOKENS);
+
+    assert price_array_len = 5;
+    assert price_array[0] = FIRST_PRICE;
+    assert price_array[1] = SECOND_PRICE;
+    assert price_array[2] = THIRD_PRICE;
+    assert price_array[3] = FOURTH_PRICE;
+    assert price_array[4] = FIFTH_PRICE;
+
+    return ();
+}

@@ -58,6 +58,9 @@ namespace IPool {
     func getNextPrice() -> (next_price: Uint256) {
     }
 
+    func getTokenPrices(number_tokens: felt) -> (price_array_len: felt, price_array: Uint256*) {
+    }
+
     func isPaused() -> (is_paused: felt) {
     }
 
