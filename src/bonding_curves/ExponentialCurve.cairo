@@ -14,6 +14,7 @@ from starkware.cairo.common.pow import pow
 from lib.cairo_math_64x61.contracts.cairo_math_64x61.math64x61 import Math64x61
 
 from src.utils.Converts import convertFeltToUint
+from src.utils.Constants import BondingCurve 
 
 
 @view
@@ -25,9 +26,8 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
         assert_not_zero(delta);
     }
 
-    let lower_bound = -9999;
     with_attr error_message("Delta must be higher than -99,99%") {
-        assert_le(lower_bound, delta);
+        assert_le(BondingCurve.lower_bound, delta);
     }
 
     let (total_price) = get_total_price(number_tokens, current_price, delta);
@@ -71,9 +71,8 @@ func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
         assert_not_zero(delta);
     }
 
-    let lower_bound = -9999;
     with_attr error_message("Delta must be higher than -99,99%") {
-        assert_le(lower_bound, delta);
+        assert_le(BondingCurve.lower_bound, delta);
     }
 
     let (next_price) = get_next_price(number_tokens, current_price, delta);
