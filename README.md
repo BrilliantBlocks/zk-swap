@@ -11,3 +11,9 @@ Liqudity providers can create an individual pool calling the `mint` function fro
 This way an individual pool with the `mint` function caller as owner is deployed and can be configurated by `setPoolParams` indicating the `current_price` for that pool and `delta` to adjust the price. After providing liquidity in the form of tokens via `addNftToPool`, users can trade automatically with the pool calling `buyNfts` or `sellNfts`. LP as pool owner can adjust the pool paramaters and add or remove assets from the pool anytime. 
 
 When minting and deploying a specific pool, the LP must indicate a specific bonding curve (price function), as `LinearCurve` or `ExponentialCurve`, to dynamically calculate and adjust the asset prices depending on the number of bought or sold tokens in the pool. 
+
+## To do
+
+Separate linked list functions and import as tested library in pool contracts.
+Refactor internal functions in `BuyPool` and `SellPool` with more purity for better testing.
+Unify and standardize `BuyPool` and `SellPool` to reduce code duplications. 
