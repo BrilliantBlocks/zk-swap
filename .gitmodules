@@ -1,5 +1,5 @@
 [submodule "diamond_contracts"]
-	url = https://github.com/BrilliantBlocks/diamond-contracts
+	url = ssh://git@github.com:BrilliantBlocks/diamond-contracts.git
 	path = lib/diamond_contracts
 	branch = refs/heads/zk-swap
 [submodule "cairo_contracts"]
