@@ -123,6 +123,11 @@ func setPoolParams{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 ) -> () {
     assert_only_owner();
 
+    let (is_positive) = uint256_signed_nn(pool_params.price);
+    with_attr error_message("The price must not be negative") {
+        assert is_positive = TRUE;
+    }
+
     _current_price.write(pool_params.price);
     _delta.write(pool_params.delta);
 
@@ -689,10 +694,10 @@ func assert_positive_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
 ) -> () {
     alloc_locals;
 
-    let (last_price) = get_next_price(number_tokens - 1);
-    let (is_positive) = uint256_signed_nn(last_price);
+    let (next_price) = get_next_price(number_tokens);
+    let (is_positive) = uint256_signed_nn(next_price);
 
-    with_attr error_message("The price must not be negative") {
+    with_attr error_message("The next price must not be negative") {
         assert is_positive = TRUE;
     }
 
