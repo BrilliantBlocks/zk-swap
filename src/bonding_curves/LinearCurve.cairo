@@ -14,6 +14,16 @@ from src.utils.Converts import convertFeltToUint256
 func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     number_tokens: felt, current_price: Uint256, delta: felt
 ) -> (total_price: Uint256) {
+
+    let (total_price) = get_total_price(number_tokens, current_price, delta);
+
+    return (total_price,);
+}
+
+
+func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    number_tokens: felt, current_price: Uint256, delta: felt
+) -> (total_price: Uint256) {
     alloc_locals;
 
     let fpm_unit = Math64x61.fromFelt(1);
@@ -40,6 +50,16 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 
 @view
 func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    number_tokens: felt, current_price: Uint256, delta: felt
+) -> (next_price: Uint256) {
+
+    let (next_price) = get_next_price(number_tokens, current_price, delta);
+
+    return (next_price,);
+}
+
+
+func get_next_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     number_tokens: felt, current_price: Uint256, delta: felt
 ) -> (next_price: Uint256) {
     alloc_locals;
