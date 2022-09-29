@@ -684,24 +684,19 @@ func populate_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 }
 
 
-func assert_positive_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func assert_positive_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     number_tokens: felt
 ) -> () {
     alloc_locals;
-    let (price_array_len: felt, price_array: Uint256*) = get_token_prices(number_tokens);
 
-    if (number_tokens == 0) {
-        return ();
-    }
-
-    let price = price_array[number_tokens - 1];
-    let (is_positive) = uint256_signed_nn(price);
+    let (next_price) = get_next_price(number_tokens);
+    let (is_positive) = uint256_signed_nn(next_price);
 
     with_attr error_message("The price must not be negative") {
         assert is_positive = TRUE;
     }
 
-    return assert_positive_prices(number_tokens - 1);
+    return ();
 }
 
 
