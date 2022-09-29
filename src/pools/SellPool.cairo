@@ -51,7 +51,8 @@ from src.pools.Pool import (
     getEthBalance,
     checkCollectionSupport,
     assert_only_owner,
-    assert_not_owner
+    assert_not_owner,
+    assert_positive_price
 )
 
 
@@ -66,6 +67,8 @@ func buyNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     with_attr error_message("Pool must not be paused") {
         assert is_paused = FALSE;
     }
+
+    assert_positive_price(nft_array_len);
 
     let (total_price) = get_total_price(nft_array_len);
 

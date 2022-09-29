@@ -689,8 +689,8 @@ func assert_positive_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
 ) -> () {
     alloc_locals;
 
-    let (next_price) = get_next_price(number_tokens);
-    let (is_positive) = uint256_signed_nn(next_price);
+    let (last_price) = get_next_price(number_tokens - 1);
+    let (is_positive) = uint256_signed_nn(last_price);
 
     with_attr error_message("The price must not be negative") {
         assert is_positive = TRUE;
