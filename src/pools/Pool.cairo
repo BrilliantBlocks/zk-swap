@@ -18,6 +18,7 @@ from starkware.cairo.common.uint256 import (
     uint256_add,
     uint256_eq, 
     uint256_le, 
+    uint256_signed_nn,
     uint256_sub
 )
 
@@ -651,6 +652,17 @@ func getTokenPrices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
         assert_not_zero(number_tokens);
     }
     
+    let (price_array_len, price_array) = get_token_prices(number_tokens);
+
+    return (price_array_len, price_array);
+}
+
+
+func get_token_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    number_tokens: felt
+) -> (price_array_len: felt, price_array: Uint256*) {
+    alloc_locals;
+    
     let (price_array: Uint256*) = alloc();
 
     populate_prices(number_tokens, price_array, 1);
@@ -672,6 +684,27 @@ func populate_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     assert price_array[0] = next_price;
 
     return populate_prices(number_tokens, price_array + Uint256.SIZE, current_count + 1);
+}
+
+
+func assert_positive_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    number_tokens: felt
+) -> () {
+    alloc_locals;
+    let (price_array_len: felt, price_array: Uint256*) = get_token_prices(number_tokens);
+
+    if (number_tokens == 0) {
+        return ();
+    }
+
+    let price = price_array[number_tokens - 1];
+    let (is_positive) = uint256_signed_nn(price);
+
+    with_attr error_message("The price must not be negative") {
+        assert is_positive = TRUE;
+    }
+
+    return assert_positive_prices(number_tokens - 1);
 }
 
 
