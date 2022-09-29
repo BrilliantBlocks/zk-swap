@@ -2,9 +2,9 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import ( 
-    assert_le,
     assert_not_zero,
-    split_felt
+    split_felt,
+    assert_in_range
 )
 from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.uint256 import Uint256
@@ -26,8 +26,8 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
         assert_not_zero(delta);
     }
 
-    with_attr error_message("Delta must be higher than -99,99%") {
-        assert_le(BondingCurve.lower_bound, delta);
+    with_attr error_message("Delta must be in the range of [-99,99%; 1000000%]") {
+        assert_in_range(delta, BondingCurve.lower_bound, BondingCurve.upper_bound);
     }
 
     let (total_price) = get_total_price(number_tokens, current_price, delta);
@@ -71,8 +71,8 @@ func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
         assert_not_zero(delta);
     }
 
-    with_attr error_message("Delta must be higher than -99,99%") {
-        assert_le(BondingCurve.lower_bound, delta);
+    with_attr error_message("Delta must be in the range of [-99,99%; 1000000%]") {
+        assert_in_range(delta, BondingCurve.lower_bound, BondingCurve.upper_bound);
     }
 
     let (next_price) = get_next_price(number_tokens, current_price, delta);

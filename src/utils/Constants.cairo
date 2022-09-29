@@ -13,5 +13,6 @@ namespace FunctionSelector {
 }
 
 namespace BondingCurve {
-    const lower_bound = -9999;
+    const lower_bound = -9999; // -99.99%
+    const upper_bound = 100000000; // 1000000%
 }

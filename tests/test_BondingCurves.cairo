@@ -297,7 +297,7 @@ func test_exponential_curve_getTotalPrice_error_for_delta_exceeding_lower_bound{
     let CURRENT_PRICE = Uint256(100000, 0); // 10
     const DELTA = -10000; // -100,00%
 
-    %{ expect_revert(error_message="Delta must be higher than -99,99%") %}
+    %{ expect_revert(error_message="Delta must be in the range of [-99,99%; 1000000%]") %}
     let (total_price) = IBondingCurve.getTotalPrice(
         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
     );
@@ -317,7 +317,7 @@ func test_exponential_curve_getNextPrice_error_for_delta_exceeding_lower_bound{s
     let CURRENT_PRICE = Uint256(100000, 0); // 10
     const DELTA = -10000; // -100,00%
 
-    %{ expect_revert(error_message="Delta must be higher than -99,99%") %}
+    %{ expect_revert(error_message="Delta must be in the range of [-99,99%; 1000000%]") %}
     let (next_price) = IBondingCurve.getNextPrice(
         exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
     );
@@ -349,6 +349,46 @@ func test_exponential_curve_with_lower_bound_delta{syscall_ptr: felt*, range_che
 
     assert total_price = TOTAL_PRICE;
     assert next_price = NEXT_PRICE;
+    
+    return ();
+}
+
+
+@external
+func test_exponential_curve_getTotalPrice_error_for_delta_exceeding_upper_bound{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local exponential_curve_contract_address;
+    %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
+
+    const NUMBER_TOKENS = 3; 
+    let CURRENT_PRICE = Uint256(100000, 0); // 10
+    const DELTA = 100000001; // 1000000,01%
+
+    %{ expect_revert(error_message="Delta must be in the range of [-99,99%; 1000000%]") %}
+    let (total_price) = IBondingCurve.getTotalPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+    
+    return ();
+}
+
+
+@external
+func test_exponential_curve_getNextPrice_error_for_delta_exceeding_upper_bound{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local exponential_curve_contract_address;
+    %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
+
+    const NUMBER_TOKENS = 3; 
+    let CURRENT_PRICE = Uint256(100000, 0); // 10
+    const DELTA = 100000001; // 1000000,01%
+
+    %{ expect_revert(error_message="Delta must be in the range of [-99,99%; 1000000%]") %}
+    let (next_price) = IBondingCurve.getNextPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
     
     return ();
 }
