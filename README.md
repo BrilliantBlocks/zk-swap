@@ -14,8 +14,6 @@ When minting and deploying a specific pool, the LP must indicate a specific bond
 
 ## To do
 
-Separate linked list functions and import as tested library in pool contracts.
+Separate linked list functions and import as tested library in `Pool` contract.
 
-Refactor internal functions in `BuyPool` and `SellPool` with more purity for better testing.
-
-Unify and standardize `BuyPool` and `SellPool` to reduce code duplications. 
+Refactor internal functions in `Pool` contract with more purity for better testing.
