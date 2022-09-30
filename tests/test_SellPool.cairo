@@ -1156,3 +1156,145 @@ func test_withdrawEth_with_unsufficient_pool_balance{syscall_ptr: felt*, range_c
 
     return ();
 }
+
+
+@external
+func test_getTokenPrices{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    let (sell_pool_contract_address) = _sell_pool_contract_address.read();
+
+    const NUMBER_TOKENS = 5;
+
+    let FIRST_PRICE = Uint256(110000, 0);
+    let SECOND_PRICE = Uint256(120000, 0);
+    let THIRD_PRICE = Uint256(130000, 0);
+    let FOURTH_PRICE = Uint256(140000, 0);
+    let FIFTH_PRICE = Uint256(150000, 0);
+
+    let (price_array_len: felt, price_array: Uint256*) = IPool.getTokenPrices(sell_pool_contract_address, NUMBER_TOKENS);
+
+    assert price_array_len = 5;
+    assert price_array[0] = FIRST_PRICE;
+    assert price_array[1] = SECOND_PRICE;
+    assert price_array[2] = THIRD_PRICE;
+    assert price_array[3] = FOURTH_PRICE;
+    assert price_array[4] = FIFTH_PRICE;
+
+    return ();
+}
+
+
+@external
+func test_getTokenPrices_with_negative_values{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    let (sell_pool_contract_address) = _sell_pool_contract_address.read();
+
+    tempvar NEW_POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=-50000);
+    const NUMBER_TOKENS = 5;
+
+    %{
+        POOL_AND_ERC20_OWNER = 123456789
+        stop_prank_callable = start_prank(POOL_AND_ERC20_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IPool.setPoolParams(sell_pool_contract_address, NEW_POOL_PARAMS);
+    %{ stop_prank_callable() %}
+
+    %{ expect_revert(error_message="The price must not be negative") %}
+    let (price_array_len: felt, price_array: Uint256*) = IPool.getTokenPrices(sell_pool_contract_address, NUMBER_TOKENS);
+
+    return ();
+}
+
+
+@external
+func test_getNextPrice_with_negative_value{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    let (sell_pool_contract_address) = _sell_pool_contract_address.read();
+
+    tempvar NEW_POOL_PARAMS: PoolParams = PoolParams(price=Uint256(50000, 0), delta=-60000);
+    const NUMBER_TOKENS = 5;
+
+    %{
+        POOL_AND_ERC20_OWNER = 123456789
+        stop_prank_callable = start_prank(POOL_AND_ERC20_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IPool.setPoolParams(sell_pool_contract_address, NEW_POOL_PARAMS);
+    %{ stop_prank_callable() %}
+
+    %{ expect_revert(error_message="The price must not be negative") %}
+    let (next_price) = IPool.getNextPrice(sell_pool_contract_address);
+
+    return ();
+}
+
+
+@external
+func test_buyNfts_with_negative_price{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+    local c1_contract_address;
+    local c2_contract_address;
+    local c3_contract_address;
+    local erc20_contract_address;
+    %{
+        ids.c1_contract_address = context.c1_contract_address 
+        ids.c2_contract_address = context.c2_contract_address
+        ids.c3_contract_address = context.c3_contract_address
+        ids.erc20_contract_address = context.erc20_contract_address
+    %}
+
+    let (sell_pool_contract_address) = _sell_pool_contract_address.read();
+    let NFT_1_1 = Uint256(11, 0);
+    let NFT_1_2 = Uint256(12, 0);
+    let NFT_2_1 = Uint256(21, 0);
+    let NFT_2_2 = Uint256(22, 0);
+    let NFT_3_1 = Uint256(31, 0);
+    let TOTAL_PRICE = Uint256(600000, 0);
+
+    let (NFT_ARRAY: NFT*) = alloc();
+    assert NFT_ARRAY[0] = NFT(address=c1_contract_address, id=NFT_1_1);
+    assert NFT_ARRAY[1] = NFT(address=c1_contract_address, id=NFT_1_2);
+    assert NFT_ARRAY[2] = NFT(address=c2_contract_address, id=NFT_2_1);
+    assert NFT_ARRAY[3] = NFT(address=c2_contract_address, id=NFT_2_2);
+    assert NFT_ARRAY[4] = NFT(address=c3_contract_address, id=NFT_3_1);
+
+    tempvar NEW_POOL_PARAMS: PoolParams = PoolParams(price=Uint256(200000, 0), delta=-70000);
+
+    %{
+        PRANK_POOL_AND_NFT_OWNER = 123456789
+        stop_prank_callable_1 = start_prank(PRANK_POOL_AND_NFT_OWNER, target_contract_address=ids.c1_contract_address)
+        stop_prank_callable_2 = start_prank(PRANK_POOL_AND_NFT_OWNER, target_contract_address=ids.c2_contract_address)
+        stop_prank_callable_3 = start_prank(PRANK_POOL_AND_NFT_OWNER, target_contract_address=ids.c3_contract_address)
+        stop_prank_callable_4 = start_prank(PRANK_POOL_AND_NFT_OWNER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IERC721.approve(c1_contract_address, sell_pool_contract_address, NFT_1_1);
+    IERC721.approve(c1_contract_address, sell_pool_contract_address, NFT_1_2);
+    IERC721.approve(c2_contract_address, sell_pool_contract_address, NFT_2_1);
+    IERC721.approve(c2_contract_address, sell_pool_contract_address, NFT_2_2);
+    IERC721.approve(c3_contract_address, sell_pool_contract_address, NFT_3_1);
+    %{
+        stop_prank_callable_1() 
+        stop_prank_callable_2()
+        stop_prank_callable_3()
+    %}
+    IPool.setPoolParams(sell_pool_contract_address, NEW_POOL_PARAMS);
+    IPool.addNftToPool(sell_pool_contract_address, 5, NFT_ARRAY);
+    %{ stop_prank_callable_4() %}
+
+    %{
+        PRANK_NFT_BUYER = 987654321
+        stop_prank_callable_1 = start_prank(PRANK_NFT_BUYER, target_contract_address=ids.erc20_contract_address)
+        stop_prank_callable_2 = start_prank(PRANK_NFT_BUYER, target_contract_address=ids.sell_pool_contract_address)
+    %}
+    IERC20.approve(erc20_contract_address, sell_pool_contract_address, TOTAL_PRICE);
+    %{ stop_prank_callable_1() %}
+
+    %{ expect_revert(error_message="The price must not be negative") %}
+    IPool.buyNfts(sell_pool_contract_address, 5, NFT_ARRAY);
+
+    %{ stop_prank_callable_2() %}
+
+    return ();
+}
