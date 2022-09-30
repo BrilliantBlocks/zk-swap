@@ -51,8 +51,7 @@ from src.pools.Pool import (
     getEthBalance,
     checkCollectionSupport,
     assert_only_owner,
-    assert_not_owner,
-    assert_positive_price
+    assert_not_owner
 )
 
 
@@ -68,9 +67,8 @@ func buyNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         assert is_paused = FALSE;
     }
 
-    assert_positive_price(nft_array_len);
-
     let (total_price) = get_total_price(nft_array_len);
+    let (new_price) = get_next_price(nft_array_len);
 
     let (erc20_address) = _erc20_address.read();
     let (caller_address) = get_caller_address();
@@ -87,8 +85,6 @@ func buyNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     let (old_eth_balance) = _eth_balance.read();
     let (new_eth_balance, _) = uint256_add(old_eth_balance, total_price);
     _eth_balance.write(new_eth_balance);
-
-    let (new_price) = get_next_price(nft_array_len);
 
     _current_price.write(new_price);
     PriceUpdate.emit(new_price);

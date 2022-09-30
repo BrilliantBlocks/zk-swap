@@ -49,8 +49,7 @@ from src.pools.Pool import (
     getEthBalance,
     checkCollectionSupport,
     assert_only_owner,
-    assert_not_owner,
-    assert_positive_price
+    assert_not_owner
 )
 
 
@@ -68,9 +67,8 @@ func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     assert_collections_supported(nft_array_len, nft_array);
 
-    assert_positive_price(nft_array_len);
-
     let (total_price) = get_total_price(nft_array_len);
+    let (new_price) = get_next_price(nft_array_len);
 
     let (eth_balance) = _eth_balance.read();
     let (sufficient_balance) = uint256_le(total_price, eth_balance);
@@ -85,8 +83,6 @@ func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     let (new_eth_balance) = uint256_sub(eth_balance, total_price);
     _eth_balance.write(new_eth_balance);
-
-    let (new_price) = get_next_price(nft_array_len);
 
     _current_price.write(new_price);
     PriceUpdate.emit(new_price);

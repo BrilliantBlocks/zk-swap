@@ -4,7 +4,8 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import ( 
     assert_not_zero,
     split_felt,
-    assert_in_range
+    assert_in_range,
+    assert_nn
 )
 from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.uint256 import Uint256
@@ -96,6 +97,11 @@ func get_next_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     let fpm_current_price = Math64x61.fromUint256(current_price);
     let fpm_next_price = Math64x61.mul(fpm_current_price, fpm_delta_sum_pow);
     let next_price_felt = Math64x61.toFelt(fpm_next_price);
+
+    with_attr error_message("The price must not be negative") {
+        assert_nn(next_price_felt);
+    }
+
     let (next_price) = convertFeltToUint256(next_price_felt);
 
     return (next_price,);

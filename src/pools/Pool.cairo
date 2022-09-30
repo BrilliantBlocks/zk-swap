@@ -18,7 +18,6 @@ from starkware.cairo.common.uint256 import (
     uint256_add,
     uint256_eq, 
     uint256_le, 
-    uint256_signed_nn,
     uint256_sub
 )
 
@@ -122,11 +121,6 @@ func setPoolParams{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     pool_params: PoolParams
 ) -> () {
     assert_only_owner();
-
-    let (is_positive) = uint256_signed_nn(pool_params.price);
-    with_attr error_message("The price must not be negative") {
-        assert is_positive = TRUE;
-    }
 
     _current_price.write(pool_params.price);
     _delta.write(pool_params.delta);
@@ -686,22 +680,6 @@ func populate_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     assert price_array[0] = next_price;
 
     return populate_prices(number_tokens, price_array + Uint256.SIZE, current_count + 1);
-}
-
-
-func assert_positive_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    number_tokens: felt
-) -> () {
-    alloc_locals;
-
-    let (next_price) = get_next_price(number_tokens);
-    let (is_positive) = uint256_signed_nn(next_price);
-
-    with_attr error_message("The next price must not be negative") {
-        assert is_positive = TRUE;
-    }
-
-    return ();
 }
 
 

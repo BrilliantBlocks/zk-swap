@@ -107,6 +107,26 @@ func test_linear_curve_with_negative_delta{syscall_ptr: felt*, range_check_ptr, 
 
 
 @external
+func test_linear_curve_with_negative_next_price{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local linear_curve_contract_address;
+    %{ ids.linear_curve_contract_address = context.linear_curve_contract_address %}
+
+    const NUMBER_TOKENS = 4;
+    let CURRENT_PRICE = Uint256(100000, 0); // 10
+    const DELTA = -50000; // -5
+
+    %{ expect_revert(error_message="The price must not be negative") %}
+    let (next_price) = IBondingCurve.getNextPrice(
+        linear_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+
+    return ();
+}
+
+
+@external
 func test_exponential_curve_with_expected_output{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
 
