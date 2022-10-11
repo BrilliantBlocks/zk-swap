@@ -16,6 +16,11 @@ from src.pools.IPool import IPool
 from tests.helper.IMintPool import Collection, Pool
 
 
+@event
+func DeployPool(pool_address: felt) {
+}
+
+
 // Storage
 
 
@@ -158,6 +163,7 @@ func mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
     let (high, low) = split_felt(pool_address);
     let pool_address_token = Uint256(low, high);
     _owners.write(pool_address_token, pool_owner);
+    DeployPool.emit(pool_address);
     return (pool_address,);
 }
 
