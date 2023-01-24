@@ -1,0 +1,13 @@
+["protostar.config"]
+protostar_version = "0.3.2"
+
+["protostar.project"]
+libs_path = "./lib"
+
+["protostar.contracts"]
+main = [
+    "./src/pools/SellPool.cairo",
+]
+
+["protostar.shared_command_configs"]
+cairo-path = ["./lib/cairo_contracts/src"]
