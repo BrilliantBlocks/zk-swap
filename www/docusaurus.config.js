@@ -59,9 +59,9 @@ const config = {
       // Replace with your project's social card
       image: 'img/docusaurus-social-card.jpg',
       navbar: {
-        title: 'My Site',
+        title: 'zk-Swap',
         logo: {
-          alt: 'My Site Logo',
+          alt: 'zk-Swap Logo',
           src: 'img/logo.svg',
         },
         items: [
@@ -69,10 +69,10 @@ const config = {
             type: 'doc',
             docId: 'intro',
             position: 'left',
-            label: 'Tutorial',
+            label: 'Docs',
           },
           {
-            href: 'https://github.com/facebook/docusaurus',
+            href: 'https://github.com/brilliantblocks/zk-swap',
             label: 'GitHub',
             position: 'right',
           },
