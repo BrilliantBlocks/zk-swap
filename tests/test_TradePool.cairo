@@ -196,3 +196,33 @@ func test_initialization_ERC_contracts{syscall_ptr: felt*, range_check_ptr, pede
 
     return ();
 }
+
+
+@external
+func test_getPoolConfig_with_expected_output{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local pool_factory_contract_address;
+    %{ ids.pool_factory_contract_address = context.pool_factory_contract_address %}
+
+    tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=10000);
+
+    let (trade_pool_contract_address) = _trade_pool_contract_address.read();
+    let (pool_factory) = IPool.getPoolFactory(trade_pool_contract_address);
+    let (pool_params: PoolParams) = IPool.getPoolConfig(trade_pool_contract_address);
+    let (erc20_balance_pool) = IPool.getEthBalance(trade_pool_contract_address);
+
+    let (high, low) = split_felt(trade_pool_contract_address);
+    let trade_pool_contract_address_token = Uint256(low, high);
+    let (pool_owner) = IERC721.ownerOf(
+        pool_factory_contract_address, trade_pool_contract_address_token
+    );
+
+    assert pool_factory = pool_factory_contract_address;
+    assert pool_params.price = POOL_PARAMS.price;
+    assert pool_params.delta = POOL_PARAMS.delta;
+    assert pool_owner = POOL_OWNER_AND_LP;
+    assert erc20_balance_pool = Uint256(400000, 0);
+
+    return ();
+}
