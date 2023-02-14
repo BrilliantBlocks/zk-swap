@@ -67,8 +67,8 @@ func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     assert_collections_supported(nft_array_len, nft_array);
 
-    let (total_price) = get_total_price(nft_array_len);
-    let (new_price) = get_next_price(nft_array_len);
+    let (total_price) = get_total_price(nft_array_len, 1);
+    let (new_price) = get_next_price(nft_array_len, 1);
 
     let (eth_balance) = _eth_balance.read();
     let (sufficient_balance) = uint256_le(total_price, eth_balance);

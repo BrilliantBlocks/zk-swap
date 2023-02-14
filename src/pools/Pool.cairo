@@ -503,14 +503,18 @@ func populate_nfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 
 
 // Swap NFTs
+// Delta sign is relevant bi-directional trading (trade pool)
+// 1: for normal delta | 2: for negative delta 
+// Always 1 for buy and sell pool 
 
 
 func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    nft_array_len
+    nft_array_len: felt, delta_sign: felt
 ) -> (total_price: Uint256) {
     alloc_locals;
     let (current_price) = _current_price.read();
-    let (delta) = _delta.read();
+    let (base_delta) = _delta.read();
+    let delta = base_delta * delta_sign;
     let (class_hash) = _bonding_curve_class_hash.read();
 
     let (calldata: felt*) = alloc();
@@ -533,11 +537,12 @@ func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 
 
 func get_next_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    nft_array_len
+    nft_array_len: felt, delta_sign: felt
 ) -> (next_price: Uint256) {
     alloc_locals;
     let (current_price) = _current_price.read();
-    let (delta) = _delta.read();
+    let (base_delta) = _delta.read();
+    let delta = base_delta * delta_sign;
     let (class_hash) = _bonding_curve_class_hash.read();
 
     let (calldata: felt*) = alloc();
@@ -632,7 +637,7 @@ func getPoolConfig{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     next_price: Uint256
 ) {
-    let (next_price) = get_next_price(1);
+    let (next_price) = get_next_price(1, 1);
 
     return (next_price,);
 }
@@ -675,7 +680,7 @@ func populate_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
         return ();
     }
     
-    let (next_price) = get_next_price(current_count);
+    let (next_price) = get_next_price(current_count, 1);
 
     assert price_array[0] = next_price;
 
