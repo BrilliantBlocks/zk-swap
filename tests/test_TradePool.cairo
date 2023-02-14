@@ -30,7 +30,7 @@ const C2_SYMBOL = 'C2';
 const ERC20_NAME = 'ERC20 Test Contract';
 const ERC20_SYMBOL = 'ERC20';
 const DECIMALS = 4;
-const INITIAL_SUPPLY_LOW = 500000;
+const INITIAL_SUPPLY_LOW = 1000000;
 const INITIAL_SUPPLY_HIGH = 0;
 const POOL_OWNER_AND_LP = 123456789;
 const NFT_TRADER = 987654321;
@@ -198,10 +198,10 @@ func test_initialization_ERC_contracts{syscall_ptr: felt*, range_check_ptr, pede
 
     assert c1_balance = Uint256(2, 0);
     assert c2_balance = Uint256(1, 0);
-    assert erc20_balance_lp = Uint256(100000, 0);
+    assert erc20_balance_lp = Uint256(600000, 0);
     assert erc20_balance_trader = Uint256(500000, 0);
     assert erc20_balance_pool = Uint256(400000, 0);
-    assert erc20_total_supply = Uint256(1000000, 0);
+    assert erc20_total_supply = Uint256(1500000, 0);
     assert c1_token_owner = POOL_OWNER_AND_LP;
     assert c2_token_owner = POOL_OWNER_AND_LP;
 
@@ -545,6 +545,128 @@ func test_tradeNFTs_with_linear_price_function{syscall_ptr: felt*, range_check_p
     let (new_pool_params) = IPool.getPoolConfig(linear_trade_pool_contract_address);
     let (pool_nft_balance_after_selling) = IERC721.balanceOf(c2_contract_address, linear_trade_pool_contract_address);
     let (pool_eth_balance_after_selling) = IPool.getEthBalance(linear_trade_pool_contract_address);
+    let (trader_eth_balance_after_selling) = IERC20.balanceOf(erc20_contract_address, NFT_TRADER);
+
+    assert new_pool_params.price = NEW_PRICE_AFTER_SELLING;
+    assert pool_nft_balance_after_selling = Uint256(2, 0);
+    assert pool_eth_balance_after_selling = POOL_ETH_BALANCE_AFTER_SELLING;
+    assert trader_eth_balance_after_selling = TRADER_ETH_BALANCE_AFTER_SELLING;
+
+    return ();
+}
+
+
+@external
+func test_tradeNFTs_with_exponential_price_function{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+    local c1_contract_address;
+    local c2_contract_address;
+    local erc20_contract_address;
+    %{
+        ids.c1_contract_address = context.c1_contract_address 
+        ids.c2_contract_address = context.c2_contract_address
+        ids.erc20_contract_address = context.erc20_contract_address
+    %}
+
+    let (exponential_trade_pool_contract_address) = _exponential_trade_pool_contract_address.read();
+    let DEPOSIT_BALANCE = Uint256(400000, 0);
+    tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=1000);
+
+    %{
+        POOL_OWNER_AND_LP = 123456789
+        stop_prank_callable_1 = start_prank(POOL_OWNER_AND_LP, target_contract_address=ids.erc20_contract_address)
+        stop_prank_callable_2 = start_prank(POOL_OWNER_AND_LP, target_contract_address=ids.exponential_trade_pool_contract_address)
+    %}
+    IERC20.approve(erc20_contract_address, exponential_trade_pool_contract_address, DEPOSIT_BALANCE);
+    %{ stop_prank_callable_1() %}
+
+    IPool.setPoolParams(exponential_trade_pool_contract_address, POOL_PARAMS);
+    IPool.depositEth(exponential_trade_pool_contract_address, DEPOSIT_BALANCE);
+    %{ stop_prank_callable_2() %}
+
+    let NFT_1_1 = Uint256(11, 0);
+    let NFT_1_2 = Uint256(12, 0);
+    let NFT_2_2 = Uint256(22, 0);
+    let NFT_2_3 = Uint256(23, 0);
+
+    let NEW_PRICE_AFTER_BUYING = Uint256(120999, 0); // 121000
+    let TOTAL_BUYING_PRICE = Uint256(209999, 0); // 210000
+    let POOL_ETH_BALANCE_AFTER_BUYING = Uint256(609999, 0); // 610000
+    let TRADER_ETH_BALANCE_AFTER_BUYING = Uint256(290001, 0); // 290000
+
+    let NEW_PRICE_AFTER_SELLING = Uint256(98009, 0); // 98010
+    let TOTAL_SELLING_PRICE = Uint256(229899, 0); // 229900
+    let POOL_ETH_BALANCE_AFTER_SELLING = Uint256(380101, 0); // 380100
+    let TRADER_ETH_BALANCE_AFTER_SELLING = Uint256(519899, 0); // 519900
+
+    let (COLLECTION_ARRAY: felt*) = alloc();
+    assert COLLECTION_ARRAY[0] = c1_contract_address;
+    assert COLLECTION_ARRAY[1] = c2_contract_address;
+
+    let (NFT_ARRAY_TO_BUY: NFT*) = alloc();
+    assert NFT_ARRAY_TO_BUY[0] = NFT(address=c1_contract_address, id=NFT_1_1);
+    assert NFT_ARRAY_TO_BUY[1] = NFT(address=c1_contract_address, id=NFT_1_2);
+
+    let (NFT_ARRAY_TO_SELL: NFT*) = alloc();
+    assert NFT_ARRAY_TO_SELL[0] = NFT(address=c2_contract_address, id=NFT_2_2);
+    assert NFT_ARRAY_TO_SELL[1] = NFT(address=c2_contract_address, id=NFT_2_3);
+
+    %{
+        POOL_OWNER_AND_LP = 123456789
+        stop_prank_callable = start_prank(POOL_OWNER_AND_LP, target_contract_address=ids.exponential_trade_pool_contract_address)
+    %}
+    IPool.addSupportedCollections(exponential_trade_pool_contract_address, 2, COLLECTION_ARRAY);
+    %{ stop_prank_callable() %}
+
+    %{
+        POOL_OWNER_AND_LP = 123456789
+        stop_prank_callable_1 = start_prank(POOL_OWNER_AND_LP, target_contract_address=ids.c1_contract_address)
+        stop_prank_callable_2 = start_prank(POOL_OWNER_AND_LP, target_contract_address=ids.exponential_trade_pool_contract_address)
+    %}
+    IERC721.approve(c1_contract_address, exponential_trade_pool_contract_address, NFT_1_1);
+    IERC721.approve(c1_contract_address, exponential_trade_pool_contract_address, NFT_1_2);
+    %{
+        stop_prank_callable_1() 
+    %}
+    IPool.addNftToPool(exponential_trade_pool_contract_address, 2, NFT_ARRAY_TO_BUY);
+    %{ stop_prank_callable_2() %}
+
+    %{
+        NFT_TRADER = 987654321
+        stop_prank_callable_1 = start_prank(NFT_TRADER, target_contract_address=ids.erc20_contract_address)
+        stop_prank_callable_2 = start_prank(NFT_TRADER, target_contract_address=ids.exponential_trade_pool_contract_address)
+    %}
+    IERC20.approve(erc20_contract_address, exponential_trade_pool_contract_address, TOTAL_BUYING_PRICE);
+    %{ stop_prank_callable_1() %}
+    IPool.buyNfts(exponential_trade_pool_contract_address, 2, NFT_ARRAY_TO_BUY);
+    %{ stop_prank_callable_2() %}
+
+    let (new_pool_params) = IPool.getPoolConfig(exponential_trade_pool_contract_address);
+    let (pool_nft_balance_after_buying) = IERC721.balanceOf(c1_contract_address, exponential_trade_pool_contract_address);
+    let (pool_eth_balance_after_buying) = IPool.getEthBalance(exponential_trade_pool_contract_address);
+    let (trader_eth_balance_after_buying) = IERC20.balanceOf(erc20_contract_address, NFT_TRADER);
+
+    assert new_pool_params.price = NEW_PRICE_AFTER_BUYING;
+    assert pool_nft_balance_after_buying = Uint256(0, 0);
+    assert pool_eth_balance_after_buying = POOL_ETH_BALANCE_AFTER_BUYING;
+    assert trader_eth_balance_after_buying = TRADER_ETH_BALANCE_AFTER_BUYING;
+
+    %{
+        NFT_TRADER = 987654321
+        stop_prank_callable_1 = start_prank(NFT_TRADER, target_contract_address=ids.c2_contract_address)
+        stop_prank_callable_2 = start_prank(NFT_TRADER, target_contract_address=ids.exponential_trade_pool_contract_address)
+    %}
+    IERC721.approve(c2_contract_address, exponential_trade_pool_contract_address, NFT_2_2);
+    IERC721.approve(c2_contract_address, exponential_trade_pool_contract_address, NFT_2_3);
+    %{
+        stop_prank_callable_1() 
+    %}
+    IPool.sellNfts(exponential_trade_pool_contract_address, 2, NFT_ARRAY_TO_SELL);
+    %{ stop_prank_callable_2() %}
+
+    let (new_pool_params) = IPool.getPoolConfig(exponential_trade_pool_contract_address);
+    let (pool_nft_balance_after_selling) = IERC721.balanceOf(c2_contract_address, exponential_trade_pool_contract_address);
+    let (pool_eth_balance_after_selling) = IPool.getEthBalance(exponential_trade_pool_contract_address);
     let (trader_eth_balance_after_selling) = IERC20.balanceOf(erc20_contract_address, NFT_TRADER);
 
     assert new_pool_params.price = NEW_PRICE_AFTER_SELLING;

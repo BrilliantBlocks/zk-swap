@@ -412,3 +412,31 @@ func test_exponential_curve_getNextPrice_error_for_delta_exceeding_upper_bound{s
     
     return ();
 }
+
+
+@external
+func test_exponential_curve_with_rounding_issue{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    local exponential_curve_contract_address;
+    %{ ids.exponential_curve_contract_address = context.exponential_curve_contract_address %}
+
+    const NUMBER_TOKENS = 2; 
+    let CURRENT_PRICE = Uint256(100000, 0); // 10
+    const DELTA = 1000; // 10,00%
+
+    let TOTAL_PRICE = Uint256(209999, 0); // 21
+    let NEXT_PRICE = Uint256(120999, 0); // 12.1
+
+    let (total_price) = IBondingCurve.getTotalPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+    let (next_price) = IBondingCurve.getNextPrice(
+        exponential_curve_contract_address, NUMBER_TOKENS, CURRENT_PRICE, DELTA
+    );
+
+    assert total_price = TOTAL_PRICE;
+    assert next_price = NEXT_PRICE;
+
+    return ();
+}
