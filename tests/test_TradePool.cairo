@@ -345,9 +345,9 @@ func test_sellNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilti
     let (c2_nft_owner_after) = IERC721.ownerOf(c2_contract_address, NFT_2_2);
     let (all_collections_after_len, all_collections_after) = IPool.getAllCollections(trade_pool_contract_address);
     let (all_nfts_of_c2_after_len, all_nfts_of_c2_after) = IPool.getAllNftsOfCollection(trade_pool_contract_address, c2_contract_address);
-    assert erc20_balance_trader_after = Uint256(830000, 0);
-    assert pool_eth_balance_after = Uint256(70000, 0);
-    assert erc20_balance_pool_after = Uint256(70000, 0);
+    assert erc20_balance_trader_after = Uint256(770000, 0);
+    assert pool_eth_balance_after = Uint256(130000, 0);
+    assert erc20_balance_pool_after = Uint256(130000, 0);
     assert c2_nft_owner_after = trade_pool_contract_address;
     assert all_collections_after_len = 1;
     assert all_collections_after[0] = c2_contract_address;

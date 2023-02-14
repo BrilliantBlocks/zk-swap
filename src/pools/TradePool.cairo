@@ -75,8 +75,8 @@ func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     assert_collections_supported(nft_array_len, nft_array);
 
-    let (total_price) = get_total_price(nft_array_len);
-    let (new_price) = get_next_price(nft_array_len);
+    let (total_price) = get_total_price(nft_array_len, -1);
+    let (new_price) = get_next_price(nft_array_len, -1);
 
     let (eth_balance) = _eth_balance.read();
     let (sufficient_balance) = uint256_le(total_price, eth_balance);
@@ -113,8 +113,8 @@ func buyNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         assert is_paused = FALSE;
     }
 
-    let (total_price) = get_total_price(nft_array_len);
-    let (new_price) = get_next_price(nft_array_len);
+    let (total_price) = get_total_price(nft_array_len, 1);
+    let (new_price) = get_next_price(nft_array_len, 1);
 
     let (erc20_address) = _erc20_address.read();
     let (caller_address) = get_caller_address();
@@ -142,11 +142,12 @@ func buyNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
 
 func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    nft_array_len
+    nft_array_len: felt, delta_sign: felt
 ) -> (total_price: Uint256) {
     alloc_locals;
     let (current_price) = _current_price.read();
-    let (delta) = _delta.read();
+    let (base_delta) = _delta.read();
+    let delta = base_delta * delta_sign;
     let (class_hash) = _bonding_curve_class_hash.read();
 
     let (calldata: felt*) = alloc();
@@ -169,11 +170,12 @@ func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 
 
 func get_next_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    nft_array_len
+    nft_array_len: felt, delta_sign: felt
 ) -> (next_price: Uint256) {
     alloc_locals;
     let (current_price) = _current_price.read();
-    let (delta) = _delta.read();
+    let (base_delta) = _delta.read();
+    let delta = base_delta * delta_sign;
     let (class_hash) = _bonding_curve_class_hash.read();
 
     let (calldata: felt*) = alloc();
