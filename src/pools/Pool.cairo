@@ -636,7 +636,9 @@ func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     delta_sign: felt
 ) -> (next_price: Uint256) {
 
-    assert abs_value(delta_sign) = 1;
+    with_attr error_message("Delta sign must be provided with 1 or -1") {
+        assert abs_value(delta_sign) = 1;
+    }
 
     let (next_price) = get_next_price(1, delta_sign);
 
@@ -646,46 +648,50 @@ func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 
 @view
 func getTokenPrices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    number_tokens: felt
+    number_tokens: felt, delta_sign: felt
 ) -> (price_array_len: felt, price_array: Uint256*) {
     alloc_locals;
 
     with_attr error_message("Number of tokens must not be zero") {
         assert_not_zero(number_tokens);
     }
+
+    with_attr error_message("Delta sign must be provided with 1 or -1") {
+        assert abs_value(delta_sign) = 1;
+    }
     
-    let (price_array_len, price_array) = get_token_prices(number_tokens);
+    let (price_array_len, price_array) = get_token_prices(number_tokens, delta_sign);
 
     return (price_array_len, price_array);
 }
 
 
 func get_token_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    number_tokens: felt
+    number_tokens: felt, delta_sign: felt
 ) -> (price_array_len: felt, price_array: Uint256*) {
     alloc_locals;
     
     let (price_array: Uint256*) = alloc();
 
-    populate_prices(number_tokens, price_array, 1);
+    populate_prices(number_tokens, price_array, delta_sign, 1);
 
     return (number_tokens, price_array);
 }
 
 
 func populate_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    number_tokens: felt, price_array: Uint256*, current_count: felt
+    number_tokens: felt, price_array: Uint256*, delta_sign: felt, current_count: felt
 ) -> () {
 
     if (current_count == number_tokens + 1) {
         return ();
     }
     
-    let (next_price) = get_next_price(current_count, DeltaSign.positive);
+    let (next_price) = get_next_price(current_count, delta_sign);
 
     assert price_array[0] = next_price;
 
-    return populate_prices(number_tokens, price_array + Uint256.SIZE, current_count + 1);
+    return populate_prices(number_tokens, price_array + Uint256.SIZE, delta_sign, current_count + 1);
 }
 
 

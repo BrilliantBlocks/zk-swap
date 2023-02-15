@@ -1173,7 +1173,7 @@ func test_getTokenPrices{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: Hash
     let FOURTH_PRICE = Uint256(140000, 0);
     let FIFTH_PRICE = Uint256(150000, 0);
 
-    let (price_array_len: felt, price_array: Uint256*) = IPool.getTokenPrices(sell_pool_contract_address, NUMBER_TOKENS);
+    let (price_array_len: felt, price_array: Uint256*) = IPool.getTokenPrices(sell_pool_contract_address, NUMBER_TOKENS, DeltaSign.positive);
 
     assert price_array_len = 5;
     assert price_array[0] = FIRST_PRICE;
@@ -1203,7 +1203,7 @@ func test_getTokenPrices_with_negative_values{syscall_ptr: felt*, range_check_pt
     %{ stop_prank_callable() %}
 
     %{ expect_revert(error_message="The price must not be negative") %}
-    let (price_array_len: felt, price_array: Uint256*) = IPool.getTokenPrices(sell_pool_contract_address, NUMBER_TOKENS);
+    let (price_array_len: felt, price_array: Uint256*) = IPool.getTokenPrices(sell_pool_contract_address, NUMBER_TOKENS, DeltaSign.positive);
 
     return ();
 }
