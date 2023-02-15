@@ -9,7 +9,8 @@ from starkware.starknet.common.syscalls import (
 from starkware.cairo.common.math import (
     assert_not_equal,
     assert_not_zero,
-    split_felt
+    split_felt,
+    abs_value
 )
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.alloc import alloc
@@ -631,10 +632,13 @@ func getPoolConfig{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 
 
 @view
-func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-    next_price: Uint256
-) {
-    let (next_price) = get_next_price(1, DeltaSign.positive);
+func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    delta_sign: felt
+) -> (next_price: Uint256) {
+
+    assert abs_value(delta_sign) = 1;
+
+    let (next_price) = get_next_price(1, delta_sign);
 
     return (next_price,);
 }

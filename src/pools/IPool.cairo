@@ -55,7 +55,7 @@ namespace IPool {
     func getEthBalance() -> (eth_balance: Uint256) {
     }
 
-    func getNextPrice() -> (next_price: Uint256) {
+    func getNextPrice(delta_sign: felt) -> (next_price: Uint256) {
     }
 
     func getTokenPrices(number_tokens: felt) -> (price_array_len: felt, price_array: Uint256*) {

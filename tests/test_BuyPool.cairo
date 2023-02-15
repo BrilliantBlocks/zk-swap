@@ -12,6 +12,7 @@ from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.pools.IPool import IPool, NFT, PoolParams
 from tests.helper.IMintPool import Collection, IMintPool
+from src.utils.Constants import DeltaSign
 
 
 @storage_var
@@ -634,7 +635,7 @@ func test_getNextPrice_with_negative_value{syscall_ptr: felt*, range_check_ptr, 
     %{ stop_prank_callable() %}
 
     %{ expect_revert(error_message="The price must not be negative") %}
-    let (next_price) = IPool.getNextPrice(buy_pool_contract_address);
+    let (next_price) = IPool.getNextPrice(buy_pool_contract_address, DeltaSign.positive);
 
     return ();
 }
