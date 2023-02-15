@@ -810,6 +810,18 @@ func assert_not_paused{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
 }
 
 
+func assert_sufficient_balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    price: Uint256, eth_balance: Uint256
+) -> () {
+    let (sufficient_balance) = uint256_le(price, eth_balance);
+    with_attr error_message("ETH balance is not sufficient") {
+        assert sufficient_balance = TRUE;
+    }
+
+    return ();
+}
+
+
 // Further view functions
 
 
