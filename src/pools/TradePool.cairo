@@ -51,6 +51,7 @@ from src.pools.Pool import (
     assert_only_owner,
     assert_not_owner
 )
+from src.utils.Constants import DeltaSign
 
 
 @external
@@ -67,8 +68,8 @@ func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     assert_collections_supported(nft_array_len, nft_array);
 
-    let (total_price) = get_total_price(nft_array_len, -1);
-    let (new_price) = get_next_price(nft_array_len, -1);
+    let (total_price) = get_total_price(nft_array_len, DeltaSign.negative);
+    let (new_price) = get_next_price(nft_array_len, DeltaSign.negative);
 
     let (eth_balance) = _eth_balance.read();
     let (sufficient_balance) = uint256_le(total_price, eth_balance);
@@ -105,8 +106,8 @@ func buyNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         assert is_paused = FALSE;
     }
 
-    let (total_price) = get_total_price(nft_array_len, 1);
-    let (new_price) = get_next_price(nft_array_len, 1);
+    let (total_price) = get_total_price(nft_array_len, DeltaSign.positive);
+    let (new_price) = get_next_price(nft_array_len, DeltaSign.positive);
 
     let (erc20_address) = _erc20_address.read();
     let (caller_address) = get_caller_address();

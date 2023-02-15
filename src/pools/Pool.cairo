@@ -25,7 +25,7 @@ from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.pools.IPool import NFT, PoolParams
-from src.utils.Constants import LinkedList, FunctionSelector
+from src.utils.Constants import LinkedList, FunctionSelector, DeltaSign
 
 
 // Events
@@ -503,9 +503,6 @@ func populate_nfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 
 
 // Swap NFTs
-// Delta sign is relevant bi-directional trading (trade pool)
-// 1: for normal delta | 2: for negative delta 
-// Always 1 for buy and sell pool 
 
 
 func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -513,8 +510,8 @@ func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 ) -> (total_price: Uint256) {
     alloc_locals;
     let (current_price) = _current_price.read();
-    let (base_delta) = _delta.read();
-    let delta = base_delta * delta_sign;
+    let (abs_delta) = _delta.read();
+    let delta = abs_delta * delta_sign;
     let (class_hash) = _bonding_curve_class_hash.read();
 
     let (calldata: felt*) = alloc();
@@ -541,8 +538,8 @@ func get_next_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 ) -> (next_price: Uint256) {
     alloc_locals;
     let (current_price) = _current_price.read();
-    let (base_delta) = _delta.read();
-    let delta = base_delta * delta_sign;
+    let (abs_delta) = _delta.read();
+    let delta = abs_delta * delta_sign;
     let (class_hash) = _bonding_curve_class_hash.read();
 
     let (calldata: felt*) = alloc();
@@ -637,7 +634,7 @@ func getPoolConfig{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     next_price: Uint256
 ) {
-    let (next_price) = get_next_price(1, 1);
+    let (next_price) = get_next_price(1, DeltaSign.positive);
 
     return (next_price,);
 }
@@ -680,7 +677,7 @@ func populate_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
         return ();
     }
     
-    let (next_price) = get_next_price(current_count, 1);
+    let (next_price) = get_next_price(current_count, DeltaSign.positive);
 
     assert price_array[0] = next_price;
 
