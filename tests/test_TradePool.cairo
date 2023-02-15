@@ -14,15 +14,6 @@ from src.pools.IPool import IPool, NFT, PoolParams
 from tests.helper.IMintPool import Collection, IMintPool
 
 
-@storage_var
-func _linear_trade_pool_contract_address() -> (res: felt) {
-}
-
-@storage_var
-func _exponential_trade_pool_contract_address() -> (res: felt) {
-}
-
-
 const C1_NAME = 'COLLECTION 1';
 const C2_NAME = 'COLLECTION 2';
 const C1_SYMBOL = 'C1';
@@ -129,8 +120,10 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     );
     %{ stop_prank_callable_1() %}
 
-    _linear_trade_pool_contract_address.write(linear_trade_pool_contract_address);
-    _exponential_trade_pool_contract_address.write(exponential_trade_pool_contract_address);
+    %{
+        context.linear_trade_pool_contract_address = ids.linear_trade_pool_contract_address
+        context.exponential_trade_pool_contract_address = ids.exponential_trade_pool_contract_address
+    %}
 
     %{
         POOL_OWNER_AND_LP = 123456789
@@ -153,13 +146,13 @@ func test_initialization_pool_factory{syscall_ptr: felt*, range_check_ptr, peder
     alloc_locals;
 
     local pool_factory_contract_address;
+    local linear_trade_pool_contract_address;
     local trade_pool_class_hash;
     %{
         ids.pool_factory_contract_address = context.pool_factory_contract_address 
+        ids.linear_trade_pool_contract_address = context.linear_trade_pool_contract_address
         ids.trade_pool_class_hash = context.trade_pool_class_hash
     %}
-
-    let (linear_trade_pool_contract_address) = _linear_trade_pool_contract_address.read();
 
     let (pool_factory_owner) = IMintPool.getFactoryOwner(pool_factory_contract_address);
     let (pool_type_class_hash) = IMintPool.getPoolTypeClassHash(pool_factory_contract_address, linear_trade_pool_contract_address);
@@ -180,11 +173,14 @@ func test_getPoolConfig_with_expected_output{syscall_ptr: felt*, range_check_ptr
     alloc_locals;
 
     local pool_factory_contract_address;
-    %{ ids.pool_factory_contract_address = context.pool_factory_contract_address %}
+    local linear_trade_pool_contract_address;
+    %{ 
+        ids.pool_factory_contract_address = context.pool_factory_contract_address 
+        ids.linear_trade_pool_contract_address = context.linear_trade_pool_contract_address
+    %}
 
     tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=10000);
 
-    let (linear_trade_pool_contract_address) = _linear_trade_pool_contract_address.read();
     let (pool_factory) = IPool.getPoolFactory(linear_trade_pool_contract_address);
     let (pool_params: PoolParams) = IPool.getPoolConfig(linear_trade_pool_contract_address);
     let (erc20_balance_pool) = IPool.getEthBalance(linear_trade_pool_contract_address);
@@ -209,14 +205,15 @@ func test_getPoolConfig_with_expected_output{syscall_ptr: felt*, range_check_ptr
 func test_addSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
 
+    local linear_trade_pool_contract_address;
     local c1_contract_address;
     local c2_contract_address;
     %{
+        ids.linear_trade_pool_contract_address = context.linear_trade_pool_contract_address
         ids.c1_contract_address = context.c1_contract_address 
         ids.c2_contract_address = context.c2_contract_address 
     %}
 
-    let (linear_trade_pool_contract_address) = _linear_trade_pool_contract_address.read();
     let (c1_is_supported) = IPool.checkCollectionSupport(linear_trade_pool_contract_address, c1_contract_address);
     let (c2_is_supported) = IPool.checkCollectionSupport(linear_trade_pool_contract_address, c2_contract_address);
 
@@ -261,14 +258,14 @@ func test_addSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_
 func test_sellNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
 
+    local linear_trade_pool_contract_address;
     local c2_contract_address;
     local erc20_contract_address;
     %{
+        ids.linear_trade_pool_contract_address = context.linear_trade_pool_contract_address
         ids.c2_contract_address = context.c2_contract_address 
         ids.erc20_contract_address = context.erc20_contract_address
     %}
-
-    let (linear_trade_pool_contract_address) = _linear_trade_pool_contract_address.read();
 
     let NFT_2_2 = Uint256(22, 0);
     let NFT_2_3 = Uint256(23, 0);
@@ -340,16 +337,17 @@ func test_sellNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilti
 @external
 func test_buyNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
+    local linear_trade_pool_contract_address;
     local c1_contract_address;
     local c2_contract_address;
     local erc20_contract_address;
     %{
+        ids.linear_trade_pool_contract_address = context.linear_trade_pool_contract_address
         ids.c1_contract_address = context.c1_contract_address 
         ids.c2_contract_address = context.c2_contract_address
         ids.erc20_contract_address = context.erc20_contract_address
     %}
 
-    let (linear_trade_pool_contract_address) = _linear_trade_pool_contract_address.read();
     let NFT_1_1 = Uint256(11, 0);
     let NFT_1_2 = Uint256(12, 0);
     let NFT_2_1 = Uint256(21, 0);
@@ -418,16 +416,17 @@ func test_buyNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin
 @external
 func test_tradeNFTs_with_linear_price_function{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
+    local linear_trade_pool_contract_address;
     local c1_contract_address;
     local c2_contract_address;
     local erc20_contract_address;
     %{
+        ids.linear_trade_pool_contract_address = context.linear_trade_pool_contract_address
         ids.c1_contract_address = context.c1_contract_address 
         ids.c2_contract_address = context.c2_contract_address
         ids.erc20_contract_address = context.erc20_contract_address
     %}
 
-    let (linear_trade_pool_contract_address) = _linear_trade_pool_contract_address.read();
     let NFT_1_1 = Uint256(11, 0);
     let NFT_1_2 = Uint256(12, 0);
     let NFT_2_2 = Uint256(22, 0);
@@ -525,16 +524,17 @@ func test_tradeNFTs_with_linear_price_function{syscall_ptr: felt*, range_check_p
 @external
 func test_tradeNFTs_with_exponential_price_function{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
+    local exponential_trade_pool_contract_address;
     local c1_contract_address;
     local c2_contract_address;
     local erc20_contract_address;
     %{
+        ids.exponential_trade_pool_contract_address = context.exponential_trade_pool_contract_address
         ids.c1_contract_address = context.c1_contract_address 
         ids.c2_contract_address = context.c2_contract_address
         ids.erc20_contract_address = context.erc20_contract_address
     %}
 
-    let (exponential_trade_pool_contract_address) = _exponential_trade_pool_contract_address.read();
     let DEPOSIT_BALANCE = Uint256(400000, 0);
     tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=1000);
 
