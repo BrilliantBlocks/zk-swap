@@ -13,7 +13,6 @@ from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 from src.pools.IPool import IPool, NFT, PoolParams
 from tests.helper.IMintPool import Collection, IMintPool
 
-
 const C1_NAME = 'COLLECTION 1';
 const C2_NAME = 'COLLECTION 2';
 const C1_SYMBOL = 'C1';
@@ -27,40 +26,39 @@ const POOL_FACTORY_AND_ERC_CONTRACT_OWNER = 192837465;
 const POOL_OWNER_AND_LP = 123456789;
 const NFT_TRADER = 987654321;
 
-
 @view
 func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
 
     %{
-    context.c1_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
-            [ 
-                ids.C1_NAME, ids.C1_SYMBOL, ids.POOL_FACTORY_AND_ERC_CONTRACT_OWNER
-            ]
+        context.c1_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
+                [ 
+                    ids.C1_NAME, ids.C1_SYMBOL, ids.POOL_FACTORY_AND_ERC_CONTRACT_OWNER
+                ]
+                ).contract_address
+
+        context.c2_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
+                [ 
+                    ids.C2_NAME, ids.C2_SYMBOL, ids.POOL_FACTORY_AND_ERC_CONTRACT_OWNER
+                ]
+                ).contract_address
+
+        context.erc20_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc20/presets/ERC20Mintable.cairo", 
+                [ 
+                    ids.ERC20_NAME, ids.ERC20_SYMBOL, ids.DECIMALS, ids.INITIAL_SUPPLY_LOW, ids.INITIAL_SUPPLY_HIGH, ids.POOL_OWNER_AND_LP, ids.POOL_FACTORY_AND_ERC_CONTRACT_OWNER
+                ]
             ).contract_address
 
-    context.c2_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
-            [ 
-                ids.C2_NAME, ids.C2_SYMBOL, ids.POOL_FACTORY_AND_ERC_CONTRACT_OWNER
-            ]
+        context.pool_factory_contract_address = deploy_contract("./tests/helper/MintPool.cairo", 
+                [
+                    ids.POOL_FACTORY_AND_ERC_CONTRACT_OWNER
+                ]
             ).contract_address
 
-    context.erc20_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc20/presets/ERC20Mintable.cairo", 
-            [ 
-                ids.ERC20_NAME, ids.ERC20_SYMBOL, ids.DECIMALS, ids.INITIAL_SUPPLY_LOW, ids.INITIAL_SUPPLY_HIGH, ids.POOL_OWNER_AND_LP, ids.POOL_FACTORY_AND_ERC_CONTRACT_OWNER
-            ]
-        ).contract_address
-    
-    context.pool_factory_contract_address = deploy_contract("./tests/helper/MintPool.cairo", 
-            [
-                ids.POOL_FACTORY_AND_ERC_CONTRACT_OWNER
-            ]
-        ).contract_address
+        context.trade_pool_class_hash = declare("./src/pools/TradePool.cairo").class_hash
 
-    context.trade_pool_class_hash = declare("./src/pools/TradePool.cairo").class_hash
-
-    context.linear_curve_class_hash = declare("./src/bonding_curves/LinearCurve.cairo").class_hash
-    context.exponential_curve_class_hash = declare("./src/bonding_curves/ExponentialCurve.cairo").class_hash
+        context.linear_curve_class_hash = declare("./src/bonding_curves/LinearCurve.cairo").class_hash
+        context.exponential_curve_class_hash = declare("./src/bonding_curves/ExponentialCurve.cairo").class_hash
     %}
 
     local trade_pool_class_hash;
@@ -113,10 +111,16 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
         stop_prank_callable_1 = start_prank(POOL_OWNER_AND_LP, target_contract_address=ids.pool_factory_contract_address)
     %}
     let (linear_trade_pool_contract_address) = IMintPool.mint(
-        pool_factory_contract_address, trade_pool_class_hash, linear_curve_class_hash, erc20_contract_address
+        pool_factory_contract_address,
+        trade_pool_class_hash,
+        linear_curve_class_hash,
+        erc20_contract_address,
     );
     let (exponential_trade_pool_contract_address) = IMintPool.mint(
-        pool_factory_contract_address, trade_pool_class_hash, exponential_curve_class_hash, erc20_contract_address
+        pool_factory_contract_address,
+        trade_pool_class_hash,
+        exponential_curve_class_hash,
+        erc20_contract_address,
     );
     %{ stop_prank_callable_1() %}
 
@@ -140,9 +144,10 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     return ();
 }
 
-
 @external
-func test_initialization_pool_factory{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_initialization_pool_factory{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
 
     local pool_factory_contract_address;
@@ -155,7 +160,9 @@ func test_initialization_pool_factory{syscall_ptr: felt*, range_check_ptr, peder
     %}
 
     let (pool_factory_owner) = IMintPool.getFactoryOwner(pool_factory_contract_address);
-    let (pool_type_class_hash) = IMintPool.getPoolTypeClassHash(pool_factory_contract_address, linear_trade_pool_contract_address);
+    let (pool_type_class_hash) = IMintPool.getPoolTypeClassHash(
+        pool_factory_contract_address, linear_trade_pool_contract_address
+    );
     let (
         collection_array_len: felt, collection_array: Collection*
     ) = IMintPool.getAllCollectionsFromAllPools(pool_factory_contract_address);
@@ -167,14 +174,15 @@ func test_initialization_pool_factory{syscall_ptr: felt*, range_check_ptr, peder
     return ();
 }
 
-
 @external
-func test_getPoolConfig_with_expected_output{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_getPoolConfig_with_expected_output{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
 
     local pool_factory_contract_address;
     local linear_trade_pool_contract_address;
-    %{ 
+    %{
         ids.pool_factory_contract_address = context.pool_factory_contract_address 
         ids.linear_trade_pool_contract_address = context.linear_trade_pool_contract_address
     %}
@@ -200,9 +208,9 @@ func test_getPoolConfig_with_expected_output{syscall_ptr: felt*, range_check_ptr
     return ();
 }
 
-
 @external
-func test_addSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_addSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
+    ) {
     alloc_locals;
 
     local linear_trade_pool_contract_address;
@@ -211,11 +219,15 @@ func test_addSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_
     %{
         ids.linear_trade_pool_contract_address = context.linear_trade_pool_contract_address
         ids.c1_contract_address = context.c1_contract_address 
-        ids.c2_contract_address = context.c2_contract_address 
+        ids.c2_contract_address = context.c2_contract_address
     %}
 
-    let (c1_is_supported) = IPool.checkCollectionSupport(linear_trade_pool_contract_address, c1_contract_address);
-    let (c2_is_supported) = IPool.checkCollectionSupport(linear_trade_pool_contract_address, c2_contract_address);
+    let (c1_is_supported) = IPool.checkCollectionSupport(
+        linear_trade_pool_contract_address, c1_contract_address
+    );
+    let (c2_is_supported) = IPool.checkCollectionSupport(
+        linear_trade_pool_contract_address, c2_contract_address
+    );
 
     assert c1_is_supported = FALSE;
     assert c2_is_supported = FALSE;
@@ -231,8 +243,12 @@ func test_addSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_
     IPool.addSupportedCollections(linear_trade_pool_contract_address, 2, COLLECTION_ARRAY);
     %{ stop_prank_callable() %}
 
-    let (c1_is_supported) = IPool.checkCollectionSupport(linear_trade_pool_contract_address, c1_contract_address);
-    let (c2_is_supported) = IPool.checkCollectionSupport(linear_trade_pool_contract_address, c2_contract_address);
+    let (c1_is_supported) = IPool.checkCollectionSupport(
+        linear_trade_pool_contract_address, c1_contract_address
+    );
+    let (c2_is_supported) = IPool.checkCollectionSupport(
+        linear_trade_pool_contract_address, c2_contract_address
+    );
 
     assert c1_is_supported = TRUE;
     assert c2_is_supported = TRUE;
@@ -244,15 +260,18 @@ func test_addSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_
     IPool.removeSupportedCollections(linear_trade_pool_contract_address, 2, COLLECTION_ARRAY);
     %{ stop_prank_callable() %}
 
-    let (c1_is_supported) = IPool.checkCollectionSupport(linear_trade_pool_contract_address, c1_contract_address);
-    let (c2_is_supported) = IPool.checkCollectionSupport(linear_trade_pool_contract_address, c2_contract_address);
+    let (c1_is_supported) = IPool.checkCollectionSupport(
+        linear_trade_pool_contract_address, c1_contract_address
+    );
+    let (c2_is_supported) = IPool.checkCollectionSupport(
+        linear_trade_pool_contract_address, c2_contract_address
+    );
 
     assert c1_is_supported = FALSE;
     assert c2_is_supported = FALSE;
 
     return ();
 }
-
 
 @external
 func test_sellNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
@@ -280,11 +299,17 @@ func test_sellNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilti
     assert NFT_ARRAY[2] = NFT(address=c2_contract_address, id=NFT_2_4);
 
     let (erc20_balance_trader_before) = IERC20.balanceOf(erc20_contract_address, NFT_TRADER);
-    let (erc20_balance_pool_before) = IERC20.balanceOf(erc20_contract_address, linear_trade_pool_contract_address);
+    let (erc20_balance_pool_before) = IERC20.balanceOf(
+        erc20_contract_address, linear_trade_pool_contract_address
+    );
     let (pool_eth_balance_before) = IPool.getEthBalance(linear_trade_pool_contract_address);
     let (token_owner_before) = IERC721.ownerOf(c2_contract_address, NFT_2_2);
-    let (all_collections_before_len, all_collections_before) = IPool.getAllCollections(linear_trade_pool_contract_address);
-    let (all_nfts_of_c2_before_len, all_nfts_of_c2_before) = IPool.getAllNftsOfCollection(linear_trade_pool_contract_address, c2_contract_address);
+    let (all_collections_before_len, all_collections_before) = IPool.getAllCollections(
+        linear_trade_pool_contract_address
+    );
+    let (all_nfts_of_c2_before_len, all_nfts_of_c2_before) = IPool.getAllNftsOfCollection(
+        linear_trade_pool_contract_address, c2_contract_address
+    );
     assert erc20_balance_trader_before = Uint256(500000, 0);
     assert erc20_balance_pool_before = Uint256(400000, 0);
     assert pool_eth_balance_before = Uint256(400000, 0);
@@ -307,18 +332,22 @@ func test_sellNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilti
     IERC721.approve(c2_contract_address, linear_trade_pool_contract_address, NFT_2_2);
     IERC721.approve(c2_contract_address, linear_trade_pool_contract_address, NFT_2_3);
     IERC721.approve(c2_contract_address, linear_trade_pool_contract_address, NFT_2_4);
-    %{
-        stop_prank_callable_1() 
-    %}
+    %{ stop_prank_callable_1() %}
     IPool.sellNfts(linear_trade_pool_contract_address, 3, NFT_ARRAY);
     %{ stop_prank_callable_2() %}
 
     let (erc20_balance_trader_after) = IERC20.balanceOf(erc20_contract_address, NFT_TRADER);
-    let (erc20_balance_pool_after) = IERC20.balanceOf(erc20_contract_address, linear_trade_pool_contract_address);
+    let (erc20_balance_pool_after) = IERC20.balanceOf(
+        erc20_contract_address, linear_trade_pool_contract_address
+    );
     let (pool_eth_balance_after) = IPool.getEthBalance(linear_trade_pool_contract_address);
     let (c2_nft_owner_after) = IERC721.ownerOf(c2_contract_address, NFT_2_2);
-    let (all_collections_after_len, all_collections_after) = IPool.getAllCollections(linear_trade_pool_contract_address);
-    let (all_nfts_of_c2_after_len, all_nfts_of_c2_after) = IPool.getAllNftsOfCollection(linear_trade_pool_contract_address, c2_contract_address);
+    let (all_collections_after_len, all_collections_after) = IPool.getAllCollections(
+        linear_trade_pool_contract_address
+    );
+    let (all_nfts_of_c2_after_len, all_nfts_of_c2_after) = IPool.getAllNftsOfCollection(
+        linear_trade_pool_contract_address, c2_contract_address
+    );
     assert erc20_balance_trader_after = Uint256(770000, 0);
     assert pool_eth_balance_after = Uint256(130000, 0);
     assert erc20_balance_pool_after = Uint256(130000, 0);
@@ -332,7 +361,6 @@ func test_sellNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilti
 
     return ();
 }
-
 
 @external
 func test_buyNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
@@ -399,7 +427,9 @@ func test_buyNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin
 
     let (pool_eth_balance_after) = IPool.getEthBalance(linear_trade_pool_contract_address);
     let (new_pool_params) = IPool.getPoolConfig(linear_trade_pool_contract_address);
-    let (pool_nft_balance_after) = IERC721.balanceOf(c1_contract_address, linear_trade_pool_contract_address);
+    let (pool_nft_balance_after) = IERC721.balanceOf(
+        c1_contract_address, linear_trade_pool_contract_address
+    );
     let (nft_owner_after) = IERC721.ownerOf(c1_contract_address, NFT_1_1);
     let (erc20_balance_nft_buyer_after) = IERC20.balanceOf(erc20_contract_address, NFT_TRADER);
 
@@ -412,9 +442,10 @@ func test_buyNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin
     return ();
 }
 
-
 @external
-func test_tradeNFTs_with_linear_price_function{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_tradeNFTs_with_linear_price_function{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
     local linear_trade_pool_contract_address;
     local c1_contract_address;
@@ -468,9 +499,7 @@ func test_tradeNFTs_with_linear_price_function{syscall_ptr: felt*, range_check_p
     %}
     IERC721.approve(c1_contract_address, linear_trade_pool_contract_address, NFT_1_1);
     IERC721.approve(c1_contract_address, linear_trade_pool_contract_address, NFT_1_2);
-    %{
-        stop_prank_callable_1() 
-    %}
+    %{ stop_prank_callable_1() %}
     IPool.addNftToPool(linear_trade_pool_contract_address, 2, NFT_ARRAY_TO_BUY);
     %{ stop_prank_callable_2() %}
 
@@ -485,7 +514,9 @@ func test_tradeNFTs_with_linear_price_function{syscall_ptr: felt*, range_check_p
     %{ stop_prank_callable_2() %}
 
     let (new_pool_params) = IPool.getPoolConfig(linear_trade_pool_contract_address);
-    let (pool_nft_balance_after_buying) = IERC721.balanceOf(c1_contract_address, linear_trade_pool_contract_address);
+    let (pool_nft_balance_after_buying) = IERC721.balanceOf(
+        c1_contract_address, linear_trade_pool_contract_address
+    );
     let (pool_eth_balance_after_buying) = IPool.getEthBalance(linear_trade_pool_contract_address);
     let (trader_eth_balance_after_buying) = IERC20.balanceOf(erc20_contract_address, NFT_TRADER);
 
@@ -501,14 +532,14 @@ func test_tradeNFTs_with_linear_price_function{syscall_ptr: felt*, range_check_p
     %}
     IERC721.approve(c2_contract_address, linear_trade_pool_contract_address, NFT_2_2);
     IERC721.approve(c2_contract_address, linear_trade_pool_contract_address, NFT_2_3);
-    %{
-        stop_prank_callable_1() 
-    %}
+    %{ stop_prank_callable_1() %}
     IPool.sellNfts(linear_trade_pool_contract_address, 2, NFT_ARRAY_TO_SELL);
     %{ stop_prank_callable_2() %}
 
     let (new_pool_params) = IPool.getPoolConfig(linear_trade_pool_contract_address);
-    let (pool_nft_balance_after_selling) = IERC721.balanceOf(c2_contract_address, linear_trade_pool_contract_address);
+    let (pool_nft_balance_after_selling) = IERC721.balanceOf(
+        c2_contract_address, linear_trade_pool_contract_address
+    );
     let (pool_eth_balance_after_selling) = IPool.getEthBalance(linear_trade_pool_contract_address);
     let (trader_eth_balance_after_selling) = IERC20.balanceOf(erc20_contract_address, NFT_TRADER);
 
@@ -520,9 +551,10 @@ func test_tradeNFTs_with_linear_price_function{syscall_ptr: felt*, range_check_p
     return ();
 }
 
-
 @external
-func test_tradeNFTs_with_exponential_price_function{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_tradeNFTs_with_exponential_price_function{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
     local exponential_trade_pool_contract_address;
     local c1_contract_address;
@@ -543,7 +575,9 @@ func test_tradeNFTs_with_exponential_price_function{syscall_ptr: felt*, range_ch
         stop_prank_callable_1 = start_prank(POOL_OWNER_AND_LP, target_contract_address=ids.erc20_contract_address)
         stop_prank_callable_2 = start_prank(POOL_OWNER_AND_LP, target_contract_address=ids.exponential_trade_pool_contract_address)
     %}
-    IERC20.approve(erc20_contract_address, exponential_trade_pool_contract_address, DEPOSIT_BALANCE);
+    IERC20.approve(
+        erc20_contract_address, exponential_trade_pool_contract_address, DEPOSIT_BALANCE
+    );
     %{ stop_prank_callable_1() %}
 
     IPool.setPoolParams(exponential_trade_pool_contract_address, POOL_PARAMS);
@@ -555,15 +589,15 @@ func test_tradeNFTs_with_exponential_price_function{syscall_ptr: felt*, range_ch
     let NFT_2_2 = Uint256(22, 0);
     let NFT_2_3 = Uint256(23, 0);
 
-    let NEW_PRICE_AFTER_BUYING = Uint256(120999, 0); // 121000
-    let TOTAL_BUYING_PRICE = Uint256(209999, 0); // 210000
-    let POOL_ETH_BALANCE_AFTER_BUYING = Uint256(609999, 0); // 610000
-    let TRADER_ETH_BALANCE_AFTER_BUYING = Uint256(290001, 0); // 290000
+    let NEW_PRICE_AFTER_BUYING = Uint256(120999, 0);  // 121000
+    let TOTAL_BUYING_PRICE = Uint256(209999, 0);  // 210000
+    let POOL_ETH_BALANCE_AFTER_BUYING = Uint256(609999, 0);  // 610000
+    let TRADER_ETH_BALANCE_AFTER_BUYING = Uint256(290001, 0);  // 290000
 
-    let NEW_PRICE_AFTER_SELLING = Uint256(98009, 0); // 98010
-    let TOTAL_SELLING_PRICE = Uint256(229899, 0); // 229900
-    let POOL_ETH_BALANCE_AFTER_SELLING = Uint256(380101, 0); // 380100
-    let TRADER_ETH_BALANCE_AFTER_SELLING = Uint256(519899, 0); // 519900
+    let NEW_PRICE_AFTER_SELLING = Uint256(98009, 0);  // 98010
+    let TOTAL_SELLING_PRICE = Uint256(229899, 0);  // 229900
+    let POOL_ETH_BALANCE_AFTER_SELLING = Uint256(380101, 0);  // 380100
+    let TRADER_ETH_BALANCE_AFTER_SELLING = Uint256(519899, 0);  // 519900
 
     let (COLLECTION_ARRAY: felt*) = alloc();
     assert COLLECTION_ARRAY[0] = c1_contract_address;
@@ -591,9 +625,7 @@ func test_tradeNFTs_with_exponential_price_function{syscall_ptr: felt*, range_ch
     %}
     IERC721.approve(c1_contract_address, exponential_trade_pool_contract_address, NFT_1_1);
     IERC721.approve(c1_contract_address, exponential_trade_pool_contract_address, NFT_1_2);
-    %{
-        stop_prank_callable_1() 
-    %}
+    %{ stop_prank_callable_1() %}
     IPool.addNftToPool(exponential_trade_pool_contract_address, 2, NFT_ARRAY_TO_BUY);
     %{ stop_prank_callable_2() %}
 
@@ -602,14 +634,20 @@ func test_tradeNFTs_with_exponential_price_function{syscall_ptr: felt*, range_ch
         stop_prank_callable_1 = start_prank(NFT_TRADER, target_contract_address=ids.erc20_contract_address)
         stop_prank_callable_2 = start_prank(NFT_TRADER, target_contract_address=ids.exponential_trade_pool_contract_address)
     %}
-    IERC20.approve(erc20_contract_address, exponential_trade_pool_contract_address, TOTAL_BUYING_PRICE);
+    IERC20.approve(
+        erc20_contract_address, exponential_trade_pool_contract_address, TOTAL_BUYING_PRICE
+    );
     %{ stop_prank_callable_1() %}
     IPool.buyNfts(exponential_trade_pool_contract_address, 2, NFT_ARRAY_TO_BUY);
     %{ stop_prank_callable_2() %}
 
     let (new_pool_params) = IPool.getPoolConfig(exponential_trade_pool_contract_address);
-    let (pool_nft_balance_after_buying) = IERC721.balanceOf(c1_contract_address, exponential_trade_pool_contract_address);
-    let (pool_eth_balance_after_buying) = IPool.getEthBalance(exponential_trade_pool_contract_address);
+    let (pool_nft_balance_after_buying) = IERC721.balanceOf(
+        c1_contract_address, exponential_trade_pool_contract_address
+    );
+    let (pool_eth_balance_after_buying) = IPool.getEthBalance(
+        exponential_trade_pool_contract_address
+    );
     let (trader_eth_balance_after_buying) = IERC20.balanceOf(erc20_contract_address, NFT_TRADER);
 
     assert new_pool_params.price = NEW_PRICE_AFTER_BUYING;
@@ -624,15 +662,17 @@ func test_tradeNFTs_with_exponential_price_function{syscall_ptr: felt*, range_ch
     %}
     IERC721.approve(c2_contract_address, exponential_trade_pool_contract_address, NFT_2_2);
     IERC721.approve(c2_contract_address, exponential_trade_pool_contract_address, NFT_2_3);
-    %{
-        stop_prank_callable_1() 
-    %}
+    %{ stop_prank_callable_1() %}
     IPool.sellNfts(exponential_trade_pool_contract_address, 2, NFT_ARRAY_TO_SELL);
     %{ stop_prank_callable_2() %}
 
     let (new_pool_params) = IPool.getPoolConfig(exponential_trade_pool_contract_address);
-    let (pool_nft_balance_after_selling) = IERC721.balanceOf(c2_contract_address, exponential_trade_pool_contract_address);
-    let (pool_eth_balance_after_selling) = IPool.getEthBalance(exponential_trade_pool_contract_address);
+    let (pool_nft_balance_after_selling) = IERC721.balanceOf(
+        c2_contract_address, exponential_trade_pool_contract_address
+    );
+    let (pool_eth_balance_after_selling) = IPool.getEthBalance(
+        exponential_trade_pool_contract_address
+    );
     let (trader_eth_balance_after_selling) = IERC20.balanceOf(erc20_contract_address, NFT_TRADER);
 
     assert new_pool_params.price = NEW_PRICE_AFTER_SELLING;

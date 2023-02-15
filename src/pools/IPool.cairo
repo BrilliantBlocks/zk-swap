@@ -2,7 +2,6 @@
 
 from starkware.cairo.common.uint256 import Uint256
 
-
 struct NFT {
     address: felt,
     id: Uint256,
@@ -12,7 +11,6 @@ struct PoolParams {
     price: Uint256,
     delta: felt,
 }
-
 
 @contract_interface
 namespace IPool {
@@ -43,7 +41,9 @@ namespace IPool {
     func getAllCollections() -> (collection_array_len: felt, collection_array: felt*) {
     }
 
-    func getAllNftsOfCollection(collection_address: felt) -> (nft_id_list_len: felt, nft_id_list: Uint256*) {
+    func getAllNftsOfCollection(collection_address: felt) -> (
+        nft_id_list_len: felt, nft_id_list: Uint256*
+    ) {
     }
 
     func buyNfts(nft_array_len: felt, nft_array: NFT*) -> () {
@@ -58,7 +58,9 @@ namespace IPool {
     func getNextPrice(delta_sign: felt) -> (next_price: Uint256) {
     }
 
-    func getTokenPrices(number_tokens: felt, delta_sign: felt) -> (price_array_len: felt, price_array: Uint256*) {
+    func getTokenPrices(number_tokens: felt, delta_sign: felt) -> (
+        price_array_len: felt, price_array: Uint256*
+    ) {
     }
 
     func isPaused() -> (is_paused: felt) {

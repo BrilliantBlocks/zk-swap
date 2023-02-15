@@ -1,12 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import ( 
-    assert_not_zero,
-    split_felt,
-    assert_in_range,
-    assert_nn
-)
+from starkware.cairo.common.math import assert_not_zero, split_felt, assert_in_range, assert_nn
 from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.bool import FALSE, TRUE
@@ -15,8 +10,7 @@ from starkware.cairo.common.pow import pow
 from lib.cairo_math_64x61.contracts.cairo_math_64x61.math64x61 import Math64x61
 
 from src.utils.Converts import convertFeltToUint256
-from src.utils.Constants import BondingCurve 
-
+from src.utils.Constants import BondingCurve
 
 @view
 func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -36,7 +30,7 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     let fpm_base = Math64x61.fromFelt(10000);
     let fpm_delta_percent = Math64x61.fromFelt(delta);
     let fpm_delta = Math64x61.div(fpm_delta_percent, fpm_base);
-    
+
     let fpm_delta_sum = Math64x61.add(fpm_unit, fpm_delta);
     let fpm_delta_sum_pow = Math64x61._pow_int(fpm_delta_sum, number_tokens);
     let fpm_counter = Math64x61.sub(fpm_delta_sum_pow, fpm_unit);
@@ -51,7 +45,6 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 
     // total_price = current_price * (((1 +- delta)^number_tokens - 1)/(+- delta))
 }
-
 
 @view
 func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -71,7 +64,7 @@ func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     let fpm_base = Math64x61.fromFelt(10000);
     let fpm_delta_percent = Math64x61.fromFelt(delta);
     let fpm_delta = Math64x61.div(fpm_delta_percent, fpm_base);
-    
+
     let fpm_delta_sum = Math64x61.add(fpm_unit, fpm_delta);
     let fpm_delta_sum_pow = Math64x61._pow_int(fpm_delta_sum, number_tokens);
     let fpm_current_price = Math64x61.fromUint256(current_price);

@@ -3,22 +3,13 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
 from starkware.cairo.common.bool import FALSE, TRUE
-from starkware.cairo.common.uint256 import (
-    Uint256, 
-    uint256_le, 
-    uint256_sub,
-    uint256_add
-)
+from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_sub, uint256_add
 
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.pools.IPool import NFT
 from src.pools.Pool import PriceUpdate
-from src.pools.Pool import (
-    _current_price,
-    _eth_balance,
-    _erc20_address,
-)
+from src.pools.Pool import _current_price, _eth_balance, _erc20_address
 from src.pools.Pool import (
     constructor,
     setPoolParams,
@@ -49,11 +40,10 @@ from src.pools.Pool import (
     checkCollectionSupport,
     assert_only_owner,
     assert_not_owner,
-    assert_not_paused, 
-    assert_sufficient_balance
+    assert_not_paused,
+    assert_sufficient_balance,
 )
 from src.utils.Constants import DeltaSign
-
 
 @external
 func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -65,7 +55,7 @@ func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     let (total_price) = get_total_price(nft_array_len, DeltaSign.negative);
     let (eth_balance) = _eth_balance.read();
-    
+
     assert_sufficient_balance(total_price, eth_balance);
 
     let (erc20_address) = _erc20_address.read();
@@ -84,7 +74,6 @@ func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     return ();
 }
-
 
 @external
 func buyNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(

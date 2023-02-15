@@ -9,7 +9,6 @@ from lib.cairo_math_64x61.contracts.cairo_math_64x61.math64x61 import Math64x61
 
 from src.utils.Converts import convertFeltToUint256
 
-
 @view
 func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     number_tokens: felt, current_price: Uint256, delta: felt
@@ -37,7 +36,6 @@ func getTotalPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     // total_price = current_price * number_tokens +- delta * (number_tokens - 1) * number_tokens / 2
 }
 
-
 @view
 func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     number_tokens: felt, current_price: Uint256, delta: felt
@@ -62,4 +60,3 @@ func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 
     // next_price = current_price +- delta * number_tokens
 }
-

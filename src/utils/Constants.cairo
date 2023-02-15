@@ -13,11 +13,11 @@ namespace FunctionSelector {
 }
 
 namespace BondingCurve {
-    const lower_bound = -9999; // -99.99%
-    const upper_bound = 100000000; // 1000000%
+    const lower_bound = -9999;  // -99.99%
+    const upper_bound = 100000000;  // 1000000%
 }
 
 namespace DeltaSign {
-    const positive = 1; // Always 1 for buy and sell pools
-    const negative = -1; // Relevant for bi-directional trading (trade pool)
+    const positive = 1;  // Always 1 for buy and sell pools
+    const negative = -1;  // Relevant for bi-directional trading (trade pool)
 }

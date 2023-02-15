@@ -15,11 +15,9 @@ from src.pools.IPool import IPool, NFT, PoolParams
 from tests.helper.IMintPool import Collection, IMintPool
 from src.utils.Constants import DeltaSign
 
-
 @storage_var
 func _sell_pool_contract_address() -> (res: felt) {
 }
-
 
 const C1_NAME = 'COLLECTION 1';
 const C2_NAME = 'COLLECTION 2';
@@ -34,7 +32,6 @@ const INITIAL_SUPPLY_LOW = 500000;
 const INITIAL_SUPPLY_HIGH = 0;
 const POOL_AND_NFT_OWNER = 123456789;
 const NFT_BUYER = 987654321;
-
 
 @view
 func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
@@ -120,7 +117,10 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
         stop_prank_callable_1 = start_prank(PRANK_POOL_AND_NFT_OWNER, target_contract_address=ids.pool_factory_contract_address)
     %}
     let (sell_pool_contract_address) = IMintPool.mint(
-        pool_factory_contract_address, sell_pool_class_hash, linear_curve_class_hash, erc20_contract_address
+        pool_factory_contract_address,
+        sell_pool_class_hash,
+        linear_curve_class_hash,
+        erc20_contract_address,
     );
     %{ stop_prank_callable_1() %}
 
@@ -137,9 +137,10 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     return ();
 }
 
-
 @external
-func test_initialization_pool_factory{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_initialization_pool_factory{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
 
     local pool_factory_contract_address;
@@ -153,7 +154,9 @@ func test_initialization_pool_factory{syscall_ptr: felt*, range_check_ptr, peder
     let (sell_pool_contract_address) = _sell_pool_contract_address.read();
 
     let (factory_owner) = IMintPool.getFactoryOwner(pool_factory_contract_address);
-    let (pool_type_class_hash) = IMintPool.getPoolTypeClassHash(pool_factory_contract_address, sell_pool_contract_address);
+    let (pool_type_class_hash) = IMintPool.getPoolTypeClassHash(
+        pool_factory_contract_address, sell_pool_contract_address
+    );
     let (
         collection_array_len: felt, collection_array: Collection*
     ) = IMintPool.getAllCollectionsFromAllPools(pool_factory_contract_address);
@@ -165,9 +168,10 @@ func test_initialization_pool_factory{syscall_ptr: felt*, range_check_ptr, peder
     return ();
 }
 
-
 @external
-func test_initialization_ERC_contracts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_initialization_ERC_contracts{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
 
     local c1_contract_address;
@@ -210,9 +214,10 @@ func test_initialization_ERC_contracts{syscall_ptr: felt*, range_check_ptr, pede
     return ();
 }
 
-
 @external
-func test_getPoolConfig_with_expected_output{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_getPoolConfig_with_expected_output{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
 
     local pool_factory_contract_address;
@@ -237,7 +242,6 @@ func test_getPoolConfig_with_expected_output{syscall_ptr: felt*, range_check_ptr
 
     return ();
 }
-
 
 @external
 func test_addNftToPool{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
@@ -296,15 +300,9 @@ func test_addNftToPool{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBu
     let (start_id_collection_2) = IPool.getStartIdByCollection(
         sell_pool_contract_address, COLLECTION_2
     );
-    let list_element_1: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 1
-    );
-    let list_element_2: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 2
-    );
-    let list_element_3: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 3
-    );
+    let list_element_1: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 1);
+    let list_element_2: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 2);
+    let list_element_3: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 3);
     let (collection_address_1) = IPool.getCollectionById(sell_pool_contract_address, 0);
     let (collection_address_2) = IPool.getCollectionById(sell_pool_contract_address, 1);
     let (collection_array_len, collection_array) = IPool.getAllCollections(
@@ -368,22 +366,22 @@ func test_addNftToPool{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBu
     %{ stop_prank_callable_3() %}
 
     let (ALL_COLLECTIONS_FROM_ALL_POOLS_ARRAY: Collection*) = alloc();
-    assert ALL_COLLECTIONS_FROM_ALL_POOLS_ARRAY[0] = Collection(collection_address=COLLECTION_1, pool_address=sell_pool_contract_address);
-    assert ALL_COLLECTIONS_FROM_ALL_POOLS_ARRAY[1] = Collection(collection_address=COLLECTION_2, pool_address=sell_pool_contract_address);
-    assert ALL_COLLECTIONS_FROM_ALL_POOLS_ARRAY[2] = Collection(collection_address=COLLECTION_3, pool_address=sell_pool_contract_address);
+    assert ALL_COLLECTIONS_FROM_ALL_POOLS_ARRAY[0] = Collection(
+        collection_address=COLLECTION_1, pool_address=sell_pool_contract_address
+    );
+    assert ALL_COLLECTIONS_FROM_ALL_POOLS_ARRAY[1] = Collection(
+        collection_address=COLLECTION_2, pool_address=sell_pool_contract_address
+    );
+    assert ALL_COLLECTIONS_FROM_ALL_POOLS_ARRAY[2] = Collection(
+        collection_address=COLLECTION_3, pool_address=sell_pool_contract_address
+    );
 
     let (start_id_collection_3) = IPool.getStartIdByCollection(
         sell_pool_contract_address, COLLECTION_3
     );
-    let list_element_2: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 2
-    );
-    let list_element_4: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 4
-    );
-    let list_element_5: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 5
-    );
+    let list_element_2: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 2);
+    let list_element_4: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 4);
+    let list_element_5: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 5);
     let (pool_balance_c3) = IERC721.balanceOf(c3_contract_address, sell_pool_contract_address);
     let (new_owner_c3) = IERC721.ownerOf(c3_contract_address, NFT_3_1);
     let (
@@ -407,7 +405,6 @@ func test_addNftToPool{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBu
 
     return ();
 }
-
 
 @external
 func test_removeNftFromPool{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
@@ -472,21 +469,11 @@ func test_removeNftFromPool{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: H
     let (start_id_collection_3) = IPool.getStartIdByCollection(
         sell_pool_contract_address, COLLECTION_3
     );
-    let list_element_1: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 1
-    );
-    let list_element_2: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 2
-    );
-    let list_element_3: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 3
-    );
-    let list_element_4: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 4
-    );
-    let list_element_5: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 5
-    );
+    let list_element_1: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 1);
+    let list_element_2: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 2);
+    let list_element_3: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 3);
+    let list_element_4: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 4);
+    let list_element_5: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 5);
     let (collection_address_1) = IPool.getCollectionById(sell_pool_contract_address, 0);
     let (collection_address_2) = IPool.getCollectionById(sell_pool_contract_address, 1);
     let (collection_array_len, collection_array) = IPool.getAllCollections(
@@ -549,18 +536,10 @@ func test_removeNftFromPool{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: H
     let (new_start_id_collection_2) = IPool.getStartIdByCollection(
         sell_pool_contract_address, COLLECTION_2
     );
-    let list_element_1: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 1
-    );
-    let list_element_2: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 2
-    );
-    let list_element_3: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 3
-    );
-    let list_element_4: (Uint256, felt) = IPool.getListElementById(
-        sell_pool_contract_address, 4
-    );
+    let list_element_1: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 1);
+    let list_element_2: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 2);
+    let list_element_3: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 3);
+    let list_element_4: (Uint256, felt) = IPool.getListElementById(sell_pool_contract_address, 4);
     let (collection_array_len, collection_array) = IPool.getAllCollections(
         sell_pool_contract_address
     );
@@ -608,9 +587,10 @@ func test_removeNftFromPool{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: H
     return ();
 }
 
-
 @external
-func test_editPoolParams_with_expected_output{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_editPoolParams_with_expected_output{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
 
     let (sell_pool_contract_address) = _sell_pool_contract_address.read();
@@ -636,7 +616,6 @@ func test_editPoolParams_with_expected_output{syscall_ptr: felt*, range_check_pt
 
     return ();
 }
-
 
 @external
 func test_buyNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
@@ -718,9 +697,10 @@ func test_buyNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin
     return ();
 }
 
-
 @external
-func test_buyNfts_from_different_collections{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_buyNfts_from_different_collections{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
     local c1_contract_address;
     local c2_contract_address;
@@ -791,9 +771,10 @@ func test_buyNfts_from_different_collections{syscall_ptr: felt*, range_check_ptr
     return ();
 }
 
-
 @external
-func test_buyNfts_with_unsufficient_eth_balance{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_buyNfts_with_unsufficient_eth_balance{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
     local c1_contract_address;
     local c2_contract_address;
@@ -857,9 +838,10 @@ func test_buyNfts_with_unsufficient_eth_balance{syscall_ptr: felt*, range_check_
     return ();
 }
 
-
 @external
-func test_buyNfts_with_toggling_pool_pause{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_buyNfts_with_toggling_pool_pause{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
     local c1_contract_address;
     local erc20_contract_address;
@@ -938,9 +920,10 @@ func test_buyNfts_with_toggling_pool_pause{syscall_ptr: felt*, range_check_ptr, 
     return ();
 }
 
-
 @external
-func test_cannot_buyNfts_when_pool_paused{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_cannot_buyNfts_when_pool_paused{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
     local c1_contract_address;
     local erc20_contract_address;
@@ -991,9 +974,10 @@ func test_cannot_buyNfts_when_pool_paused{syscall_ptr: felt*, range_check_ptr, p
     return ();
 }
 
-
 @external
-func test_getNextPrice_with_expected_output{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_getNextPrice_with_expected_output{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
 
     let (sell_pool_contract_address) = _sell_pool_contract_address.read();
@@ -1005,7 +989,6 @@ func test_getNextPrice_with_expected_output{syscall_ptr: felt*, range_check_ptr,
 
     return ();
 }
-
 
 @external
 func test_depositEth{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
@@ -1038,9 +1021,10 @@ func test_depositEth{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuil
     return ();
 }
 
-
 @external
-func test_depositEth_with_unsufficient_balance{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_depositEth_with_unsufficient_balance{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
     local erc20_contract_address;
     %{ ids.erc20_contract_address = context.erc20_contract_address %}
@@ -1063,7 +1047,6 @@ func test_depositEth_with_unsufficient_balance{syscall_ptr: felt*, range_check_p
 
     return ();
 }
-
 
 @external
 func test_withdrawEth{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
@@ -1117,9 +1100,10 @@ func test_withdrawEth{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBui
     return ();
 }
 
-
 @external
-func test_withdrawEth_with_unsufficient_pool_balance{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_withdrawEth_with_unsufficient_pool_balance{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
     local erc20_contract_address;
     %{ ids.erc20_contract_address = context.erc20_contract_address %}
@@ -1158,7 +1142,6 @@ func test_withdrawEth_with_unsufficient_pool_balance{syscall_ptr: felt*, range_c
     return ();
 }
 
-
 @external
 func test_getTokenPrices{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
@@ -1173,7 +1156,9 @@ func test_getTokenPrices{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: Hash
     let FOURTH_PRICE = Uint256(140000, 0);
     let FIFTH_PRICE = Uint256(150000, 0);
 
-    let (price_array_len: felt, price_array: Uint256*) = IPool.getTokenPrices(sell_pool_contract_address, NUMBER_TOKENS, DeltaSign.positive);
+    let (price_array_len: felt, price_array: Uint256*) = IPool.getTokenPrices(
+        sell_pool_contract_address, NUMBER_TOKENS, DeltaSign.positive
+    );
 
     assert price_array_len = 5;
     assert price_array[0] = FIRST_PRICE;
@@ -1185,9 +1170,10 @@ func test_getTokenPrices{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: Hash
     return ();
 }
 
-
 @external
-func test_getTokenPrices_with_negative_values{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_getTokenPrices_with_negative_values{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
 
     let (sell_pool_contract_address) = _sell_pool_contract_address.read();
@@ -1203,14 +1189,17 @@ func test_getTokenPrices_with_negative_values{syscall_ptr: felt*, range_check_pt
     %{ stop_prank_callable() %}
 
     %{ expect_revert(error_message="The price must not be negative") %}
-    let (price_array_len: felt, price_array: Uint256*) = IPool.getTokenPrices(sell_pool_contract_address, NUMBER_TOKENS, DeltaSign.positive);
+    let (price_array_len: felt, price_array: Uint256*) = IPool.getTokenPrices(
+        sell_pool_contract_address, NUMBER_TOKENS, DeltaSign.positive
+    );
 
     return ();
 }
 
-
 @external
-func test_getNextPrice_with_negative_value{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_getNextPrice_with_negative_value{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
 
     let (sell_pool_contract_address) = _sell_pool_contract_address.read();
@@ -1231,9 +1220,10 @@ func test_getNextPrice_with_negative_value{syscall_ptr: felt*, range_check_ptr, 
     return ();
 }
 
-
 @external
-func test_buyNfts_with_negative_price{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_buyNfts_with_negative_price{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
     local c1_contract_address;
     local c2_contract_address;
