@@ -12,6 +12,7 @@ from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.pools.IPool import IPool, NFT, PoolParams
 from tests.helper.IMintPool import Collection, IMintPool
+from src.utils.Constants import DeltaSign
 
 const C1_NAME = 'COLLECTION 1';
 const C2_NAME = 'COLLECTION 2';
@@ -679,6 +680,108 @@ func test_tradeNFTs_with_exponential_price_function{
     assert pool_nft_balance_after_selling = Uint256(2, 0);
     assert pool_eth_balance_after_selling = POOL_ETH_BALANCE_AFTER_SELLING;
     assert trader_eth_balance_after_selling = TRADER_ETH_BALANCE_AFTER_SELLING;
+
+    return ();
+}
+
+
+@external
+func test_getTokenPrices_for_linear_price_function{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+    local linear_trade_pool_contract_address;
+    %{
+        ids.linear_trade_pool_contract_address = context.linear_trade_pool_contract_address
+    %}
+
+    const TOKENS_TO_BUY_AND_SELL = 5;
+
+    let FIRST_PRICE_TO_BUY = Uint256(110000, 0);
+    let SECOND_PRICE_TO_BUY = Uint256(120000, 0);
+    let THIRD_PRICE_TO_BUY = Uint256(130000, 0);
+    let FOURTH_PRICE_TO_BUY = Uint256(140000, 0);
+    let FIFTH_PRICE_TO_BUY = Uint256(150000, 0);
+
+    let FIRST_PRICE_TO_SELL = Uint256(90000, 0);
+    let SECOND_PRICE_TO_SELL = Uint256(80000, 0);
+    let THIRD_PRICE_TO_SELL = Uint256(70000, 0);
+    let FOURTH_PRICE_TO_SELL = Uint256(60000, 0);
+    let FIFTH_PRICE_TO_SELL = Uint256(50000, 0);
+
+    let (price_array_to_buy_len: felt, price_array_to_buy: Uint256*) = IPool.getTokenPrices(
+        linear_trade_pool_contract_address, TOKENS_TO_BUY_AND_SELL, DeltaSign.positive
+    );
+
+    let (price_array_to_sell_len: felt, price_array_to_sell: Uint256*) = IPool.getTokenPrices(
+        linear_trade_pool_contract_address, TOKENS_TO_BUY_AND_SELL, DeltaSign.negative
+    );
+
+    assert price_array_to_buy_len = TOKENS_TO_BUY_AND_SELL;
+    assert price_array_to_sell_len = TOKENS_TO_BUY_AND_SELL;
+    assert price_array_to_buy[0] = FIRST_PRICE_TO_BUY;
+    assert price_array_to_buy[1] = SECOND_PRICE_TO_BUY;
+    assert price_array_to_buy[2] = THIRD_PRICE_TO_BUY;
+    assert price_array_to_buy[3] = FOURTH_PRICE_TO_BUY;
+    assert price_array_to_buy[4] = FIFTH_PRICE_TO_BUY;
+    assert price_array_to_sell[0] = FIRST_PRICE_TO_SELL;
+    assert price_array_to_sell[1] = SECOND_PRICE_TO_SELL;
+    assert price_array_to_sell[2] = THIRD_PRICE_TO_SELL;
+    assert price_array_to_sell[3] = FOURTH_PRICE_TO_SELL;
+    assert price_array_to_sell[4] = FIFTH_PRICE_TO_SELL;
+
+    return ();
+}
+
+
+@external
+func test_getTokenPrices_for_exponential_price_function{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+    local exponential_trade_pool_contract_address;
+    %{
+        ids.exponential_trade_pool_contract_address = context.exponential_trade_pool_contract_address
+    %}
+
+    tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=1000);
+    %{
+        POOL_OWNER_AND_LP = 123456789
+        stop_prank_callable = start_prank(POOL_OWNER_AND_LP, target_contract_address=ids.exponential_trade_pool_contract_address)
+    %}
+    IPool.setPoolParams(exponential_trade_pool_contract_address, POOL_PARAMS);
+    %{ stop_prank_callable() %}
+
+    const TOKENS_TO_BUY_AND_SELL = 5;
+
+    let FIRST_PRICE_TO_BUY = Uint256(109999, 0); // 110000
+    let SECOND_PRICE_TO_BUY = Uint256(120999, 0); // 121000
+    let THIRD_PRICE_TO_BUY = Uint256(133099, 0); // 133100
+    let FOURTH_PRICE_TO_BUY = Uint256(146409, 0); // 146410
+    let FIFTH_PRICE_TO_BUY = Uint256(161050, 0); // 161051
+
+    let FIRST_PRICE_TO_SELL = Uint256(89999, 0); // 90000
+    let SECOND_PRICE_TO_SELL = Uint256(80999, 0); // 81000
+    let THIRD_PRICE_TO_SELL = Uint256(72899, 0); // 72900
+    let FOURTH_PRICE_TO_SELL = Uint256(65609, 0); // 65610
+    let FIFTH_PRICE_TO_SELL = Uint256(59048, 0); // 59049
+
+    let (price_array_to_buy_len: felt, price_array_to_buy: Uint256*) = IPool.getTokenPrices(
+        exponential_trade_pool_contract_address, TOKENS_TO_BUY_AND_SELL, DeltaSign.positive
+    );
+
+    let (price_array_to_sell_len: felt, price_array_to_sell: Uint256*) = IPool.getTokenPrices(
+        exponential_trade_pool_contract_address, TOKENS_TO_BUY_AND_SELL, DeltaSign.negative
+    );
+
+    assert price_array_to_buy_len = TOKENS_TO_BUY_AND_SELL;
+    assert price_array_to_sell_len = TOKENS_TO_BUY_AND_SELL;
+    assert price_array_to_buy[0] = FIRST_PRICE_TO_BUY;
+    assert price_array_to_buy[1] = SECOND_PRICE_TO_BUY;
+    assert price_array_to_buy[2] = THIRD_PRICE_TO_BUY;
+    assert price_array_to_buy[3] = FOURTH_PRICE_TO_BUY;
+    assert price_array_to_buy[4] = FIFTH_PRICE_TO_BUY;
+    assert price_array_to_sell[0] = FIRST_PRICE_TO_SELL;
+    assert price_array_to_sell[1] = SECOND_PRICE_TO_SELL;
+    assert price_array_to_sell[2] = THIRD_PRICE_TO_SELL;
+    assert price_array_to_sell[3] = FOURTH_PRICE_TO_SELL;
+    assert price_array_to_sell[4] = FIFTH_PRICE_TO_SELL;
 
     return ();
 }
