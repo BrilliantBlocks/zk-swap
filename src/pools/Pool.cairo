@@ -800,6 +800,16 @@ func assert_not_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 }
 
 
+func assert_not_paused{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> () {
+    let (is_paused) = _pool_paused.read();
+    with_attr error_message("Pool must not be paused") {
+        assert is_paused = FALSE;
+    }
+
+    return ();
+}
+
+
 // Further view functions
 
 

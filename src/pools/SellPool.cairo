@@ -20,7 +20,6 @@ from src.pools.Pool import (
 )
 from src.pools.Pool import (
     _current_price,
-    _pool_paused,
     _eth_balance,
     _erc20_address,
 )
@@ -51,7 +50,8 @@ from src.pools.Pool import (
     getEthBalance,
     checkCollectionSupport,
     assert_only_owner,
-    assert_not_owner
+    assert_not_owner,
+    assert_not_paused
 )
 from src.utils.Constants import DeltaSign
 
@@ -62,11 +62,7 @@ func buyNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 ) -> () {
 
     assert_not_owner();
-
-    let (is_paused) = _pool_paused.read();
-    with_attr error_message("Pool must not be paused") {
-        assert is_paused = FALSE;
-    }
+    assert_not_paused();
 
     let (total_price) = get_total_price(nft_array_len, DeltaSign.positive);
     let (new_price) = get_next_price(nft_array_len, DeltaSign.positive);
