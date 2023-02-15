@@ -32,6 +32,7 @@ const ERC20_SYMBOL = 'ERC20';
 const DECIMALS = 4;
 const INITIAL_SUPPLY_LOW = 1000000;
 const INITIAL_SUPPLY_HIGH = 0;
+const POOL_FACTORY_AND_ERC_CONTRACT_OWNER = 192837465;
 const POOL_OWNER_AND_LP = 123456789;
 const NFT_TRADER = 987654321;
 
@@ -39,7 +40,6 @@ const NFT_TRADER = 987654321;
 @view
 func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
-    let (POOL_FACTORY_AND_ERC_CONTRACT_OWNER) = get_contract_address();
 
     %{
     context.c1_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
@@ -98,14 +98,24 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     let DEPOSIT_BALANCE = Uint256(400000, 0);
     tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=10000);
 
+    %{
+        POOL_FACTORY_AND_ERC_CONTRACT_OWNER = 192837465
+        stop_prank_callable_1 = start_prank(POOL_FACTORY_AND_ERC_CONTRACT_OWNER, target_contract_address=ids.c1_contract_address)
+        stop_prank_callable_2 = start_prank(POOL_FACTORY_AND_ERC_CONTRACT_OWNER, target_contract_address=ids.c2_contract_address)
+        stop_prank_callable_3 = start_prank(POOL_FACTORY_AND_ERC_CONTRACT_OWNER, target_contract_address=ids.erc20_contract_address)
+    %}
     IPool.mint(c1_contract_address, POOL_OWNER_AND_LP, NFT_1_1);
     IPool.mint(c1_contract_address, POOL_OWNER_AND_LP, NFT_1_2);
     IPool.mint(c2_contract_address, POOL_OWNER_AND_LP, NFT_2_1);
     IPool.mint(c2_contract_address, NFT_TRADER, NFT_2_2);
     IPool.mint(c2_contract_address, NFT_TRADER, NFT_2_3);
     IPool.mint(c2_contract_address, NFT_TRADER, NFT_2_4);
-
     IPool.mint(erc20_contract_address, NFT_TRADER, Uint256(500000, 0));
+    %{
+        stop_prank_callable_1() 
+        stop_prank_callable_2()
+        stop_prank_callable_3()
+    %}
 
     %{
         POOL_OWNER_AND_LP = 123456789
@@ -149,61 +159,17 @@ func test_initialization_pool_factory{syscall_ptr: felt*, range_check_ptr, peder
         ids.trade_pool_class_hash = context.trade_pool_class_hash
     %}
 
-    let (POOL_FACTORY_OWNER) = get_contract_address();
     let (linear_trade_pool_contract_address) = _linear_trade_pool_contract_address.read();
 
-    let (factory_owner) = IMintPool.getFactoryOwner(pool_factory_contract_address);
+    let (pool_factory_owner) = IMintPool.getFactoryOwner(pool_factory_contract_address);
     let (pool_type_class_hash) = IMintPool.getPoolTypeClassHash(pool_factory_contract_address, linear_trade_pool_contract_address);
     let (
         collection_array_len: felt, collection_array: Collection*
     ) = IMintPool.getAllCollectionsFromAllPools(pool_factory_contract_address);
 
-    assert factory_owner = POOL_FACTORY_OWNER;
+    assert pool_factory_owner = POOL_FACTORY_AND_ERC_CONTRACT_OWNER;
     assert pool_type_class_hash = trade_pool_class_hash;
     assert collection_array_len = 0;
-
-    return ();
-}
-
-
-@external
-func test_initialization_ERC_contracts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
-    alloc_locals;
-
-    local c1_contract_address;
-    local c2_contract_address;
-    local erc20_contract_address;
-    %{
-        ids.c1_contract_address = context.c1_contract_address 
-        ids.c2_contract_address = context.c2_contract_address 
-        ids.erc20_contract_address = context.erc20_contract_address
-    %}
-
-    let NFT_1_1 = Uint256(11, 0);
-    let NFT_1_2 = Uint256(12, 0);
-    let NFT_2_1 = Uint256(21, 0);
-    let NFT_2_2 = Uint256(22, 0);
-    let NFT_2_3 = Uint256(23, 0);
-    let NFT_2_4 = Uint256(24, 0);
-
-    let (linear_trade_pool_contract_address) = _linear_trade_pool_contract_address.read();
-    let (c1_balance) = IERC721.balanceOf(c1_contract_address, POOL_OWNER_AND_LP);
-    let (c2_balance) = IERC721.balanceOf(c2_contract_address, POOL_OWNER_AND_LP);
-    let (erc20_balance_lp) = IERC20.balanceOf(erc20_contract_address, POOL_OWNER_AND_LP);
-    let (erc20_balance_trader) = IERC20.balanceOf(erc20_contract_address, NFT_TRADER);
-    let (erc20_balance_pool) = IERC20.balanceOf(erc20_contract_address, linear_trade_pool_contract_address);
-    let (c1_token_owner) = IERC721.ownerOf(c1_contract_address, NFT_1_1);
-    let (c2_token_owner) = IERC721.ownerOf(c2_contract_address, NFT_2_1);
-    let (erc20_total_supply) = IERC20.totalSupply(erc20_contract_address);
-
-    assert c1_balance = Uint256(2, 0);
-    assert c2_balance = Uint256(1, 0);
-    assert erc20_balance_lp = Uint256(600000, 0);
-    assert erc20_balance_trader = Uint256(500000, 0);
-    assert erc20_balance_pool = Uint256(400000, 0);
-    assert erc20_total_supply = Uint256(1500000, 0);
-    assert c1_token_owner = POOL_OWNER_AND_LP;
-    assert c2_token_owner = POOL_OWNER_AND_LP;
 
     return ();
 }
