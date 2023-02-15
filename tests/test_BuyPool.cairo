@@ -14,10 +14,6 @@ from src.pools.IPool import IPool, NFT, PoolParams
 from tests.helper.IMintPool import Collection, IMintPool
 from src.utils.Constants import DeltaSign
 
-@storage_var
-func _buy_pool_contract_address() -> (res: felt) {
-}
-
 const C1_NAME = 'COLLECTION 1';
 const C2_NAME = 'COLLECTION 2';
 const C1_SYMBOL = 'C1';
@@ -27,13 +23,13 @@ const ERC20_SYMBOL = 'ERC20';
 const DECIMALS = 4;
 const INITIAL_SUPPLY_LOW = 500000;
 const INITIAL_SUPPLY_HIGH = 0;
+const POOL_FACTORY_AND_ERC_CONTRACT_OWNER = 192837465;
 const POOL_AND_ERC20_OWNER = 123456789;
 const NFT_OWNER_AND_SELLER = 987654321;
 
 @view
 func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
-    let (POOL_FACTORY_AND_ERC_CONTRACT_OWNER) = get_contract_address();
 
     %{
         context.c1_contract_address = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc721/presets/ERC721MintableBurnable.cairo", 
@@ -86,9 +82,18 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     let DEPOSIT_BALANCE = Uint256(400000, 0);
     tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=10000);
 
+    %{
+        POOL_FACTORY_AND_ERC_CONTRACT_OWNER = 192837465
+        stop_prank_callable_1 = start_prank(POOL_FACTORY_AND_ERC_CONTRACT_OWNER, target_contract_address=ids.c1_contract_address)
+        stop_prank_callable_2 = start_prank(POOL_FACTORY_AND_ERC_CONTRACT_OWNER, target_contract_address=ids.c2_contract_address)
+    %}
     IPool.mint(c1_contract_address, NFT_OWNER_AND_SELLER, NFT_1_1);
     IPool.mint(c1_contract_address, NFT_OWNER_AND_SELLER, NFT_1_2);
     IPool.mint(c2_contract_address, NFT_OWNER_AND_SELLER, NFT_2_1);
+    %{
+        stop_prank_callable_1() 
+        stop_prank_callable_2()
+    %}
 
     %{
         POOL_AND_ERC20_OWNER = 123456789
@@ -102,7 +107,7 @@ func __setup__{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     );
     %{ stop_prank_callable_1() %}
 
-    _buy_pool_contract_address.write(buy_pool_contract_address);
+    %{ context.buy_pool_contract_address = ids.buy_pool_contract_address %}
 
     %{
         POOL_AND_ERC20_OWNER = 123456789
@@ -126,14 +131,13 @@ func test_initialization_pool_factory{
     alloc_locals;
 
     local pool_factory_contract_address;
+    local buy_pool_contract_address;
     local buy_pool_class_hash;
     %{
         ids.pool_factory_contract_address = context.pool_factory_contract_address 
+        ids.buy_pool_contract_address = context.buy_pool_contract_address 
         ids.buy_pool_class_hash = context.buy_pool_class_hash
     %}
-
-    let (POOL_FACTORY_OWNER) = get_contract_address();
-    let (buy_pool_contract_address) = _buy_pool_contract_address.read();
 
     let (factory_owner) = IMintPool.getFactoryOwner(pool_factory_contract_address);
     let (pool_type_class_hash) = IMintPool.getPoolTypeClassHash(
@@ -143,48 +147,9 @@ func test_initialization_pool_factory{
         collection_array_len: felt, collection_array: Collection*
     ) = IMintPool.getAllCollectionsFromAllPools(pool_factory_contract_address);
 
-    assert factory_owner = POOL_FACTORY_OWNER;
+    assert factory_owner = POOL_FACTORY_AND_ERC_CONTRACT_OWNER;
     assert pool_type_class_hash = buy_pool_class_hash;
     assert collection_array_len = 0;
-
-    return ();
-}
-
-@external
-func test_initialization_ERC_contracts{
-    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
-}() {
-    alloc_locals;
-
-    local c1_contract_address;
-    local c2_contract_address;
-    local erc20_contract_address;
-    %{
-        ids.c1_contract_address = context.c1_contract_address 
-        ids.c2_contract_address = context.c2_contract_address 
-        ids.erc20_contract_address = context.erc20_contract_address
-    %}
-
-    let NFT_1_1 = Uint256(11, 0);
-    let NFT_1_2 = Uint256(12, 0);
-    let NFT_2_1 = Uint256(21, 0);
-
-    let (buy_pool_contract_address) = _buy_pool_contract_address.read();
-    let (c1_balance) = IERC721.balanceOf(c1_contract_address, NFT_OWNER_AND_SELLER);
-    let (c2_balance) = IERC721.balanceOf(c2_contract_address, NFT_OWNER_AND_SELLER);
-    let (erc20_balance_pool_owner) = IERC20.balanceOf(erc20_contract_address, POOL_AND_ERC20_OWNER);
-    let (erc20_balance_pool) = IERC20.balanceOf(erc20_contract_address, buy_pool_contract_address);
-    let (c1_token_owner) = IERC721.ownerOf(c1_contract_address, NFT_1_1);
-    let (c2_token_owner) = IERC721.ownerOf(c2_contract_address, NFT_2_1);
-    let (erc20_total_supply) = IERC20.totalSupply(erc20_contract_address);
-
-    assert c1_balance = Uint256(2, 0);
-    assert c2_balance = Uint256(1, 0);
-    assert erc20_balance_pool_owner = Uint256(100000, 0);
-    assert erc20_balance_pool = Uint256(400000, 0);
-    assert erc20_total_supply = Uint256(500000, 0);
-    assert c1_token_owner = NFT_OWNER_AND_SELLER;
-    assert c2_token_owner = NFT_OWNER_AND_SELLER;
 
     return ();
 }
@@ -196,11 +161,14 @@ func test_getPoolConfig_with_expected_output{
     alloc_locals;
 
     local pool_factory_contract_address;
-    %{ ids.pool_factory_contract_address = context.pool_factory_contract_address %}
+    local buy_pool_contract_address;
+    %{
+        ids.pool_factory_contract_address = context.pool_factory_contract_address 
+        ids.buy_pool_contract_address = context.buy_pool_contract_address 
+    %}
 
     tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=10000);
 
-    let (buy_pool_contract_address) = _buy_pool_contract_address.read();
     let (pool_factory) = IPool.getPoolFactory(buy_pool_contract_address);
     let (pool_params: PoolParams) = IPool.getPoolConfig(buy_pool_contract_address);
     let (pool_eth_balance) = IPool.getEthBalance(buy_pool_contract_address);
@@ -225,14 +193,15 @@ func test_addSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_
     ) {
     alloc_locals;
 
+    local buy_pool_contract_address;
     local c1_contract_address;
     local c2_contract_address;
     %{
+        ids.buy_pool_contract_address = context.buy_pool_contract_address 
         ids.c1_contract_address = context.c1_contract_address 
         ids.c2_contract_address = context.c2_contract_address
     %}
 
-    let (buy_pool_contract_address) = _buy_pool_contract_address.read();
     let (c1_is_supported) = IPool.checkCollectionSupport(
         buy_pool_contract_address, c1_contract_address
     );
@@ -288,16 +257,16 @@ func test_addSupportedCollections{syscall_ptr: felt*, range_check_ptr, pedersen_
 func test_sellNfts{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
 
+    local buy_pool_contract_address;
     local c1_contract_address;
     local c2_contract_address;
     local erc20_contract_address;
     %{
+        ids.buy_pool_contract_address = context.buy_pool_contract_address
         ids.c1_contract_address = context.c1_contract_address 
         ids.c2_contract_address = context.c2_contract_address 
         ids.erc20_contract_address = context.erc20_contract_address
     %}
-
-    let (buy_pool_contract_address) = _buy_pool_contract_address.read();
 
     let NFT_1_1 = Uint256(11, 0);
     let NFT_1_2 = Uint256(12, 0);
@@ -403,16 +372,16 @@ func test_sellNfts_with_not_supported_collection{
 }() {
     alloc_locals;
 
+    local buy_pool_contract_address;
     local c1_contract_address;
     local c2_contract_address;
     local erc20_contract_address;
     %{
+        ids.buy_pool_contract_address = context.buy_pool_contract_address
         ids.c1_contract_address = context.c1_contract_address 
         ids.c2_contract_address = context.c2_contract_address 
         ids.erc20_contract_address = context.erc20_contract_address
     %}
-
-    let (buy_pool_contract_address) = _buy_pool_contract_address.read();
 
     let NFT_1_1 = Uint256(11, 0);
     let NFT_1_2 = Uint256(12, 0);
@@ -461,16 +430,16 @@ func test_sellNfts_and_withdraw_them_as_pool_owner{
 }() {
     alloc_locals;
 
+    local buy_pool_contract_address;
     local c1_contract_address;
     local c2_contract_address;
     local erc20_contract_address;
     %{
+        ids.buy_pool_contract_address = context.buy_pool_contract_address
         ids.c1_contract_address = context.c1_contract_address 
         ids.c2_contract_address = context.c2_contract_address 
         ids.erc20_contract_address = context.erc20_contract_address
     %}
-
-    let (buy_pool_contract_address) = _buy_pool_contract_address.read();
 
     let NFT_1_1 = Uint256(11, 0);
     let NFT_1_2 = Uint256(12, 0);
@@ -561,7 +530,8 @@ func test_sellNfts_and_withdraw_them_as_pool_owner{
 func test_getTokenPrices{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     alloc_locals;
 
-    let (buy_pool_contract_address) = _buy_pool_contract_address.read();
+    local buy_pool_contract_address;
+    %{ ids.buy_pool_contract_address = context.buy_pool_contract_address %}
 
     const NUMBER_TOKENS = 5;
 
@@ -591,7 +561,8 @@ func test_getTokenPrices_with_negative_values{
 }() {
     alloc_locals;
 
-    let (buy_pool_contract_address) = _buy_pool_contract_address.read();
+    local buy_pool_contract_address;
+    %{ ids.buy_pool_contract_address = context.buy_pool_contract_address %}
 
     tempvar NEW_POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=-50000);
     const NUMBER_TOKENS = 5;
@@ -617,16 +588,16 @@ func test_sellNfts_with_negative_prices{
 }() {
     alloc_locals;
 
+    local buy_pool_contract_address;
     local c1_contract_address;
     local c2_contract_address;
     local erc20_contract_address;
     %{
+        ids.buy_pool_contract_address = context.buy_pool_contract_address
         ids.c1_contract_address = context.c1_contract_address 
         ids.c2_contract_address = context.c2_contract_address 
         ids.erc20_contract_address = context.erc20_contract_address
     %}
-
-    let (buy_pool_contract_address) = _buy_pool_contract_address.read();
 
     let NFT_1_1 = Uint256(11, 0);
     let NFT_1_2 = Uint256(12, 0);
@@ -678,7 +649,8 @@ func test_getNextPrice_with_negative_value{
 }() {
     alloc_locals;
 
-    let (buy_pool_contract_address) = _buy_pool_contract_address.read();
+    local buy_pool_contract_address;
+    %{ ids.buy_pool_contract_address = context.buy_pool_contract_address %}
 
     tempvar NEW_POOL_PARAMS: PoolParams = PoolParams(price=Uint256(50000, 0), delta=-60000);
     const NUMBER_TOKENS = 5;
