@@ -15,14 +15,11 @@ from starkware.cairo.common.uint256 import Uint256, uint256_check
 from src.pools.IPool import IPool
 from tests.helper.IMintPool import Collection, Pool
 
-
 @event
 func DeployPool(pool_address: felt) {
 }
 
-
 // Storage
-
 
 @storage_var
 func _factory_owner() -> (address: felt) {
@@ -36,7 +33,6 @@ func _owners(pool_address_token: Uint256) -> (res: felt) {
 func _pool_by_id(int: felt) -> (res: Pool) {
 }
 
-
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     factory_owner: felt
@@ -45,14 +41,11 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     return ();
 }
 
-
 // View
 
-
 @view
-func getAllCollectionsFromAllPools{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}() -> (
-    _collection_array_len: felt, _collection_array: Collection*
-) {
+func getAllCollectionsFromAllPools{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
+    ) -> (_collection_array_len: felt, _collection_array: Collection*) {
     alloc_locals;
     let (collection_array: Collection*) = alloc();
 
@@ -64,7 +57,6 @@ func getAllCollectionsFromAllPools{pedersen_ptr: HashBuiltin*, syscall_ptr: felt
     return (collection_array_len, collection_array);
 }
 
-
 func populate_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     collection_array: Collection*, array_index: felt, current_count: felt
 ) -> (collection_count: felt) {
@@ -73,9 +65,7 @@ func populate_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
         return (current_count,);
     }
 
-    let (pool_collection_array_len, pool_collection_array) = IPool.getAllCollections(
-        pool.address
-    );
+    let (pool_collection_array_len, pool_collection_array) = IPool.getAllCollections(pool.address);
 
     let (next_count) = populate_struct(
         collection_array,
@@ -88,7 +78,6 @@ func populate_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
     return populate_collections(collection_array, array_index + 1, next_count);
 }
 
-
 func populate_struct{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     collection_array: Collection*,
     pool_collection_array_len: felt,
@@ -100,7 +89,9 @@ func populate_struct{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
         return (current_count,);
     }
 
-    assert collection_array[current_count] = Collection(collection_address=pool_collection_array[0], pool_address=pool_address);
+    assert collection_array[current_count] = Collection(
+        collection_address=pool_collection_array[0], pool_address=pool_address
+    );
 
     return populate_struct(
         collection_array,
@@ -110,7 +101,6 @@ func populate_struct{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
         current_count + 1,
     );
 }
-
 
 @view
 func ownerOf{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
@@ -126,9 +116,7 @@ func ownerOf{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
     return (owner,);
 }
 
-
 // Externals
-
 
 @external
 func mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
@@ -167,9 +155,7 @@ func mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
     return (pool_address,);
 }
 
-
 // Internals
-
 
 func get_next_free_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     current_id: felt
@@ -184,7 +170,6 @@ func get_next_free_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     return (sum + 1,);
 }
 
-
 func assert_only_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> () {
     alloc_locals;
     let (caller_address) = get_caller_address();
@@ -197,9 +182,7 @@ func assert_only_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     return ();
 }
 
-
 // Helper functions
-
 
 @view
 func getFactoryOwner{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}() -> (
@@ -210,22 +193,18 @@ func getFactoryOwner{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check
     return (factory_owner,);
 }
 
-
 @view
 func getPoolTypeClassHash{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
     pool_address: felt
 ) -> (pool_type_class_hash: felt) {
-    
     let (pool_type_class_hash) = iterate_pool_list(0, pool_address);
 
     return (pool_type_class_hash,);
 }
 
-
 func iterate_pool_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     current_id: felt, pool_address: felt
 ) -> (pool_type_class_hash: felt) {
-    
     let (pool) = _pool_by_id.read(current_id);
 
     if (pool.address == 0) {
@@ -237,5 +216,4 @@ func iterate_pool_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     }
 
     return iterate_pool_list(current_id + 1, pool_address);
-
 }

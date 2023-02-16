@@ -13,6 +13,11 @@ namespace FunctionSelector {
 }
 
 namespace BondingCurve {
-    const lower_bound = -9999; // -99.99%
-    const upper_bound = 100000000; // 1000000%
+    const lower_bound = -9999;  // -99.99%
+    const upper_bound = 100000000;  // 1000000%
+}
+
+namespace CurveDirection {
+    const forward = 1;  // Always forward for buy and sell pools
+    const backward = -1;  // Relevant for bi-directional trading (trade pool)
 }
