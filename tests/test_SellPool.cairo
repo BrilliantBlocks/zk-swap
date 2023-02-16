@@ -13,7 +13,7 @@ from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.pools.IPool import IPool, NFT, PoolParams
 from tests.helper.IMintPool import Collection, IMintPool
-from src.utils.Constants import DeltaSign
+from src.utils.Constants import CurveDirection
 
 const C1_NAME = 'COLLECTION 1';
 const C2_NAME = 'COLLECTION 2';
@@ -952,7 +952,7 @@ func test_getNextPrice_with_expected_output{
 
     let NEXT_PRICE = Uint256(110000, 0);
 
-    let (next_price) = IPool.getNextPrice(sell_pool_contract_address, DeltaSign.positive);
+    let (next_price) = IPool.getNextPrice(sell_pool_contract_address, CurveDirection.forward);
 
     assert next_price = NEXT_PRICE;
 
@@ -1138,7 +1138,7 @@ func test_getTokenPrices{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: Hash
     let FIFTH_PRICE = Uint256(150000, 0);
 
     let (price_array_len: felt, price_array: Uint256*) = IPool.getTokenPrices(
-        sell_pool_contract_address, NUMBER_TOKENS, DeltaSign.positive
+        sell_pool_contract_address, NUMBER_TOKENS, CurveDirection.forward
     );
 
     assert price_array_len = 5;
@@ -1171,7 +1171,7 @@ func test_getTokenPrices_with_negative_values{
 
     %{ expect_revert(error_message="The price must not be negative") %}
     let (price_array_len: felt, price_array: Uint256*) = IPool.getTokenPrices(
-        sell_pool_contract_address, NUMBER_TOKENS, DeltaSign.positive
+        sell_pool_contract_address, NUMBER_TOKENS, CurveDirection.forward
     );
 
     return ();
@@ -1196,7 +1196,7 @@ func test_getNextPrice_with_negative_value{
     %{ stop_prank_callable() %}
 
     %{ expect_revert(error_message="The price must not be negative") %}
-    let (next_price) = IPool.getNextPrice(sell_pool_contract_address, DeltaSign.positive);
+    let (next_price) = IPool.getNextPrice(sell_pool_contract_address, CurveDirection.forward);
 
     return ();
 }

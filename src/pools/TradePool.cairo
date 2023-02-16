@@ -43,7 +43,7 @@ from src.pools.Pool import (
     assert_not_paused,
     assert_sufficient_balance,
 )
-from src.utils.Constants import DeltaSign
+from src.utils.Constants import CurveDirection
 
 @external
 func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -53,7 +53,7 @@ func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     assert_not_paused();
     assert_collections_supported(nft_array_len, nft_array);
 
-    let (total_price) = get_total_price(nft_array_len, DeltaSign.negative);
+    let (total_price) = get_total_price(nft_array_len, CurveDirection.backward);
     let (eth_balance) = _eth_balance.read();
 
     assert_sufficient_balance(total_price, eth_balance);
@@ -66,7 +66,7 @@ func sellNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     let (new_eth_balance) = uint256_sub(eth_balance, total_price);
     _eth_balance.write(new_eth_balance);
 
-    let (new_price) = get_next_price(nft_array_len, DeltaSign.negative);
+    let (new_price) = get_next_price(nft_array_len, CurveDirection.backward);
     _current_price.write(new_price);
     PriceUpdate.emit(new_price);
 
@@ -82,7 +82,7 @@ func buyNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     assert_not_owner();
     assert_not_paused();
 
-    let (total_price) = get_total_price(nft_array_len, DeltaSign.positive);
+    let (total_price) = get_total_price(nft_array_len, CurveDirection.forward);
     let (erc20_address) = _erc20_address.read();
     let (caller_address) = get_caller_address();
     let (contract_address) = get_contract_address();
@@ -96,7 +96,7 @@ func buyNfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     let (new_eth_balance, _) = uint256_add(old_eth_balance, total_price);
     _eth_balance.write(new_eth_balance);
 
-    let (new_price) = get_next_price(nft_array_len, DeltaSign.positive);
+    let (new_price) = get_next_price(nft_array_len, CurveDirection.forward);
     _current_price.write(new_price);
     PriceUpdate.emit(new_price);
 

@@ -12,7 +12,7 @@ from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.pools.IPool import IPool, NFT, PoolParams
 from tests.helper.IMintPool import Collection, IMintPool
-from src.utils.Constants import DeltaSign
+from src.utils.Constants import CurveDirection
 
 const C1_NAME = 'COLLECTION 1';
 const C2_NAME = 'COLLECTION 2';
@@ -708,11 +708,11 @@ func test_getTokenPrices_for_linear_price_function{syscall_ptr: felt*, range_che
     let FIFTH_PRICE_TO_SELL = Uint256(50000, 0);
 
     let (price_array_to_buy_len: felt, price_array_to_buy: Uint256*) = IPool.getTokenPrices(
-        linear_trade_pool_contract_address, TOKENS_TO_BUY_AND_SELL, DeltaSign.positive
+        linear_trade_pool_contract_address, TOKENS_TO_BUY_AND_SELL, CurveDirection.forward
     );
 
     let (price_array_to_sell_len: felt, price_array_to_sell: Uint256*) = IPool.getTokenPrices(
-        linear_trade_pool_contract_address, TOKENS_TO_BUY_AND_SELL, DeltaSign.negative
+        linear_trade_pool_contract_address, TOKENS_TO_BUY_AND_SELL, CurveDirection.backward
     );
 
     assert price_array_to_buy_len = TOKENS_TO_BUY_AND_SELL;
@@ -763,11 +763,11 @@ func test_getTokenPrices_for_exponential_price_function{syscall_ptr: felt*, rang
     let FIFTH_PRICE_TO_SELL = Uint256(59048, 0); // 59049
 
     let (price_array_to_buy_len: felt, price_array_to_buy: Uint256*) = IPool.getTokenPrices(
-        exponential_trade_pool_contract_address, TOKENS_TO_BUY_AND_SELL, DeltaSign.positive
+        exponential_trade_pool_contract_address, TOKENS_TO_BUY_AND_SELL, CurveDirection.forward
     );
 
     let (price_array_to_sell_len: felt, price_array_to_sell: Uint256*) = IPool.getTokenPrices(
-        exponential_trade_pool_contract_address, TOKENS_TO_BUY_AND_SELL, DeltaSign.negative
+        exponential_trade_pool_contract_address, TOKENS_TO_BUY_AND_SELL, CurveDirection.backward
     );
 
     assert price_array_to_buy_len = TOKENS_TO_BUY_AND_SELL;

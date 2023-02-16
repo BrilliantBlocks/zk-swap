@@ -15,7 +15,7 @@ from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.pools.IPool import NFT, PoolParams
-from src.utils.Constants import LinkedList, FunctionSelector, DeltaSign
+from src.utils.Constants import LinkedList, FunctionSelector
 
 // Events
 
@@ -463,12 +463,12 @@ func populate_nfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 // Swap NFTs
 
 func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    nft_array_len: felt, delta_sign: felt
+    nft_array_len: felt, curve_direction: felt
 ) -> (total_price: Uint256) {
     alloc_locals;
     let (current_price) = _current_price.read();
     let (abs_delta) = _delta.read();
-    let delta = abs_delta * delta_sign;
+    let delta = abs_delta * curve_direction;
     let (class_hash) = _bonding_curve_class_hash.read();
 
     let (calldata: felt*) = alloc();
@@ -490,12 +490,12 @@ func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 }
 
 func get_next_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    nft_array_len: felt, delta_sign: felt
+    nft_array_len: felt, curve_direction: felt
 ) -> (next_price: Uint256) {
     alloc_locals;
     let (current_price) = _current_price.read();
     let (abs_delta) = _delta.read();
-    let delta = abs_delta * delta_sign;
+    let delta = abs_delta * curve_direction;
     let (class_hash) = _bonding_curve_class_hash.read();
 
     let (calldata: felt*) = alloc();
@@ -580,20 +580,20 @@ func getPoolConfig{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 
 @view
 func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    delta_sign: felt
+    curve_direction: felt
 ) -> (next_price: Uint256) {
     with_attr error_message("Delta sign must be provided with 1 or -1") {
-        assert abs_value(delta_sign) = 1;
+        assert abs_value(curve_direction) = 1;
     }
 
-    let (next_price) = get_next_price(1, delta_sign);
+    let (next_price) = get_next_price(1, curve_direction);
 
     return (next_price,);
 }
 
 @view
 func getTokenPrices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    number_tokens: felt, delta_sign: felt
+    number_tokens: felt, curve_direction: felt
 ) -> (price_array_len: felt, price_array: Uint256*) {
     alloc_locals;
 
@@ -602,39 +602,39 @@ func getTokenPrices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     }
 
     with_attr error_message("Delta sign must be provided with 1 or -1") {
-        assert abs_value(delta_sign) = 1;
+        assert abs_value(curve_direction) = 1;
     }
 
-    let (price_array_len, price_array) = get_token_prices(number_tokens, delta_sign);
+    let (price_array_len, price_array) = get_token_prices(number_tokens, curve_direction);
 
     return (price_array_len, price_array);
 }
 
 func get_token_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    number_tokens: felt, delta_sign: felt
+    number_tokens: felt, curve_direction: felt
 ) -> (price_array_len: felt, price_array: Uint256*) {
     alloc_locals;
 
     let (price_array: Uint256*) = alloc();
 
-    populate_prices(number_tokens, price_array, delta_sign, 1);
+    populate_prices(number_tokens, price_array, curve_direction, 1);
 
     return (number_tokens, price_array);
 }
 
 func populate_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    number_tokens: felt, price_array: Uint256*, delta_sign: felt, current_count: felt
+    number_tokens: felt, price_array: Uint256*, curve_direction: felt, current_count: felt
 ) -> () {
     if (current_count == number_tokens + 1) {
         return ();
     }
 
-    let (next_price) = get_next_price(current_count, delta_sign);
+    let (next_price) = get_next_price(current_count, curve_direction);
 
     assert price_array[0] = next_price;
 
     return populate_prices(
-        number_tokens, price_array + Uint256.SIZE, delta_sign, current_count + 1
+        number_tokens, price_array + Uint256.SIZE, curve_direction, current_count + 1
     );
 }
 
@@ -755,7 +755,7 @@ func assert_not_paused{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     return ();
 }
 
-func assert_sufficient_balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func assert_sufficient_balance{range_check_ptr}(
     price: Uint256, eth_balance: Uint256
 ) -> () {
     let (sufficient_balance) = uint256_le(price, eth_balance);

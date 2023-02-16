@@ -17,7 +17,7 @@ namespace BondingCurve {
     const upper_bound = 100000000;  // 1000000%
 }
 
-namespace DeltaSign {
-    const positive = 1;  // Always 1 for buy and sell pools
-    const negative = -1;  // Relevant for bi-directional trading (trade pool)
+namespace CurveDirection {
+    const forward = 1;  // Always forward for buy and sell pools
+    const backward = -1;  // Relevant for bi-directional trading (trade pool)
 }
