@@ -164,7 +164,7 @@ func test_getPoolConfig_with_expected_output{
     local buy_pool_contract_address;
     %{
         ids.pool_factory_contract_address = context.pool_factory_contract_address 
-        ids.buy_pool_contract_address = context.buy_pool_contract_address 
+        ids.buy_pool_contract_address = context.buy_pool_contract_address
     %}
 
     tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=10000);

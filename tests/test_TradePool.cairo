@@ -684,14 +684,13 @@ func test_tradeNFTs_with_exponential_price_function{
     return ();
 }
 
-
 @external
-func test_getTokenPrices_for_linear_price_function{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_getTokenPrices_for_linear_price_function{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
     local linear_trade_pool_contract_address;
-    %{
-        ids.linear_trade_pool_contract_address = context.linear_trade_pool_contract_address
-    %}
+    %{ ids.linear_trade_pool_contract_address = context.linear_trade_pool_contract_address %}
 
     const TOKENS_TO_BUY_AND_SELL = 5;
 
@@ -731,14 +730,13 @@ func test_getTokenPrices_for_linear_price_function{syscall_ptr: felt*, range_che
     return ();
 }
 
-
 @external
-func test_getTokenPrices_for_exponential_price_function{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+func test_getTokenPrices_for_exponential_price_function{
+    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
+}() {
     alloc_locals;
     local exponential_trade_pool_contract_address;
-    %{
-        ids.exponential_trade_pool_contract_address = context.exponential_trade_pool_contract_address
-    %}
+    %{ ids.exponential_trade_pool_contract_address = context.exponential_trade_pool_contract_address %}
 
     tempvar POOL_PARAMS: PoolParams = PoolParams(price=Uint256(100000, 0), delta=1000);
     %{
@@ -750,17 +748,17 @@ func test_getTokenPrices_for_exponential_price_function{syscall_ptr: felt*, rang
 
     const TOKENS_TO_BUY_AND_SELL = 5;
 
-    let FIRST_PRICE_TO_BUY = Uint256(109999, 0); // 110000
-    let SECOND_PRICE_TO_BUY = Uint256(120999, 0); // 121000
-    let THIRD_PRICE_TO_BUY = Uint256(133099, 0); // 133100
-    let FOURTH_PRICE_TO_BUY = Uint256(146409, 0); // 146410
-    let FIFTH_PRICE_TO_BUY = Uint256(161050, 0); // 161051
+    let FIRST_PRICE_TO_BUY = Uint256(109999, 0);  // 110000
+    let SECOND_PRICE_TO_BUY = Uint256(120999, 0);  // 121000
+    let THIRD_PRICE_TO_BUY = Uint256(133099, 0);  // 133100
+    let FOURTH_PRICE_TO_BUY = Uint256(146409, 0);  // 146410
+    let FIFTH_PRICE_TO_BUY = Uint256(161050, 0);  // 161051
 
-    let FIRST_PRICE_TO_SELL = Uint256(89999, 0); // 90000
-    let SECOND_PRICE_TO_SELL = Uint256(80999, 0); // 81000
-    let THIRD_PRICE_TO_SELL = Uint256(72899, 0); // 72900
-    let FOURTH_PRICE_TO_SELL = Uint256(65609, 0); // 65610
-    let FIFTH_PRICE_TO_SELL = Uint256(59048, 0); // 59049
+    let FIRST_PRICE_TO_SELL = Uint256(89999, 0);  // 90000
+    let SECOND_PRICE_TO_SELL = Uint256(80999, 0);  // 81000
+    let THIRD_PRICE_TO_SELL = Uint256(72899, 0);  // 72900
+    let FOURTH_PRICE_TO_SELL = Uint256(65609, 0);  // 65610
+    let FIFTH_PRICE_TO_SELL = Uint256(59048, 0);  // 59049
 
     let (price_array_to_buy_len: felt, price_array_to_buy: Uint256*) = IPool.getTokenPrices(
         exponential_trade_pool_contract_address, TOKENS_TO_BUY_AND_SELL, CurveDirection.forward

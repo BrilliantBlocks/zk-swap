@@ -578,6 +578,8 @@ func getPoolConfig{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     return (pool_params,);
 }
 
+// @param curve_direction: Direction to follow along the bonding curve (always 1 for buy and sell pool; relevant for bi-directional trade pool)
+// @return next_price: to get the next price of an asset from a specific pool
 @view
 func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     curve_direction: felt
@@ -591,6 +593,9 @@ func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     return (next_price,);
 }
 
+// @param curve_direction: Direction to follow along the bonding curve (always 1 for buy and sell pool; -1 relevant for bi-directional trade pool)
+// @param number_tokens: for a specific number of assets
+// @return next_price: to get the next prices for these assets from a specific pool
 @view
 func getTokenPrices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     number_tokens: felt, curve_direction: felt
@@ -755,9 +760,7 @@ func assert_not_paused{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     return ();
 }
 
-func assert_sufficient_balance{range_check_ptr}(
-    price: Uint256, eth_balance: Uint256
-) -> () {
+func assert_sufficient_balance{range_check_ptr}(price: Uint256, eth_balance: Uint256) -> () {
     let (sufficient_balance) = uint256_le(price, eth_balance);
     with_attr error_message("ETH balance is not sufficient") {
         assert sufficient_balance = TRUE;

@@ -157,7 +157,7 @@ func test_initialization_pool_factory{
         ids.pool_factory_contract_address = context.pool_factory_contract_address 
         ids.sell_pool_contract_address = context.sell_pool_contract_address 
         ids.sell_pool_class_hash = context.sell_pool_class_hash
-    %}    
+    %}
 
     let (factory_owner) = IMintPool.getFactoryOwner(pool_factory_contract_address);
     let (pool_type_class_hash) = IMintPool.getPoolTypeClassHash(
@@ -181,7 +181,7 @@ func test_getPoolConfig_with_expected_output{
     alloc_locals;
     local pool_factory_contract_address;
     local sell_pool_contract_address;
-    %{ 
+    %{
         ids.pool_factory_contract_address = context.pool_factory_contract_address 
         ids.sell_pool_contract_address = context.sell_pool_contract_address
     %}
@@ -964,9 +964,9 @@ func test_depositEth{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuil
     alloc_locals;
     local sell_pool_contract_address;
     local erc20_contract_address;
-    %{ 
+    %{
         ids.sell_pool_contract_address = context.sell_pool_contract_address
-        ids.erc20_contract_address = context.erc20_contract_address 
+        ids.erc20_contract_address = context.erc20_contract_address
     %}
 
     let ERC20_BALANCE_POOL_OWNER = Uint256(300000, 0);
@@ -1000,9 +1000,9 @@ func test_depositEth_with_unsufficient_balance{
     alloc_locals;
     local sell_pool_contract_address;
     local erc20_contract_address;
-    %{ 
+    %{
         ids.sell_pool_contract_address = context.sell_pool_contract_address
-        ids.erc20_contract_address = context.erc20_contract_address 
+        ids.erc20_contract_address = context.erc20_contract_address
     %}
 
     let ERC20_BALANCE_POOL_OWNER = Uint256(300000, 0);
@@ -1028,9 +1028,9 @@ func test_withdrawEth{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBui
     alloc_locals;
     local sell_pool_contract_address;
     local erc20_contract_address;
-    %{ 
+    %{
         ids.sell_pool_contract_address = context.sell_pool_contract_address
-        ids.erc20_contract_address = context.erc20_contract_address 
+        ids.erc20_contract_address = context.erc20_contract_address
     %}
 
     let ERC20_BALANCE_POOL_OWNER = Uint256(300000, 0);
@@ -1085,9 +1085,9 @@ func test_withdrawEth_with_unsufficient_pool_balance{
     alloc_locals;
     local sell_pool_contract_address;
     local erc20_contract_address;
-    %{ 
+    %{
         ids.sell_pool_contract_address = context.sell_pool_contract_address
-        ids.erc20_contract_address = context.erc20_contract_address 
+        ids.erc20_contract_address = context.erc20_contract_address
     %}
 
     let ERC20_BALANCE_POOL_OWNER = Uint256(300000, 0);
