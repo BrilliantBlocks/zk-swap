@@ -1,0 +1,6 @@
+{
+  "link": {
+    "type": "generated-index",
+    "description": "A liquidity pool is a smart contract containing two different asset types, e.g. tokens from an ERC-721 NFT collection and ERC-20 tokens. Users can automatically trade one of these assets for another by interacting just with the pool contract. \n The two main components defining a liquidity pool are the pool type and the underlying bonding curve aka the price function for the assets. The pool type differ in which type of operation they enable to perform – buying pools let users sell NFTs by interacting with them, selling pools let users buy NFTs by interacting with and trade pools allow both types of interaction. Every liquidity pool can be configured with its own underlying bonding curve defining the future asset prices. Currently the supported bonding curves are of constant, linear and exponential nature. It means with every sold or bought asset, the price can either stay constant, increase or decrease linearly and exponentially."
+  }
+}
