@@ -4,29 +4,18 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import (
     get_caller_address,
     get_contract_address,
-    library_call
+    library_call,
 )
-from starkware.cairo.common.math import (
-    assert_not_equal,
-    assert_not_zero,
-    split_felt
-)
+from starkware.cairo.common.math import assert_not_equal, assert_not_zero, split_felt, abs_value
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.uint256 import (
-    Uint256, 
-    uint256_add,
-    uint256_eq, 
-    uint256_le, 
-    uint256_sub
-)
+from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_eq, uint256_le, uint256_sub
 
 from lib.cairo_contracts.src.openzeppelin.token.erc721.IERC721 import IERC721
 from lib.cairo_contracts.src.openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.pools.IPool import NFT, PoolParams
 from src.utils.Constants import LinkedList, FunctionSelector
-
 
 // Events
 
@@ -50,9 +39,7 @@ func DeltaUpdate(new_delta: felt) {
 func PausePool(bool: felt) {
 }
 
-
 // Storage
-
 
 @storage_var
 func _pool_factory() -> (address: felt) {
@@ -98,7 +85,6 @@ func _erc20_address() -> (res: felt) {
 func _supported_collections(address: felt) -> (bool: felt) {
 }
 
-
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     factory_address: felt, bonding_curve_class_hash: felt, erc20_address: felt
@@ -115,7 +101,6 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     return ();
 }
 
-
 @external
 func setPoolParams{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     pool_params: PoolParams
@@ -131,7 +116,6 @@ func setPoolParams{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     return ();
 }
 
-
 @external
 func addSupportedCollections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     collection_array_len: felt, collection_array: felt*
@@ -143,11 +127,9 @@ func addSupportedCollections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     return ();
 }
 
-
 func add_supported_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    collection_array_len: felt, collection_array: felt*,
+    collection_array_len: felt, collection_array: felt*
 ) -> () {
-    
     if (collection_array_len == 0) {
         return ();
     }
@@ -162,7 +144,6 @@ func add_supported_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, r
     return add_supported_collections(collection_array_len - 1, collection_array + 1);
 }
 
-
 @external
 func removeSupportedCollections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     collection_array_len: felt, collection_array: felt*
@@ -174,11 +155,9 @@ func removeSupportedCollections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     return ();
 }
 
-
 func remove_supported_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    collection_array_len: felt, collection_array: felt*,
+    collection_array_len: felt, collection_array: felt*
 ) -> () {
-    
     if (collection_array_len == 0) {
         return ();
     }
@@ -193,9 +172,7 @@ func remove_supported_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
     return remove_supported_collections(collection_array_len - 1, collection_array + 1);
 }
 
-
 // Add NFTs to pool
-
 
 @external
 func addNftToPool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -209,7 +186,6 @@ func addNftToPool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 
     return ();
 }
-
 
 func _add_nft_to_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     nft_array_len: felt, nft_array: NFT*
@@ -261,7 +237,6 @@ func _add_nft_to_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     return _add_nft_to_pool(nft_array_len - 1, nft_array + NFT.SIZE);
 }
 
-
 func find_next_free_slot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     next_free_slot: felt
 ) {
@@ -269,7 +244,6 @@ func find_next_free_slot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
 
     return (next_free_slot,);
 }
-
 
 func _find_next_free_slot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     current_id: felt
@@ -288,7 +262,6 @@ func _find_next_free_slot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
     return (sum + 1,);
 }
 
-
 func find_last_collection_element{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     current_id: felt
 ) -> (last_collection_element: felt) {
@@ -301,16 +274,13 @@ func find_last_collection_element{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
     return find_last_collection_element(s[1]);
 }
 
-
 func get_collection_count{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     collection_count: felt
 ) {
     let (collection_count) = _get_collection_count(LinkedList.start_slot_collection_array);
 
     return (collection_count,);
-
 }
-
 
 func _get_collection_count{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     current_id: felt
@@ -325,7 +295,6 @@ func _get_collection_count{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     return (sum + 1,);
 }
 
-
 func get_token_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     current_id: felt
 ) -> (res: Uint256) {
@@ -333,9 +302,7 @@ func get_token_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     return (x[0],);
 }
 
-
 // Remove NFTs from pool
-
 
 @external
 func removeNftFromPool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -347,7 +314,6 @@ func removeNftFromPool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
 
     return ();
 }
-
 
 func _remove_nft_from_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     nft_array_len: felt, nft_array: NFT*
@@ -401,7 +367,6 @@ func _remove_nft_from_pool{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     return _remove_nft_from_pool(nft_array_len - 1, nft_array + NFT.SIZE);
 }
 
-
 func find_element_to_be_removed{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     current_id: felt, token_id: Uint256
 ) -> (last_element: felt, this_element: felt) {
@@ -422,7 +387,6 @@ func find_element_to_be_removed{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     return find_element_to_be_removed(last_element[1], token_id);
 }
 
-
 func get_next_collection_slot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     current_id: felt
 ) -> (res: felt) {
@@ -430,9 +394,7 @@ func get_next_collection_slot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
     return (x[1],);
 }
 
-
 // Get all pool assets
-
 
 @view
 func getAllCollections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
@@ -447,7 +409,6 @@ func getAllCollections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
 
     return (collection_array_len, collection_array);
 }
-
 
 func populate_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     collection_array: felt*, array_index: felt, current_count: felt
@@ -465,7 +426,6 @@ func populate_collections{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
     collection_array[0] = collection_element;
     return populate_collections(collection_array + 1, array_index + 1, current_count + 1);
 }
-
 
 @view
 func getAllNftsOfCollection{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -487,7 +447,6 @@ func getAllNftsOfCollection{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     return (nft_id_list_len, nft_id_list);
 }
 
-
 func populate_nfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     nft_id_list: Uint256*, list_index: felt, current_id: felt
 ) -> (nft_count: felt) {
@@ -501,16 +460,15 @@ func populate_nfts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     return populate_nfts(nft_id_list + Uint256.SIZE, list_index + 1, s[1]);
 }
 
-
 // Swap NFTs
 
-
 func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    nft_array_len
+    nft_array_len: felt, curve_direction: felt
 ) -> (total_price: Uint256) {
     alloc_locals;
     let (current_price) = _current_price.read();
-    let (delta) = _delta.read();
+    let (abs_delta) = _delta.read();
+    let delta = abs_delta * curve_direction;
     let (class_hash) = _bonding_curve_class_hash.read();
 
     let (calldata: felt*) = alloc();
@@ -531,13 +489,13 @@ func get_total_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     return (total_price,);
 }
 
-
 func get_next_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    nft_array_len
+    nft_array_len: felt, curve_direction: felt
 ) -> (next_price: Uint256) {
     alloc_locals;
     let (current_price) = _current_price.read();
-    let (delta) = _delta.read();
+    let (abs_delta) = _delta.read();
+    let delta = abs_delta * curve_direction;
     let (class_hash) = _bonding_curve_class_hash.read();
 
     let (calldata: felt*) = alloc();
@@ -558,11 +516,9 @@ func get_next_price{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     return (next_price,);
 }
 
-
 func assert_collections_supported{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     nft_array_len: felt, nft_array: NFT*
 ) -> () {
-    
     if (nft_array_len == 0) {
         return ();
     }
@@ -573,7 +529,6 @@ func assert_collections_supported{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
     }
     return assert_collections_supported(nft_array_len - 1, nft_array + NFT.SIZE);
 }
-
 
 @external
 func togglePause{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> () {
@@ -592,7 +547,6 @@ func togglePause{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     return ();
 }
 
-
 @view
 func isPaused{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     is_paused: felt
@@ -602,9 +556,7 @@ func isPaused{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}()
     return (is_paused,);
 }
 
-
 // Get pool configuration
-
 
 @view
 func getPoolFactory{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
@@ -614,7 +566,6 @@ func getPoolFactory{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 
     return (pool_factory,);
 }
-
 
 @view
 func getPoolConfig{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
@@ -627,64 +578,72 @@ func getPoolConfig{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     return (pool_params,);
 }
 
-
+// @param curve_direction: Direction to follow along the bonding curve (always 1 for buy and sell pool; relevant for bi-directional trade pool)
+// @return next_price: to get the next price of an asset from a specific pool
 @view
-func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-    next_price: Uint256
-) {
-    let (next_price) = get_next_price(1);
+func getNextPrice{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    curve_direction: felt
+) -> (next_price: Uint256) {
+    with_attr error_message("Delta sign must be provided with 1 or -1") {
+        assert abs_value(curve_direction) = 1;
+    }
+
+    let (next_price) = get_next_price(1, curve_direction);
 
     return (next_price,);
 }
 
-
+// @param curve_direction: Direction to follow along the bonding curve (always 1 for buy and sell pool; -1 relevant for bi-directional trade pool)
+// @param number_tokens: for a specific number of assets
+// @return next_price: to get the next prices for these assets from a specific pool
 @view
 func getTokenPrices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    number_tokens: felt
+    number_tokens: felt, curve_direction: felt
 ) -> (price_array_len: felt, price_array: Uint256*) {
     alloc_locals;
 
     with_attr error_message("Number of tokens must not be zero") {
         assert_not_zero(number_tokens);
     }
-    
-    let (price_array_len, price_array) = get_token_prices(number_tokens);
+
+    with_attr error_message("Delta sign must be provided with 1 or -1") {
+        assert abs_value(curve_direction) = 1;
+    }
+
+    let (price_array_len, price_array) = get_token_prices(number_tokens, curve_direction);
 
     return (price_array_len, price_array);
 }
 
-
 func get_token_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    number_tokens: felt
+    number_tokens: felt, curve_direction: felt
 ) -> (price_array_len: felt, price_array: Uint256*) {
     alloc_locals;
-    
+
     let (price_array: Uint256*) = alloc();
 
-    populate_prices(number_tokens, price_array, 1);
+    populate_prices(number_tokens, price_array, curve_direction, 1);
 
     return (number_tokens, price_array);
 }
 
-
 func populate_prices{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    number_tokens: felt, price_array: Uint256*, current_count: felt
+    number_tokens: felt, price_array: Uint256*, curve_direction: felt, current_count: felt
 ) -> () {
-
     if (current_count == number_tokens + 1) {
         return ();
     }
-    
-    let (next_price) = get_next_price(current_count);
+
+    let (next_price) = get_next_price(current_count, curve_direction);
 
     assert price_array[0] = next_price;
 
-    return populate_prices(number_tokens, price_array + Uint256.SIZE, current_count + 1);
+    return populate_prices(
+        number_tokens, price_array + Uint256.SIZE, curve_direction, current_count + 1
+    );
 }
 
-
 // Deposit and withdraw ETH
-
 
 @external
 func depositEth{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -711,7 +670,6 @@ func depositEth{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
     return ();
 }
 
-
 @external
 func withdrawEth{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     amount: Uint256
@@ -735,7 +693,6 @@ func withdrawEth{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     return ();
 }
 
-
 @external
 func withdrawAllEth{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> () {
     alloc_locals;
@@ -758,9 +715,7 @@ func withdrawAllEth{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     return ();
 }
 
-
 // Assertions
-
 
 func assert_only_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> () {
     let (caller_address) = get_caller_address();
@@ -779,7 +734,6 @@ func assert_only_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     return ();
 }
 
-
 func assert_not_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> () {
     let (caller_address) = get_caller_address();
     let (contract_address) = get_contract_address();
@@ -797,9 +751,25 @@ func assert_not_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     return ();
 }
 
+func assert_not_paused{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> () {
+    let (is_paused) = _pool_paused.read();
+    with_attr error_message("Pool must not be paused") {
+        assert is_paused = FALSE;
+    }
+
+    return ();
+}
+
+func assert_sufficient_balance{range_check_ptr}(price: Uint256, eth_balance: Uint256) -> () {
+    let (sufficient_balance) = uint256_le(price, eth_balance);
+    with_attr error_message("ETH balance is not sufficient") {
+        assert sufficient_balance = TRUE;
+    }
+
+    return ();
+}
 
 // Further view functions
-
 
 @view
 func getStartIdByCollection{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -809,7 +779,6 @@ func getStartIdByCollection{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     return (res,);
 }
 
-
 @view
 func getListElementById{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     current_id: felt
@@ -817,7 +786,6 @@ func getListElementById{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_ch
     let (x) = _list_element_by_id.read(current_id);
     return (x,);
 }
-
 
 @view
 func getCollectionById{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -827,7 +795,6 @@ func getCollectionById{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     return (x,);
 }
 
-
 @view
 func getEthBalance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     eth_balance: Uint256
@@ -836,12 +803,10 @@ func getEthBalance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     return (eth_balance,);
 }
 
-
 @view
 func checkCollectionSupport{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     collection_address: felt
 ) -> (bool: felt) {
-
     let (is_supported) = _supported_collections.read(collection_address);
     return (is_supported,);
 }
