@@ -8,7 +8,7 @@ const katex = require('rehype-katex');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'zk-Swap',
+  title: 'ZK-Swap',
   tagline: 'NFT AMM on StarkNet',
   favicon: 'img/favicon.ico',
 
@@ -53,9 +53,9 @@ const config = {
       // Replace with your project's social card
       image: 'img/docusaurus-social-card.jpg',
       navbar: {
-        title: 'zk-Swap',
+        title: 'ZK-Swap',
         logo: {
-          alt: 'zk-Swap Logo',
+          alt: 'ZK-Swap Logo',
           src: 'img/logo.svg',
         },
         items: [
