@@ -1,0 +1,144 @@
+.wrapper {
+    display: flex;
+    flex-direction: column
+}
+
+.container {
+    display: flex;
+    gap: 1rem;
+    margin-block: 1rem
+}
+
+.container_row {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #d0d0d0;
+    border-radius: 7px;
+    padding: 0.5rem;
+    margin-bottom: 2rem
+}
+
+.content {
+    flex-basis: 50%
+}
+
+.label_container {
+    display: flex;
+    align-items: center;
+}
+
+.label {
+    font-size: 1rem;
+    font-weight: 900;
+    text-transform: none;
+}
+
+.headline {
+    font-size: 1.3rem;
+    color: #f0f0f0;
+    font-weight: 800;
+}
+
+.subheading {
+    font-size: 0.9rem;
+    font-weight: 400;
+    text-transform: none;
+    color: #a3a3a3 !important;
+}
+
+.pool_info {
+    font-size: 0.9rem;
+    font-weight: 400;
+    text-transform: none;
+}
+
+.btn {
+    display: flex;
+    margin-block: 0.8rem;
+    margin-right: 1.4rem;
+    padding: 0.6rem;
+    background-color: rgba(111, 132, 152, 0.4);
+    border-radius: 7px;
+}
+
+.btn_content {
+    font-size: 1rem;
+    font-weight: 900;
+    text-transform: none;
+}
+
+.icon_arrow {
+    padding: 0.1rem 0.3rem 0.01rem;
+    background-color: #F5B700;
+    border-radius: 7px;
+    width: 30px;
+    display: inline-block
+}
+
+.adornment {
+    color: #fff !important;
+    font-weight: 800;
+}
+
+.adornment_text {
+    color: #fff !important;
+    font-weight: 800;
+    background-color: #000;
+    padding: 0.6rem
+}
+
+.input_filled {
+    color: #fff !important;
+    background-color: rgba(208, 208, 208, 0.02) !important;
+    border: 2px solid rgba(255, 249, 249, 0.4) !important;
+    border-radius: 7px;
+    height: 2.8rem;
+}
+
+.adornmentInput {
+    padding-bottom: 0 !important;
+    color: red
+}
+
+.bold {
+    font-weight: 800;
+    padding-bottom: 0 !important;
+}
+
+.spacing_y {
+    margin-block: 1rem
+}
+
+.spacing_r {
+    padding-right: 20px !important;
+}
+
+.spacing_none {
+    padding-right: 0;
+}
+
+.light {
+    color: #fff
+}
+
+.divider {
+    margin-block: 1rem 3rem;
+    width: 100%;
+    background-color: rgba(208, 208, 208, 0.3);
+}
+
+.column {
+    flex-direction: column;
+}
+
+.assets_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+
+.asset_headline {
+    font-size: 1.1rem;
+    text-transform: none;
+}

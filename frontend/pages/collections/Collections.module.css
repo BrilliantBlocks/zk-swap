@@ -1,0 +1,74 @@
+.spacing_inline {
+    margin-inline: 2rem;
+    padding-bottom: 10rem;
+}
+
+.spacing_top {
+    margin-top: 1rem;
+}
+
+.loadMore_margin_top {
+    margin-top: 5rem;
+}
+
+.spacing_bottom {
+    margin-bottom: 3rem;
+}
+
+.container {
+    gap: 1rem;
+    justify-content: center;
+}
+
+.flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.flex_tabs {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.grid {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    column-gap: 1rem;
+    row-gap: 1.2rem;
+    width: 100%
+}
+
+.card_wrapper {
+    flex: 0 0 10%;
+}
+
+.btn {
+    padding: 0.5rem 2rem;
+    border-radius: 7px;
+}
+
+.margin_top {
+    margin-top: 7rem;
+}
+
+.tabpanel {
+    display: flex;
+    flex-direction: column !important
+}
+
+.tabpanel_content {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 88vw;
+    row-gap: 1rem;
+    column-gap: 1rem
+}
+
+.mt {
+    margin-top: 3rem
+}

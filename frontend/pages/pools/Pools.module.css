@@ -1,0 +1,63 @@
+.pools_container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 2rem;
+    color: white;
+}
+
+.pools_content_t {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 1rem;
+    color: #6f8498 !important
+}
+
+.text {
+    font-weight: 700;
+    color: #6f8498 !important
+}
+
+.btn_container {
+    display: flex;
+    margin-top: 0.7rem
+}
+
+.btn_search {
+    font-size: 0.9rem;
+    color: #d0d0d0 !important;
+    text-transform: capitalize;
+    min-width: 25vw;
+    justify-content: flex-start;
+}
+
+.pools_content_b {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    margin: 2rem;
+    margin-top: 5rem;
+    padding-bottom: 10rem;
+}
+
+.pools_content_card {
+    min-width: 950px;
+    width: 75vw;
+}
+
+.spacing {
+    margin-bottom: 3rem;
+}
+
+.pools_card_headline {
+    margin-bottom: 0.3rem;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.pools_card_subheading {
+    font-size: 0.9rem;
+    text-transform: capitalize;
+}

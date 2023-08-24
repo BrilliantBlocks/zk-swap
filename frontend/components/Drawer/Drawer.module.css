@@ -1,0 +1,25 @@
+.cart_container {
+    width: 50px;
+    height: 100%;
+    position: fixed;
+    top: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+.top {
+    /* top: 0; */
+    right: 0;
+}
+
+.center {
+    top: 50%;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.mt {
+    margin-top: 1.6rem
+}
