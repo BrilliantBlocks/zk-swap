@@ -1,0 +1,52 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.container {
+    display: flex;
+    margin-bottom: 1.3rem
+}
+
+.content {
+    justify-content: center;
+    z-index: 10
+}
+
+.image_container {
+    width: 90px;
+    height: 90px;
+    overflow: hidden;
+    border-radius: 50%;
+    border: 6px solid #141414
+}
+
+.input {
+    width: 20vw;
+    padding: 0.2rem 1rem;
+    background-color: #282828;
+    color: #fff;
+    border-radius: 7px;
+    border: 1px solid #282828
+}
+
+.collection_container {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+    margin-bottom: 0.7rem;
+}
+
+.collection_title {
+    color: #fff !important;
+    font-size: 2.5rem;
+    font-weight: 900;
+    text-align: center;
+}
+
+.link {
+    margin-top: 0.6rem !important
+}

@@ -1,0 +1,40 @@
+.flex {
+    display: flex;
+    flex-direction: column;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+}
+
+.type {
+    font-size: 1rem;
+    color: #fff !important
+}
+
+.fullWidth {
+    width: 100%;
+}
+
+.light_text {
+    color: #fff !important
+}
+
+.margin_right {
+    margin-right: 2rem;
+}
+
+.btn_container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.75rem;
+}
+
+.btn {
+    background-color: rgba(181, 181, 181, 0.3);
+    border: 1px solid rgba(181, 181, 181, 0.3);
+    border-radius: 50rem;
+    padding: 0.33rem 0.5rem;
+}

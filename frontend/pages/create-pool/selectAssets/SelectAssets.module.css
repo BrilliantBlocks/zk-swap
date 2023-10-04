@@ -1,0 +1,201 @@
+.dialogModal {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.dialogCloseButton {
+    color: #fff;
+    float: right;
+    border: 1px solid #fff;
+    border-radius: 5px;
+    padding: 0.1rem;
+    min-width: 2rem;
+}
+
+.dialogCloseButton:hover {
+    background-color: rgb(6, 4, 35, 1);
+}
+
+.dialogInformation {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    margin: auto;
+    background-color: #7a7a7a;
+    color: rgb(0, 0, 0) !important;
+    border-radius: 7px;
+    font-weight: 500;
+    text-transform: none;
+}
+
+.dialogForm {
+    margin: 0;
+    width: 100% !important;
+    /* min-height: 100% !important; */
+}
+
+.depositMenuItem {
+    /* margin: auto; */
+    margin: 1rem 0;
+    border: 2px solid rgb(28, 27, 43);
+}
+
+.depositMenuItem:hover {
+    background-color: rgb(6, 4, 35, 1);
+}
+
+.depositMenuItemBox {
+    display: flex;
+    margin: 0;
+    width: 100vh;
+}
+
+.depotiMenuItemBoxImage {
+    width: 10%;
+    margin: auto;
+}
+
+.depositMenuItemBoxData {
+    margin: 0 1rem;
+    width: 70%;
+}
+
+.noneTextTransfor {
+    text-transform: none;
+}
+
+.lowerCase {
+    text-transform: lowercase;
+}
+
+.upperCase {
+    text-transform: uppercase;
+}
+
+.boldText {
+    font-weight: 800;
+}
+
+.fontSize16 {
+    font-size: 16px;
+}
+
+.textCenter {
+    text-align: center;
+}
+
+.priceData {
+    width: 20%;
+    margin: auto;
+}
+
+.input {
+    border: 1px solid #767676;
+    font-size: 12px;
+    border-radius: 5px;
+    width: 100%;
+    color: #fff;
+    margin: 2rem 0;
+    padding: 0.5rem;
+    cursor: pointer;
+}
+
+.input:hover {
+    background-color: rgb(6, 4, 35, 1);
+}
+
+.headline {
+    color: #bfbfbf !important;
+    font-size: 1.6rem;
+    font-weight: 600;
+    text-transform: none;
+
+}
+
+.subheading {
+    font-size: 1.6rem;
+    font-weight: 800;
+    text-transform: none;
+    color: #fff !important
+}
+
+.container {
+    margin: auto;
+    padding: 2rem;
+}
+
+.content {
+    margin: 1rem 0;
+}
+
+.flex {
+    display: flex;
+}
+
+.light {
+    color: #fff;
+}
+
+.btn {
+    width: 170px;
+    margin: 0 2rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: none;
+    color: #fff;
+    border: 1px solid grey;
+    border-radius: 7px;
+
+}
+
+.btn_add {
+    width: 2rem;
+    background-color: #d0d0d0;
+    color: black;
+    border-radius: 7px;
+}
+
+.table_row {
+    display: flex;
+    width: 100%;
+    justify-content: space-between !important;
+    align-items: center !important;
+
+}
+
+.cell {
+    width: 100%;
+    display: flex;
+    justify-content: space-between !important;
+    align-items: center;
+}
+
+.rounded_img {
+    border-radius: 50%;
+}
+
+.label {
+    color: rgb(221, 221, 221);
+    font-size: 0.8rem;
+    font-weight: 300;
+    margin-top: 0.4rem;
+    margin-bottom: 0.2rem;
+}
+
+.inputBox {
+    display: flex;
+    justify-content: space-between;
+}
+
+.inputField {
+    flex-basis: 85%;
+    border-radius: 7px;
+    padding: 0.6rem !important;
+    background-color: transparent;
+    color: white;
+}
+
+.formBtn {
+    background-color: '#fff !important';
+    color: #02051a;
+    border-radius: 7px;
+}

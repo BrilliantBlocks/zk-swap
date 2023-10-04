@@ -1,0 +1,243 @@
+.wrapper {
+    border: 1px solid #fff;
+    border-radius: 7px;
+    margin: 0 !important;
+    padding: 0.4rem !important;
+    max-width: 10rem !important;
+    width: 10rem;
+    max-height: 17rem;
+    height: fit-content !important;
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    flex-shrink: 0 !important;
+}
+
+.card_outline {
+    border: 2px solid #fff !important;
+    border-radius: 7px;
+}
+
+.flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.icon_wrapper {
+    display: flex;
+    align-items: center;
+    margin-top: 1rem
+}
+
+.content_text {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-left: 1rem;
+}
+
+.content_headline {
+    font-family: Inter, Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    text-transform: capitalize;
+    color: #95aac9 !important
+}
+
+.card_image_container {
+    padding: 0.4rem !important;
+    flex: 0 0 50%;
+}
+
+.cart_text_container {
+    padding: 0.4rem !important;
+    flex: 0 0 26%
+}
+
+.cart_title {
+    margin-block: -0.25rem;
+    font-size: 0.75rem;
+}
+
+.card_subtitle {
+    margin-bottom: 0.375rem !important;
+    height: 1.3rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.card_button {
+    display: flex;
+    flex: 0 0 10%;
+    justify-content: flex-end;
+    padding: 0.4rem !important;
+    padding-top: 0;
+    margin-block: 0.4rem;
+    background-color: #333;
+    border-radius: 6px;
+}
+
+.card_button_text {
+    margin-left: 0.36rem !important;
+    font-size: 0.83rem;
+    font-weight: 400;
+}
+
+.cardImage {
+    width: 100px; 
+    height: 100px; 
+    object-fit: cover;
+}
+
+.text {
+    color: #fff !important;
+    font-weight: 800;
+    border: 1px solid rgb(217, 220, 223)
+}
+
+.round_img {
+    border-radius: 50% !important;
+}
+
+.pools_wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem !important;
+    padding: 0.7rem;
+    border: 2px solid #d0d0d0 !important;
+    border-radius: 7px;
+}
+
+.pool_container {
+    margin-bottom: 0.3rem;
+    padding: 0.4rem;
+    background-color: #1F1F1F;
+    border-radius: 7px;
+}
+
+.pools_content_text {
+    font-weight: 800;
+    font-size: 1rem;
+    text-transform: capitalize;
+}
+
+.pools_flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-block: 1.5rem !important;
+}
+
+.pools_content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.pools_content_visual {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem
+}
+
+.pools_content_text {
+    font-size: 1.3rem;
+    font-weight: 800;
+}
+
+.pools_content_headline {
+    font-size: 1.1rem;
+    font-weight: 800;
+    text-transform: capitalize;
+    color: #6f8498 !important;
+}
+
+.text_s {
+    font-size: 1.1rem !important;
+}
+
+.pools_content_flex {
+    display: flex
+}
+
+.pools_accent {
+    color: #6f8498 !important;
+}
+
+.pools_right_content {
+    display: flex;
+    margin-bottom: 0.3rem;
+    padding: 0.75rem;
+    gap: 2rem;
+    background-color: #1F1F1F;
+    border-radius: 7px;
+}
+
+.pools_end {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.pools_right_text {
+    font-size: 1rem;
+    font-weight: 800;
+    margin-right: 0.5rem;
+    color: #6f8498 !important;
+}
+
+.pools_btn_container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: 0.5rem;
+    color: #fff !important;
+}
+
+.pools_flex_b {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem
+}
+
+.pools_b_headline {
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    color: #95aac9 !important
+}
+
+.pools_b_subheading {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.icon_box {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.icon_arrow {
+    padding: 0.1rem 0.3rem;
+    background-color: #F5B700;
+    border-radius: 7px;
+}
+
+.visual_content {
+    display: flex;
+    margin-top: 0.2rem
+}
+
+.pools_img {
+    display: flex;
+    height: 20px;
+    width: 20px;
+    border-radius: 50% !important;
+}
+
+.position_center {
+    text-align: center;
+}

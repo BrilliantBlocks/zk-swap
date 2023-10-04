@@ -1,0 +1,101 @@
+.icons {
+    display: flex;
+    column-gap: 25px;
+    justify-content: center;
+    text-align: center;
+}
+
+.footer {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin-bottom: -100px;
+}
+
+
+
+.icon {
+    width: 35px;
+    height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 26px;
+    color: #fff;
+    border-radius: 50%;
+    outline: 2px solid #fff;
+    transition-property: outline-offset, outline-color, background-color;
+    transition-duration: .25s;
+}
+
+.docs {
+    width: 35px;
+    height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 14px;
+    transition-property: outline-offset, outline-color, background-color;
+    transition-duration: .25s;
+    color: white;
+}
+
+.docs:hover {
+    outline-offset: 4px;
+    animation: shake .25s;
+}
+
+.copyright {
+    margin-top: 15px;
+    font-size: 8px;
+    justify-content: center;
+    display: flex;
+    text-align: center;
+    color: #fff;
+}
+
+.icon:hover {
+    outline-offset: 4px;
+    animation: shake .25s;
+}
+
+.discord:hover {
+    /* background-image: #49a3fd; */
+    background-color: #7289da;
+    outline-color: #a0b4fa;
+}
+
+.twiter:hover {
+    background-color: #1da1f2;
+    outline-color: #1da1f2;
+}
+
+.github:hover {
+    background-color: #2ea44f;
+    outline-color: #2ea44f;
+}
+
+.instagram:hover {
+    background-image: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+    outline-color: #aB2d76;
+}
+
+@keyframes shake {
+    10% {
+        transform: rotate(15deg);
+    }
+
+    20% {
+        transform: rotate(-15deg);
+    }
+
+    30% {
+        transform: rotate(15deg);
+    }
+
+    40% {
+        transform: rotate(-15deg);
+    }
+}

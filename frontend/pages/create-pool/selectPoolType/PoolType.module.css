@@ -1,0 +1,42 @@
+.containerBox {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: nowrap;
+    min-width: 100%;
+    padding: 8px;
+}
+
+.childBox {
+    margin: 0.3rem;
+    padding: 28px;
+    color: white;
+    border: 2px solid grey;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.childBox:hover {
+    background-color: rgb(6, 4, 35, 1);
+}
+
+.content {
+    margin: 2rem;
+    text-align: center;
+}
+
+.headline {
+    padding: 1rem;
+    font-size: 1.4rem !important;
+    font-weight: 800;
+    color: #f0f0f0 !important;
+}
+
+.radio {
+    display: none !important;
+}
+
+.border {
+    border: 2px solid #F5B700;
+    background-color: rgb(9, 7, 39);
+}

@@ -1,0 +1,50 @@
+.cart_item_container {
+    display: flex;
+    flex-basis: 100%;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card_visual {
+    flex: 0 0 20%
+}
+
+.card_description {
+    flex: 0 0 30%;
+}
+
+.card_title {
+    color: #fff !important;
+    font-size: 0.8rem;
+}
+
+.card_subtitle {
+    color: #fff !important;
+    ;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.card_info {
+    display: flex;
+    flex: 0 1 20%;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.card_info_visual {
+    flex: 0 0 40%
+}
+
+.card_info_text {
+    flex: 0 1 60%
+}
+
+.card_actions {
+    flex: 0 0 10%;
+    margin-left: 0.3rem;
+}
+
+.card_text {
+    color: #fff !important;
+}

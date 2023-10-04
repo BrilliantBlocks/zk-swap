@@ -1,0 +1,9 @@
+.btn {
+    min-width: 25vw;
+    justify-content: flex-start;
+    margin-top: 1rem;
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
+    text-transform: capitalize;
+    color: #b5b5b5 !important;
+}
